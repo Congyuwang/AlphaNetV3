@@ -393,13 +393,13 @@ class UpDownAccuracy(tf.keras.metrics.Metric):
 
     def __init__(self, name='up_down_accuracy', **kwargs):
         super(UpDownAccuracy, self).__init__(name=name, **kwargs)
-        self.up_down_correct_count = self.add_weight(name='ud_count', initializer='zeros')
-        self.length = self.add_weight(name='len', initializer='zeros')
+        self.up_down_correct_count = self.add_weight(name='ud_count', initializer='zeros', shape=(), dtype=tf.float64)
+        self.length = self.add_weight(name='len', initializer='zeros', shape=(), dtype=tf.float64)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        y_true = tf.cast(y_true > 0, tf.float32)
-        y_pred = tf.cast(y_pred > 0, tf.float32)
-        length = tf.cast(len(y_true), tf.float32)
+        y_true = tf.cast(y_true > 0, tf.float64)
+        y_pred = tf.cast(y_pred > 0, tf.float64)
+        length = tf.cast(len(y_true), tf.float64)
         correct_count = length - tf.reduce_sum(tf.abs(y_true - y_pred))
 
         self.length.assign_add(length)
