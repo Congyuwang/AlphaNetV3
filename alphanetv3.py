@@ -456,30 +456,56 @@ class TrainValData:
         :param history_length: 每个sample的历史天数
         :param sample_step: 采样sample时前进的天数
         """
+        # check time series shapes
         if len(time_series_list) == 0:
             raise Exception("Empty data")
-        self.__dates_list = [stock.dates for stock in time_series_list]
-        self.__distinct_dates = np.unique([date for dates in self.__dates_list for date in dates])
+        self.__feature_counts = time_series_list[0].data.shape[1]
+        for series in time_series_list:
+            if series.data.shape[1] != self.__feature_counts:
+                raise Exception("time series do not have the same number of features")
+
+        # gather distinct dates
+        self.__distinct_dates = np.unique([date for stock in time_series_list for date in stock.dates])
         self.__distinct_dates.sort()
-        self.__data_list = [stock.data for stock in time_series_list]
-        self.__labels_list = [stock.labels for stock in time_series_list]
+
+        # initialize rectangular tensor according to dates list
+        self.__data = np.empty((len(time_series_list),
+                                len(self.__distinct_dates),
+                                self.__feature_counts))
+        self.__labels = np.empty((len(time_series_list),
+                                  len(self.__distinct_dates)))
+        self.__data[:] = np.NaN
+        self.__labels[:] = np.NaN
+
+        # fill in data for rectangular tensor
+        dates_positions = {date: index for index, date in enumerate(self.__distinct_dates)}
+        dates_position_mapper = np.vectorize(lambda d: dates_positions[d])
+        for i, series in enumerate(time_series_list):
+            position_index = dates_position_mapper(series.dates)
+            self.__data[i, position_index, :] = series.data
+            self.__labels[i, position_index] = series.labels
+
+        # convert to tensor constant
+        self.__data = tf.constant(self.__data)
+        self.__labels = tf.constant(self.__labels)
         self.__train_length = train_length
         self.__validate_length = validate_length
         self.__history_length = history_length
         self.__sample_step = sample_step
 
-    def __get_generator__(self, date_index, order="shuffle"):
+    def __get_generator__(self, start_index, end_index, order="shuffle"):
         """
         该函数根据每个股票的日期范围给出一个generation_list
-        :param date_index: 每个时间序列的日期范围, boolean mask
+        :param start_index: generate 的区间开始的index, inclusive
+        :param end_index: generate 的区间结束的index, exclusive
         :param order: 有三种顺序: shuffle, by_date, by_series
         :return: generator
         """
-        dates = [date[dates] for date, dates in zip(self.__dates_list, date_index)]
-        data = [data[dates] for data, dates in zip(self.__data_list, date_index)]
-        label = [labels[dates] for labels, dates in zip(self.__labels_list, date_index)]
-        generation_list = [(stock_i, i, dates[stock_i][i]) for stock_i in range(len(data))
-                           for i in range(0, len(data[stock_i]) - self.__history_length + 1, self.__sample_step)]
+        length = end_index - start_index
+        data = self.__data[:, start_index:end_index, :]
+        label = self.__labels[:, start_index:end_index]
+        generation_list = [(series_i, i, self.__distinct_dates[i]) for series_i in range(len(data))
+                           for i in range(0, length - self.__history_length + 1, self.__sample_step)]
 
         if order == "shuffle":
             np.random.shuffle(generation_list)
@@ -490,12 +516,20 @@ class TrainValData:
         else:
             raise Exception("wrong order argument, choose from `shuffle`, `by_date`, and `by_series`")
 
+        # 去掉date
         generation_list = [(stock_i, i) for stock_i, i, _ in generation_list]
 
         def generator():
-            for stock_i, i in generation_list:
-                x = tf.constant(data[stock_i][i: i + self.__history_length])
-                y = tf.constant(label[stock_i][i + self.__history_length - 1])
+            for series_i, i in generation_list:
+                x_data = data[series_i][i: i + self.__history_length]
+                y_data = label[series_i][i + self.__history_length - 1]
+
+                # 如果该序列的历史片段内有确实数据则跳过该数据
+                if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int8)) > 0 or
+                        tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int8)) > 0):
+                    continue
+                x = tf.constant(x_data)
+                y = tf.constant(y_data)
                 yield x, y
 
         return generator
@@ -507,7 +541,6 @@ class TrainValData:
         :return: tensorflow dataset, (train, val)
         """
 
-        data_dim = self.__data_list[0].shape[1]
         if type(start_date) is not int:
             raise Exception("start date should be an integer YYYYMMDD")
 
@@ -515,36 +548,26 @@ class TrainValData:
         after_start_date = self.__distinct_dates >= start_date
         if np.sum(after_start_date) < self.__train_length + self.__validate_length:
             raise Exception("date range exceeded end of dates")
-        train_start_date = np.min(self.__distinct_dates[after_start_date])
 
-        train_start_index = np.where(self.__distinct_dates == train_start_date)[0]
+        # get train, val periods
+        train_start_index = np.argmin(self.__distinct_dates[after_start_date])
         train_end_index = train_start_index + self.__train_length
         val_start_index = train_end_index - self.__history_length + 1
         val_end_index = train_end_index + self.__validate_length
 
-        # get training, validating data date ranges
-        train_start_date = train_start_date
-        train_end_date = self.__distinct_dates[train_end_index]
-        val_start_index = self.__distinct_dates[val_start_index]
-        val_end_date = self.__distinct_dates[val_end_index]
-
-        # generate train_data and val_data
-        train_dates_index = [np.logical_and(date < train_end_date, date >= train_start_date)
-                             for date in self.__dates_list]
-        val_dates_index = [np.logical_and(date < val_end_date, date >= val_start_index)
-                           for date in self.__dates_list]
-
-        train_generator = self.__get_generator__(train_dates_index, order=order)
-        val_generator = self.__get_generator__(val_dates_index, order=order)
+        train_generator = self.__get_generator__(train_start_index, train_end_index, order=order)
+        val_generator = self.__get_generator__(val_start_index, val_end_index, order=order)
 
         # get rolling sample generator
         train_dataset = tf.data.Dataset.from_generator(train_generator,
                                                        output_types=(tf.float32, tf.float32),
-                                                       output_shapes=((self.__history_length, data_dim), ()))
+                                                       output_shapes=((self.__history_length,
+                                                                       self.__feature_counts), ()))
 
         val_dataset = tf.data.Dataset.from_generator(val_generator,
                                                      output_types=(tf.float32, tf.float32),
-                                                     output_shapes=((self.__history_length, data_dim), ()))
+                                                     output_shapes=((self.__history_length,
+                                                                     self.__feature_counts), ()))
 
         return train_dataset, val_dataset
 
@@ -557,6 +580,8 @@ if __name__ == "__main__":
     # 测试数据准备
     csi = pd.read_csv("./data/CSI500.zip", dtype={"代码": "category", "简称": "category"})
     csi.drop(columns=["简称"], inplace=True)
+
+    # 新增特征
     csi["close/free_turn"] = csi["收盘价(元)"] / csi["换手率(基准.自由流通股本)"]
     csi["open/turn"] = csi["开盘价(元)"] / csi["换手率(%)"]
     csi["volume/low"] = csi["成交量(股)"] / csi["最低价(元)"]
@@ -705,4 +730,12 @@ if __name__ == "__main__":
 
     train_val_generator = TrainValData(stock_data)
     train, val = train_val_generator.get(20110101)
-    test_data = next(iter(train.batch(500)))
+    first_batch_train = next(iter(train.batch(500)))
+    first_batch_val = next(iter(val.batch(500)))
+    last_batch_train = None
+    last_batch_val = None
+    for b in iter(train.batch(500)):
+        last_batch_train = b
+
+    for b in iter(val.batch(500)):
+        last_batch_val = b
