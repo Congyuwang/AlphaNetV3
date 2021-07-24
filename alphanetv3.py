@@ -577,6 +577,7 @@ class TrainValData:
 if __name__ == "__main__":
 
     import pandas as pd
+    from tqdm import tqdm
 
     # 测试数据准备
     csi = pd.read_csv("./data/CSI500.zip", dtype={"代码": "category", "简称": "category"})
@@ -617,6 +618,12 @@ if __name__ == "__main__":
                              stock_data[0].data[2:32],
                              stock_data[0].data[4:34]], dtype=tf.float32)
 
+    # 补全全部stock与日期组合，用于手动生成batch对比测试
+    trading_dates = csi["日期"].unique()
+    trading_dates.sort()
+    full_index = pd.DataFrame([[s, d] for s in codes for d in trading_dates])
+    full_index.columns = ["代码", "日期"]
+    full_csi = full_index.merge(csi, how="left", left_on=["代码", "日期"], right_on=["代码", "日期"])
 
     def __is_all_close__(data1, data2, **kwargs):
         return np.all(np.isclose(data1, data2, **kwargs))
@@ -641,7 +648,38 @@ if __name__ == "__main__":
                 correlations.append(corr_coefficient[i, m])
         return correlations
 
-    print("Testing custom layers")
+    def __get_batches__(start_date):
+        train_val_generator = TrainValData(stock_data)
+        train, val = train_val_generator.get(start_date)
+        first_train = next(iter(train.batch(500)))
+        first_val = next(iter(val.batch(500)))
+        last_train = None
+        last_val = None
+
+        for b in iter(train.batch(500)):
+            last_train = b
+
+        for b in iter(val.batch(500)):
+            last_val = b
+
+        return first_train, first_val, last_train, last_val
+
+    def __get_n_batches__(start_date_index, end_date_index, n=2, step=2):
+        data_list = []
+        running_index = [(start_date_index + day, end_date_index + day, co)
+                         for day in range(0, step * n, step)
+                         for co in codes]
+        for start, end, co in tqdm(running_index):
+            start_date = trading_dates[start]
+            end_date = trading_dates[end]
+            df = full_csi.loc[np.logical_and(np.logical_and(full_csi["代码"] == co, full_csi["日期"] <= end_date),
+                                             full_csi["日期"] >= start_date), :].iloc[:, 3:].values
+            if np.sum(pd.isnull(df)) == 0:
+                data_list.append(df)
+
+        return data_list
+
+    print("===Testing custom layers===")
 
     # test std
     s = Std()(test_data)
@@ -722,21 +760,79 @@ if __name__ == "__main__":
     else:
         raise Exception("correlation incorrect")
 
-    print("Testing AlphaNetV3")
+    print("===Testing AlphaNetV3===")
 
     alpha_net_v3 = AlphaNetV3()
     alpha_net_v3.model().summary()
 
+    print("===Testing data utility===")
+
     print("Testing data utility")
 
-    train_val_generator = TrainValData(stock_data)
-    train, val = train_val_generator.get(20110101)
-    first_batch_train = next(iter(train.batch(500)))
-    first_batch_val = next(iter(val.batch(500)))
-    last_batch_train = None
-    last_batch_val = None
-    for b in iter(train.batch(500)):
-        last_batch_train = b
+    print("Computing tensorflow dataset: 20110101")
 
-    for b in iter(val.batch(500)):
-        last_batch_val = b
+    first_batch_train, first_batch_val, last_batch_train, last_batch_val = __get_batches__(20110101)
+
+    print("Comparing first batch of training dataset", flush=True)
+    first_data_queue = __get_n_batches__(0, 29, 3)
+    if __is_all_close__(first_data_queue[:len(first_batch_train[0])], first_batch_train[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("Comparing last batch of training dataset", flush=True)
+    last_data_queue = __get_n_batches__(1170 - 2, 1199 - 2)
+    if __is_all_close__(last_data_queue[-len(last_batch_train[0]):], last_batch_train[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("Comparing first batch of validation dataset", flush=True)
+    first_val_data_queue = __get_n_batches__(1200 - 29, 1200)
+    if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])], first_batch_val[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("Comparing last batch of training dataset", flush=True)
+    last_val_data_queue = __get_n_batches__(1470 - 2, 1499 - 2)
+    if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):], last_batch_val[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    start_basis = np.where(trading_dates == 20110601)
+
+    print("Computing tensorflow dataset: 20110601")
+
+    first_batch_train, first_batch_val, last_batch_train, last_batch_val = __get_batches__(20110601)
+
+    print("Comparing first batch of training dataset", flush=True)
+    first_data_queue = __get_n_batches__(start_basis + 0, start_basis + 29, 3)
+    if __is_all_close__(first_data_queue[:len(first_batch_train[0])], first_batch_train[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("Comparing last batch of training dataset", flush=True)
+    last_data_queue = __get_n_batches__(start_basis + 1170 - 2, start_basis + 1199 - 2)
+    if __is_all_close__(last_data_queue[-len(last_batch_train[0]):], last_batch_train[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("Comparing first batch of validation dataset", flush=True)
+    first_val_data_queue = __get_n_batches__(start_basis + 1200 - 29, start_basis + 1200)
+    if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])], first_batch_val[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("Comparing last batch of training dataset", flush=True)
+    last_val_data_queue = __get_n_batches__(start_basis + 1470 - 2, start_basis + 1499 - 2)
+    if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):], last_batch_val[0]):
+        print("passed", flush=True)
+    else:
+        raise Exception("failure")
+
+    print("ALL TESTS PASSED")
