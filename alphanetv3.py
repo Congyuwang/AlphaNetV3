@@ -23,40 +23,6 @@ from tensorflow.keras.layers import Layer
 from typing import List
 
 
-def __get_dimensions__(inputs, stride):
-    """
-    return time_steps, features, and output_length based on inputs and stride
-
-    :param inputs: pass the inputs of layer to the function
-    :param stride: the stride of the custom layer
-    :return: (time_steps, features, output_length)
-    """
-    time_steps = inputs.shape[1]
-    features = inputs.shape[2]
-    output_length = time_steps // stride
-
-    if time_steps % stride != 0:
-        raise Exception("Error, time_steps 应该是 stride的整数倍")
-
-    return time_steps, features, output_length
-
-
-def __lower_triangle_without_diagonal_mask__(matrix):
-    """
-    the boolean mask of lower triangular part of the matrix without
-    the diagonal elements.
-
-    :param matrix: the input matrix
-    :return: boolean mask the the same shape as the input matrix
-    """
-    ones = tf.ones_like(matrix)
-    mask_lower = tf.linalg.band_part(ones, -1, 0)
-    mask_diag = tf.linalg.band_part(ones, 0, 0)
-    # lower triangle removing the diagonal elements
-    mask = tf.cast(mask_lower - mask_diag, dtype=tf.bool)
-    return mask
-
-
 class Std(Layer):
     """
     计算每个feature各个stride的standard deviation
@@ -424,52 +390,6 @@ class AlphaNetV3:
         """
         return self.__model
 
-    def fit(self, *args, **kwargs):
-        """
-        训练的函数
-        :return: history object
-        """
-        self.__model.fit(*args, **kwargs)
-
-    def predict(self, *args, **kwargs):
-        """
-        预测的函数
-        :return: 预测值
-        """
-        self.__model.predict(*args, **kwargs)
-
-
-class UpDownAccuracy(tf.keras.metrics.Metric):
-
-    def __init__(self, name='up_down_accuracy', **kwargs):
-        super(UpDownAccuracy, self).__init__(name=name, **kwargs)
-        self.up_down_correct_count = self.add_weight(name='ud_count',
-                                                     initializer='zeros',
-                                                     shape=(),
-                                                     dtype=tf.float64)
-        self.length = self.add_weight(name='len',
-                                      initializer='zeros',
-                                      shape=(),
-                                      dtype=tf.float64)
-
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        y_true = tf.cast(y_true > 0, tf.float64)
-        y_pred = tf.cast(y_pred > 0, tf.float64)
-        length = tf.cast(len(y_true), tf.float64)
-        correct_count = length - tf.reduce_sum(tf.abs(y_true - y_pred))
-
-        self.length.assign_add(length)
-        self.up_down_correct_count.assign_add(correct_count)
-
-    def result(self):
-        if self.length == 0.0:
-            return 0.0
-        return self.up_down_correct_count / self.length
-
-    def reset_states(self):
-        self.up_down_correct_count.assign(0.0)
-        self.length.assign(0.0)
-
 
 class TimeSeriesData:
     """
@@ -496,19 +416,6 @@ class TimeSeriesData:
         self.dates = dates.astype(np.int32)
         self.data = data
         self.labels = labels
-
-
-def __generator__(data, label, generation_list, history_length):
-    for series_i, i in generation_list:
-        x_data = data[series_i][i: i + history_length]
-        y_data = label[series_i][i + history_length - 1]
-
-        # 如果该序列的历史片段内有缺失数据则跳过该数据
-        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int64)) == 0 and
-                tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int64)) == 0):
-            x = tf.constant(x_data)
-            y = tf.constant(y_data)
-            yield x, y
 
 
 class TrainValData:
@@ -646,6 +553,60 @@ class TrainValData:
                                                      output_shapes=shapes)
 
         return train_dataset, val_dataset
+
+
+def __get_dimensions__(inputs, stride):
+    """
+    return time_steps, features, and output_length based on inputs and stride
+
+    :param inputs: pass the inputs of layer to the function
+    :param stride: the stride of the custom layer
+    :return: (time_steps, features, output_length)
+    """
+    time_steps = inputs.shape[1]
+    features = inputs.shape[2]
+    output_length = time_steps // stride
+
+    if time_steps % stride != 0:
+        raise Exception("Error, time_steps 应该是 stride的整数倍")
+
+    return time_steps, features, output_length
+
+
+def __lower_triangle_without_diagonal_mask__(matrix):
+    """
+    the boolean mask of lower triangular part of the matrix without
+    the diagonal elements.
+
+    :param matrix: the input matrix
+    :return: boolean mask the the same shape as the input matrix
+    """
+    ones = tf.ones_like(matrix)
+    mask_lower = tf.linalg.band_part(ones, -1, 0)
+    mask_diag = tf.linalg.band_part(ones, 0, 0)
+    # lower triangle removing the diagonal elements
+    mask = tf.cast(mask_lower - mask_diag, dtype=tf.bool)
+    return mask
+
+
+def __generator__(data, label, generation_list, history_length):
+    """
+    tensorflow dataset 用到的generator
+    :param data: tensor, 序列 x 时间 x 特征
+    :param label: tensor, 序列 x 时间
+    :param generation_list: 生成数据的顺序信息 (序列id, 时间) pairs
+    :param history_length: 单个sample的历史长度
+    """
+    for series_i, i in generation_list:
+        x_data = data[series_i][i: i + history_length]
+        y_data = label[series_i][i + history_length - 1]
+
+        # 如果该序列的历史片段内有缺失数据则跳过该数据
+        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int64)) == 0 and
+                tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int64)) == 0):
+            x = tf.constant(x_data)
+            y = tf.constant(y_data)
+            yield x, y
 
 
 # unit test
