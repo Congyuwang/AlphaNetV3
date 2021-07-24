@@ -470,8 +470,8 @@ class TrainValData:
             self.__labels[i, position_index] = series.labels
 
         # convert to tensor constant
-        self.__data = tf.constant(self.__data)
-        self.__labels = tf.constant(self.__labels)
+        self.__data = tf.constant(self.__data, dtype=tf.float32)
+        self.__labels = tf.constant(self.__labels, dtype=tf.float32)
         self.__train_length = train_length
         self.__validate_length = validate_length
         self.__history_length = history_length
@@ -600,14 +600,12 @@ def __generator__(data, label, generation_list, history_length):
     :param history_length: 单个sample的历史长度
     """
     for series_i, i in generation_list:
-        x_data = data[series_i][i: i + history_length]
-        y_data = label[series_i][i + history_length - 1]
+        x = data[series_i][i: i + history_length]
+        y = label[series_i][i + history_length - 1]
 
         # 如果该序列的历史片段内有缺失数据则跳过该数据
-        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int64)) == 0 and
-                tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int64)) == 0):
-            x = tf.constant(x_data)
-            y = tf.constant(y_data)
+        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x), tf.int64)) == 0 and
+                tf.reduce_sum(tf.cast(tf.math.is_nan(y), tf.int64)) == 0):
             yield x, y
 
 
