@@ -518,20 +518,18 @@ class TrainValData:
         length = end_index - start_index
         data = self.__data[:, start_index:end_index, :]
         label = self.__labels[:, start_index:end_index]
-        generation_list = [(series_i, i, self.__distinct_dates[i]) for series_i in range(len(data))
-                           for i in range(0, length - self.__history_length + 1, self.__sample_step)]
+        generation_list = [(series_i, i)
+                           for i in range(0, length - self.__history_length + 1, self.__sample_step)
+                           for series_i in range(len(data))]
 
         if order == "shuffle":
             np.random.shuffle(generation_list)
         elif order == "by_date":
-            generation_list = sorted(generation_list, key=lambda k: k[2])
-        elif order == "by_series":
             pass
+        elif order == "by_series":
+            generation_list = sorted(generation_list, key=lambda k: k[0])
         else:
             raise Exception("wrong order argument, choose from `shuffle`, `by_date`, and `by_series`")
-
-        # 去掉date
-        generation_list = [(stock_i, i) for stock_i, i, _ in generation_list]
 
         return data, label, generation_list, self.__history_length
 
