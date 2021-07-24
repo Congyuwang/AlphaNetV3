@@ -367,7 +367,8 @@ class AlphaNetV3:
     def __init__(self,
                  optimizer=tf.keras.optimizers.Adam,
                  alpha=0.0001,
-                 loss="MSE"):
+                 loss="MSE",
+                 metrics=None):
         inputs = tf.keras.Input(shape=(30, 15))
         expanded_10 = FeatureExpansion(stride=10)(inputs)
         expanded_5 = FeatureExpansion(stride=5)(inputs)
@@ -381,7 +382,7 @@ class AlphaNetV3:
         outputs = tfl.Dense(1, activation="linear",
                             kernel_initializer="truncated_normal")(concat)
         self.__model = tf.keras.Model(inputs=inputs, outputs=outputs)
-        self.__model.compile(optimizer(alpha), loss=loss)
+        self.__model.compile(optimizer(alpha), loss=loss, metrics=metrics)
 
     def model(self):
         """
