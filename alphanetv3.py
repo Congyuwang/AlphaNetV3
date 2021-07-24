@@ -445,12 +445,11 @@ def __generator__(data, label, generation_list, history_length):
         y_data = label[series_i][i + history_length - 1]
 
         # 如果该序列的历史片段内有缺失数据则跳过该数据
-        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int64)) == 0 or
+        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int64)) == 0 and
                 tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int64)) == 0):
-            continue
-        x = tf.constant(x_data)
-        y = tf.constant(y_data)
-        yield x, y
+            x = tf.constant(x_data)
+            y = tf.constant(y_data)
+            yield x, y
 
 
 class TrainValData:
