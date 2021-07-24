@@ -524,7 +524,8 @@ class TrainValData:
             raise Exception("date range exceeded end of dates")
 
         # get train, val periods
-        train_start_index = np.argmin(self.__distinct_dates[after_start_date])
+        first_date = np.min(self.__distinct_dates[after_start_date])
+        train_start_index = first_index(self.__distinct_dates, first_date)
         train_end_index = train_start_index + self.__train_length
         val_start_index = (train_end_index -
                            self.__history_length +
@@ -608,6 +609,15 @@ def __generator__(data, label, generation_list, history_length):
             x = tf.constant(x_data)
             y = tf.constant(y_data)
             yield x, y
+
+
+def first_index(array, element):
+    """
+    :param array: input array
+    :param element: the element in the array to be found
+    :return: the index of the element in the array
+    """
+    return np.min(np.where(array == element))
 
 
 # unit test
@@ -894,7 +904,7 @@ if __name__ == "__main__":
     else:
         raise Exception("failure")
 
-    start_basis = np.where(trading_dates == 20110601)[0][0]
+    start_basis = np.min(np.where(trading_dates == 20110601))
 
     print("Computing tensorflow dataset: 20110601")
 
