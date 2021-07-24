@@ -551,7 +551,7 @@ class TrainValData:
         # get train, val periods
         train_start_index = np.argmin(self.__distinct_dates[after_start_date])
         train_end_index = train_start_index + self.__train_length
-        val_start_index = train_end_index - self.__history_length + 1
+        val_start_index = train_end_index - self.__history_length + self.__sample_step
         val_end_index = train_end_index + self.__validate_length
 
         train_generator_args = self.__get_generator_args__(train_start_index, train_end_index, order=order)
@@ -788,7 +788,7 @@ if __name__ == "__main__":
         raise Exception("failure")
 
     print("Comparing first batch of validation dataset", flush=True)
-    first_val_data_queue = __get_n_batches__(1200 - 29, 1200)
+    first_val_data_queue = __get_n_batches__(1200 - 30 + 2, 1201)
     if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])], first_batch_val[0]):
         print("passed", flush=True)
     else:
@@ -822,7 +822,7 @@ if __name__ == "__main__":
         raise Exception("failure")
 
     print("Comparing first batch of validation dataset", flush=True)
-    first_val_data_queue = __get_n_batches__(start_basis + 1200 - 29, start_basis + 1200)
+    first_val_data_queue = __get_n_batches__(start_basis + 1200 - 30 + 2, start_basis + 1201)
     if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])], first_batch_val[0]):
         print("passed", flush=True)
     else:
