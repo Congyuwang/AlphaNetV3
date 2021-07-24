@@ -495,7 +495,7 @@ class TrainValData:
         def generator():
             for stock_i, i in generation_list:
                 x = tf.constant(data[stock_i][i: i + self.__history_length])
-                y = tf.constant(label[stock_i][i + self.__history_length])
+                y = tf.constant(label[stock_i][i + self.__history_length - 1])
                 yield x, y
 
         return generator
@@ -508,7 +508,7 @@ class TrainValData:
         """
 
         data_dim = self.__data_list[0].shape[1]
-        if start_date is not int:
+        if type(start_date) is not int:
             raise Exception("start date should be an integer YYYYMMDD")
 
         # find the actual starting date
@@ -601,8 +601,8 @@ if __name__ == "__main__":
         covariances = []
         cov_mat = np.cov(data.T)
         for i in range(cov_mat.shape[0]):
-            for j in range(i):
-                covariances.append(cov_mat[i, j])
+            for m in range(i):
+                covariances.append(cov_mat[i, m])
         return covariances
 
 
@@ -611,29 +611,34 @@ if __name__ == "__main__":
         correlations = []
         corr_coefficient = np.corrcoef(data.T)
         for i in range(corr_coefficient.shape[0]):
-            for j in range(i):
-                correlations.append(corr_coefficient[i, j])
+            for m in range(i):
+                correlations.append(corr_coefficient[i, m])
         return correlations
-
 
     print("Testing custom layers")
 
     # test std
     s = Std()(test_data)
-    test1 = __is_all_close__(s[0][0], np.std(test_data[0][0:10], axis=0))
-    test2 = __is_all_close__(s[0][1], np.std(test_data[0][10:20], axis=0))
-    test3 = __is_all_close__(s[0][2], np.std(test_data[0][20:30], axis=0))
-    if np.all([test1, test2, test3]):
+    test_result = []
+    for j in range(len(test_data)):
+        test1 = __is_all_close__(s[j][0], np.std(test_data[j][0:10], axis=0))
+        test2 = __is_all_close__(s[j][1], np.std(test_data[j][10:20], axis=0))
+        test3 = __is_all_close__(s[j][2], np.std(test_data[j][20:30], axis=0))
+        test_result.extend([test1, test2, test3])
+    if np.all(test_result):
         print("Std: all tests passed")
     else:
         raise Exception("Std incorrect")
 
     # test z-score
     z = ZScore()(test_data)
-    test1 = __is_all_close__(z[0][0], np.mean(test_data[0][0:10], axis=0) / np.std(test_data[0][0:10], axis=0))
-    test2 = __is_all_close__(z[0][1], np.mean(test_data[0][10:20], axis=0) / np.std(test_data[0][10:20], axis=0))
-    test3 = __is_all_close__(z[0][2], np.mean(test_data[0][20:30], axis=0) / np.std(test_data[0][20:30], axis=0))
-    if np.all([test1, test2, test3]):
+    test_result = []
+    for j in range(len(test_data)):
+        test1 = __is_all_close__(z[j][0], np.mean(test_data[j][0:10], axis=0) / np.std(test_data[j][0:10], axis=0))
+        test2 = __is_all_close__(z[j][1], np.mean(test_data[j][10:20], axis=0) / np.std(test_data[j][10:20], axis=0))
+        test3 = __is_all_close__(z[j][2], np.mean(test_data[j][20:30], axis=0) / np.std(test_data[j][20:30], axis=0))
+        test_result.extend([test1, test2, test3])
+    if np.all(test_result):
         print("z-score: all tests passed")
     else:
         raise Exception("z-score incorrect")
@@ -641,40 +646,52 @@ if __name__ == "__main__":
     # test linear decay
     d = LinearDecay()(test_data)
     weights = np.linspace(1, 10, 10)
-    test1 = __is_all_close__(d[0][0], np.average(test_data[0][0:10], axis=0, weights=weights))
-    test2 = __is_all_close__(d[0][1], np.average(test_data[0][10:20], axis=0, weights=weights))
-    test3 = __is_all_close__(d[0][2], np.average(test_data[0][20:30], axis=0, weights=weights))
-    if np.all([test1, test2, test3]):
+    test_result = []
+    for j in range(len(test_data)):
+        test1 = __is_all_close__(d[j][0], np.average(test_data[j][0:10], axis=0, weights=weights))
+        test2 = __is_all_close__(d[j][1], np.average(test_data[j][10:20], axis=0, weights=weights))
+        test3 = __is_all_close__(d[j][2], np.average(test_data[j][20:30], axis=0, weights=weights))
+        test_result.extend([test1, test2, test3])
+    if np.all(test_result):
         print("linear decay: all tests passed")
     else:
         raise Exception("linear decay incorrect")
 
     # test return
     r = Return()(test_data)
-    test1 = __is_all_close__(r[0][0], test_data[0][10 - 1] / test_data[0][0] - 1)
-    test2 = __is_all_close__(r[0][1], test_data[0][20 - 1] / test_data[0][10] - 1)
-    test3 = __is_all_close__(r[0][2], test_data[0][30 - 1] / test_data[0][20] - 1)
-    if np.all([test1, test2, test3]):
+    test_result = []
+    for j in range(len(test_data)):
+        test1 = __is_all_close__(r[j][0], test_data[j][10 - 1] / test_data[j][0] - 1)
+        test2 = __is_all_close__(r[j][1], test_data[j][20 - 1] / test_data[j][10] - 1)
+        test3 = __is_all_close__(r[j][2], test_data[j][30 - 1] / test_data[j][20] - 1)
+        test_result.extend([test1, test2, test3])
+    if np.all(test_result):
         print("return: all tests passed")
     else:
         raise Exception("return incorrect")
 
     # test covariances
     c = Covariance()(test_data)
-    test1 = __is_all_close__(c[0][0], __compute_test_covariance__(test_data[0][0:10]))
-    test2 = __is_all_close__(c[0][1], __compute_test_covariance__(test_data[0][10:20]))
-    test3 = __is_all_close__(c[0][2], __compute_test_covariance__(test_data[0][20:30]))
-    if np.all([test1, test2, test3]):
+    test_result = []
+    for j in range(len(test_data)):
+        test1 = __is_all_close__(c[j][0], __compute_test_covariance__(test_data[j][0:10]))
+        test2 = __is_all_close__(c[j][1], __compute_test_covariance__(test_data[j][10:20]))
+        test3 = __is_all_close__(c[j][2], __compute_test_covariance__(test_data[j][20:30]))
+        test_result.extend([test1, test2, test3])
+    if np.all(test_result):
         print("covariance: all tests passed")
     else:
         raise Exception("covariance incorrect")
 
     # test correlation
     c = Correlation()(test_data)
-    test1 = __is_all_close__(c[0][0], __compute_test_correlation__(test_data[0][0:10]), atol=1e-5)
-    test2 = __is_all_close__(c[0][1], __compute_test_correlation__(test_data[0][10:20]), atol=1e-5)
-    test3 = __is_all_close__(c[0][2], __compute_test_correlation__(test_data[0][20:30]), atol=1e-5)
-    if np.all([test1, test2, test3]):
+    test_result = []
+    for j in range(len(test_data)):
+        test1 = __is_all_close__(c[j][0], __compute_test_correlation__(test_data[j][0:10]), atol=1e-5)
+        test2 = __is_all_close__(c[j][1], __compute_test_correlation__(test_data[j][10:20]), atol=1e-5)
+        test3 = __is_all_close__(c[j][2], __compute_test_correlation__(test_data[j][20:30]), atol=1e-5)
+        test_result.extend([test1, test2, test3])
+    if np.all(test_result):
         print("correlation: all tests passed")
     else:
         raise Exception("correlation incorrect")
@@ -688,5 +705,4 @@ if __name__ == "__main__":
 
     train_val_generator = TrainValData(stock_data)
     train, val = train_val_generator.get(20110101)
-    for data in iter(train):
-        pass
+    test_data = next(iter(train.batch(500)))
