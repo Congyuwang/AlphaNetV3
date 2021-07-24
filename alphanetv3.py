@@ -438,6 +438,20 @@ class TimeSeriesData:
         self.labels = labels
 
 
+def __generator__(data, label, generation_list, history_length):
+    for series_i, i in generation_list:
+        x_data = data[series_i][i: i + history_length]
+        y_data = label[series_i][i + history_length - 1]
+
+        # 如果该序列的历史片段内有缺失数据则跳过该数据
+        if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int64)) == 0 or
+                tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int64)) == 0):
+            continue
+        x = tf.constant(x_data)
+        y = tf.constant(y_data)
+        yield x, y
+
+
 class TrainValData:
     """
     获取train, validation tensorflow dataset
@@ -493,7 +507,7 @@ class TrainValData:
         self.__history_length = history_length
         self.__sample_step = sample_step
 
-    def __get_generator__(self, start_index, end_index, order="shuffle"):
+    def __get_generator_args__(self, start_index, end_index, order="shuffle"):
         """
         该函数根据每个股票的日期范围给出一个generation_list
         :param start_index: generate 的区间开始的index, inclusive
@@ -519,20 +533,7 @@ class TrainValData:
         # 去掉date
         generation_list = [(stock_i, i) for stock_i, i, _ in generation_list]
 
-        def generator():
-            for series_i, i in generation_list:
-                x_data = data[series_i][i: i + self.__history_length]
-                y_data = label[series_i][i + self.__history_length - 1]
-
-                # 如果该序列的历史片段内有确实数据则跳过该数据
-                if (tf.reduce_sum(tf.cast(tf.math.is_nan(x_data), tf.int8)) > 0 or
-                        tf.reduce_sum(tf.cast(tf.math.is_nan(y_data), tf.int8)) > 0):
-                    continue
-                x = tf.constant(x_data)
-                y = tf.constant(y_data)
-                yield x, y
-
-        return generator
+        return data, label, generation_list, self.__history_length
 
     def get(self, start_date, order="by_date"):
         """
@@ -555,16 +556,18 @@ class TrainValData:
         val_start_index = train_end_index - self.__history_length + 1
         val_end_index = train_end_index + self.__validate_length
 
-        train_generator = self.__get_generator__(train_start_index, train_end_index, order=order)
-        val_generator = self.__get_generator__(val_start_index, val_end_index, order=order)
+        train_generator_args = self.__get_generator_args__(train_start_index, train_end_index, order=order)
+        val_generator_args = self.__get_generator_args__(val_start_index, val_end_index, order=order)
 
         # get rolling sample generator
-        train_dataset = tf.data.Dataset.from_generator(train_generator,
+        train_dataset = tf.data.Dataset.from_generator(__generator__,
+                                                       args=train_generator_args,
                                                        output_types=(tf.float32, tf.float32),
                                                        output_shapes=((self.__history_length,
                                                                        self.__feature_counts), ()))
-
-        val_dataset = tf.data.Dataset.from_generator(val_generator,
+        # 通过传递tensor args比直接由generator从环境抓取数据运行速度更快，只不过args必须是rectangular tensors
+        val_dataset = tf.data.Dataset.from_generator(__generator__,
+                                                     args=val_generator_args,
                                                      output_types=(tf.float32, tf.float32),
                                                      output_shapes=((self.__history_length,
                                                                      self.__feature_counts), ()))
