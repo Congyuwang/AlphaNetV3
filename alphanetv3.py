@@ -4,9 +4,10 @@
 ```
 input: (batch_size, history time steps, features)
 
-        +-> expand features (stride = 5)  -> BN -> GRU -> BN -+
-input --|                                                     |- concat -> Dense(linear)
-        +-> expand features (stride = 10) -> BN -> GRU -> BN -+
+                stride = 5
+        +-> expand features -> BN -> GRU -> BN -+
+input --|       stride = 10                     |- concat -> Dense(linear)
+        +-> expand features -> BN -> GRU -> BN -+
 ```
 
 (BN: batch normalization)
@@ -66,7 +67,8 @@ class Std(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(Std, self).__init__(**kwargs)
         self.stride = stride
 
@@ -75,15 +77,23 @@ class Std(Layer):
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs, self.stride)
+        time_steps, features, output_length = __get_dimensions__(inputs,
+                                                                 self.stride)
+        intermediate_shape = (-1, output_length, self.stride, features)
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs, ksize=self.stride, strides=self.stride, padding="VALID")
-        means = tf.repeat(means, self.stride, axis=1)
+        means = tf.repeat(
+            tf.nn.avg_pool(inputs,
+                           ksize=self.stride,
+                           strides=self.stride,
+                           padding="VALID"),
+            self.stride,
+            axis=1
+        )
 
         # subtract means for each stride
         squared_diff = tf.square(tf.subtract(inputs, means))
-        squared_diff = tf.reshape(squared_diff, (-1, output_length, self.stride, features))
+        squared_diff = tf.reshape(squared_diff, intermediate_shape)
 
         # compute standard deviation for each stride
         mean_squared_diff = tf.reduce_mean(squared_diff, axis=2)
@@ -94,7 +104,8 @@ class Std(Layer):
 
 class ZScore(Layer):
     """
-    并非严格意义上的z-score, 计算公式为每个feature各个stride的mean除以各自的standard deviation
+    并非严格意义上的z-score,
+    计算公式为每个feature各个stride的mean除以各自的standard deviation
     """
 
     def __init__(self, stride=10, **kwargs):
@@ -102,7 +113,8 @@ class ZScore(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(ZScore, self).__init__(**kwargs)
         self.stride = stride
 
@@ -111,14 +123,20 @@ class ZScore(Layer):
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs, self.stride)
+        time_steps, features, output_length = __get_dimensions__(inputs,
+                                                                 self.stride)
+        intermediate_shape = (-1, output_length, self.stride, features)
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs, ksize=self.stride, strides=self.stride, padding="VALID")
+        means = tf.nn.avg_pool(inputs,
+                               ksize=self.stride,
+                               strides=self.stride,
+                               padding="VALID")
 
         # compute standard deviations for each stride
-        squared_diff = tf.square(tf.subtract(inputs, tf.repeat(means, self.stride, axis=1)))
-        squared_diff = tf.reshape(squared_diff, (-1, output_length, self.stride, features))
+        means_broadcast = tf.repeat(means, self.stride, axis=1)
+        squared_diff = tf.square(tf.subtract(inputs, means_broadcast))
+        squared_diff = tf.reshape(squared_diff, intermediate_shape)
         mean_squared_diff = tf.reduce_mean(squared_diff, axis=2)
         std = tf.sqrt(mean_squared_diff)
 
@@ -138,7 +156,8 @@ class LinearDecay(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(LinearDecay, self).__init__(**kwargs)
         self.stride = stride
 
@@ -147,7 +166,8 @@ class LinearDecay(Layer):
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs, self.stride)
+        time_steps, features, output_length = __get_dimensions__(inputs,
+                                                                 self.stride)
 
         output_shape = (-1, output_length, features)
         intermediate_shape = (-1, self.stride, features)
@@ -157,7 +177,8 @@ class LinearDecay(Layer):
         kernel = tf.repeat(single_kernel, intermediate_shape[2])
         kernel = kernel / tf.reduce_sum(single_kernel)
 
-        # reshape tensors into (bash_size * (time_steps / stride), stride, features)
+        # reshape tensors into:
+        # (bash_size * (time_steps / stride), stride, features)
         kernel = tf.reshape(kernel, intermediate_shape[1:])
         inputs = tf.reshape(inputs, intermediate_shape)
 
@@ -177,7 +198,8 @@ class Return(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(Return, self).__init__(**kwargs)
         self.stride = stride
 
@@ -199,7 +221,8 @@ class Return(Layer):
 
 class Covariance(Layer):
     """
-    计算每个stride每两个feature之间的covariance大小，输出feature数量为features * (features - 1) / 2
+    计算每个stride每两个feature之间的covariance大小，
+    输出feature数量为features * (features - 1) / 2
     """
 
     def __init__(self, stride=10, **kwargs):
@@ -207,31 +230,42 @@ class Covariance(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(Covariance, self).__init__(**kwargs)
         self.stride = stride
 
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features * (features - 1) / 2)
+        :return: return dimension 为(batch_size, time_steps / stride,
+        features * (features - 1) / 2)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs, self.stride)
+        time_steps, features, output_length = __get_dimensions__(inputs,
+                                                                 self.stride)
+        intermediate_shape = (-1, self.stride, features)
         output_features = int(features * (features - 1) / 2)
         output_shape = (-1, output_length, output_features)
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs, ksize=self.stride, strides=self.stride, padding="VALID")
+        means = tf.nn.avg_pool(inputs,
+                               ksize=self.stride,
+                               strides=self.stride,
+                               padding="VALID")
 
         # subtract means for each stride
-        means_subtracted = tf.subtract(inputs, tf.repeat(means, self.stride, axis=1))
-        means_subtracted = tf.reshape(means_subtracted, (-1, self.stride, features))
+        means_broadcast = tf.repeat(means, self.stride, axis=1)
+        means_subtracted = tf.subtract(inputs, means_broadcast)
+        means_subtracted = tf.reshape(means_subtracted, intermediate_shape)
 
         # compute covariance matrix
-        covariance_matrix = tf.einsum("ijk,ijm->ikm", means_subtracted, means_subtracted)
+        covariance_matrix = tf.einsum("ijk,ijm->ikm",
+                                      means_subtracted,
+                                      means_subtracted)
         covariance_matrix = covariance_matrix / (self.stride - 1)
 
-        # get the lower part of the covariance matrix without the diagonal elements
+        # get the lower part of the covariance matrix
+        # without the diagonal elements
         mask = __lower_triangle_without_diagonal_mask__(covariance_matrix)
         covariances = tf.boolean_mask(covariance_matrix, mask)
         covariances = tf.reshape(covariances, output_shape)
@@ -240,7 +274,8 @@ class Covariance(Layer):
 
 class Correlation(Layer):
     """
-    计算每个stride每两个feature之间的correlation coefficient，输出feature数量为features * (features - 1) / 2
+    计算每个stride每两个feature之间的correlation coefficient，
+    输出feature数量为features * (features - 1) / 2
     """
 
     def __init__(self, stride=10, **kwargs):
@@ -248,25 +283,32 @@ class Correlation(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(Correlation, self).__init__(**kwargs)
         self.stride = stride
 
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features * (features - 1) / 2)
+        :return: return dimension 为(batch_size, time_steps / stride,
+        features * (features - 1) / 2)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs, self.stride)
+        time_steps, features, output_length = __get_dimensions__(inputs,
+                                                                 self.stride)
         output_features = int(features * (features - 1) / 2)
         output_shape = (-1, output_length, output_features)
         intermediate_shape = (-1, self.stride, features)
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs, ksize=self.stride, strides=self.stride, padding="VALID")
+        means = tf.nn.avg_pool(inputs,
+                               ksize=self.stride,
+                               strides=self.stride,
+                               padding="VALID")
 
         # subtract means for each stride
-        means_subtracted = tf.subtract(inputs, tf.repeat(means, self.stride, axis=1))
+        means_broadcast = tf.repeat(means, self.stride, axis=1)
+        means_subtracted = tf.subtract(inputs, means_broadcast)
         means_subtracted = tf.reshape(means_subtracted, intermediate_shape)
 
         # compute standard deviations for each strides
@@ -278,13 +320,17 @@ class Correlation(Layer):
         denominator_matrix = tf.einsum("ik,im->ikm", std, std)
 
         # compute covariance matrix
-        covariance_matrix = tf.einsum("ijk,ijm->ikm", means_subtracted, means_subtracted)
+        covariance_matrix = tf.einsum("ijk,ijm->ikm",
+                                      means_subtracted,
+                                      means_subtracted)
         covariance_matrix = covariance_matrix / self.stride
 
         # take the lower triangle of each matrix without diagonal
         mask = __lower_triangle_without_diagonal_mask__(covariance_matrix)
-        covariances = tf.reshape(tf.boolean_mask(covariance_matrix, mask), output_shape)
-        denominators = tf.reshape(tf.boolean_mask(denominator_matrix, mask), output_shape)
+        covariances = tf.reshape(tf.boolean_mask(covariance_matrix, mask),
+                                 output_shape)
+        denominators = tf.reshape(tf.boolean_mask(denominator_matrix, mask),
+                                  output_shape)
 
         return tf.math.divide_no_nan(covariances, denominators)
 
@@ -305,7 +351,8 @@ class FeatureExpansion(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be greater than 1")
+            raise Exception("Illegal Argument: stride should be "
+                            "greater than 1")
         super(FeatureExpansion, self).__init__(**kwargs)
         self.stride = stride
         self.std = Std(stride=stride)
@@ -318,7 +365,8 @@ class FeatureExpansion(Layer):
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features * (features + 3))
+        :return: return dimension 为(batch_size, time_steps / stride,
+        features * (features + 3))
         """
         std_output = self.std(inputs)
         z_score_output = self.z_score(inputs)
@@ -341,9 +389,10 @@ class AlphaNetV3:
     ```
     input: (batch_size, history time steps, features)
 
-            +-> expand features (stride = 5)  -> BN -> GRU -> BN -+
-    input --|                                                     |- concat -> Dense(linear)
-            +-> expand features (stride = 10) -> BN -> GRU -> BN -+
+                    stride = 5
+            +-> expand features -> BN -> GRU -> BN -+
+    input --|       stride = 10                     |- concat -> Dense(linear)
+            +-> expand features -> BN -> GRU -> BN -+
     ```
 
     (BN: batch normalization)
@@ -363,7 +412,8 @@ class AlphaNetV3:
         normalized_10 = tfl.BatchNormalization()(gru_10)
         normalized_5 = tfl.BatchNormalization()(gru_5)
         concat = tfl.Concatenate(axis=-1)([normalized_10, normalized_5])
-        outputs = tfl.Dense(1, activation="linear", kernel_initializer="truncated_normal")(concat)
+        outputs = tfl.Dense(1, activation="linear",
+                            kernel_initializer="truncated_normal")(concat)
         self.__model = tf.keras.Model(inputs=inputs, outputs=outputs)
         self.__model.compile(optimizer(alpha), loss=loss)
 
@@ -393,8 +443,14 @@ class UpDownAccuracy(tf.keras.metrics.Metric):
 
     def __init__(self, name='up_down_accuracy', **kwargs):
         super(UpDownAccuracy, self).__init__(name=name, **kwargs)
-        self.up_down_correct_count = self.add_weight(name='ud_count', initializer='zeros', shape=(), dtype=tf.float64)
-        self.length = self.add_weight(name='len', initializer='zeros', shape=(), dtype=tf.float64)
+        self.up_down_correct_count = self.add_weight(name='ud_count',
+                                                     initializer='zeros',
+                                                     shape=(),
+                                                     dtype=tf.float64)
+        self.length = self.add_weight(name='len',
+                                      initializer='zeros',
+                                      shape=(),
+                                      dtype=tf.float64)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true > 0, tf.float64)
@@ -420,7 +476,10 @@ class TimeSeriesData:
     储存一个个股的数据信息及预测目标，全部使用numpy，日期格式为整数: `YYYYMMDD`.
     """
 
-    def __init__(self, dates: np.ndarray, data: np.ndarray, labels: np.ndarray):
+    def __init__(self,
+                 dates: np.ndarray,
+                 data: np.ndarray,
+                 labels: np.ndarray):
         """
         :param dates: 日期列, 1D numpy array
         :param data: 训练输入的X，2D numpy array, 日期长度 x 特征数量
@@ -476,10 +535,12 @@ class TrainValData:
         self.__feature_counts = time_series_list[0].data.shape[1]
         for series in time_series_list:
             if series.data.shape[1] != self.__feature_counts:
-                raise Exception("time series do not have the same number of features")
+                raise Exception("time series do not have "
+                                "the same number of features")
 
         # gather distinct dates
-        self.__distinct_dates = np.unique([date for stock in time_series_list for date in stock.dates])
+        self.__distinct_dates = np.unique([date for stock in time_series_list
+                                           for date in stock.dates])
         self.__distinct_dates.sort()
 
         # initialize rectangular tensor according to dates list
@@ -492,7 +553,8 @@ class TrainValData:
         self.__labels[:] = np.NaN
 
         # fill in data for rectangular tensor
-        dates_positions = {date: index for index, date in enumerate(self.__distinct_dates)}
+        dates_positions = {date: index
+                           for index, date in enumerate(self.__distinct_dates)}
         dates_position_mapper = np.vectorize(lambda d: dates_positions[d])
         for i, series in enumerate(time_series_list):
             position_index = dates_position_mapper(series.dates)
@@ -519,7 +581,9 @@ class TrainValData:
         data = self.__data[:, start_index:end_index, :]
         label = self.__labels[:, start_index:end_index]
         generation_list = [(series_i, i)
-                           for i in range(0, length - self.__history_length + 1, self.__sample_step)
+                           for i in range(0,
+                                          length - self.__history_length + 1,
+                                          self.__sample_step)
                            for series_i in range(len(data))]
 
         if order == "shuffle":
@@ -529,14 +593,16 @@ class TrainValData:
         elif order == "by_series":
             generation_list = sorted(generation_list, key=lambda k: k[0])
         else:
-            raise Exception("wrong order argument, choose from `shuffle`, `by_date`, and `by_series`")
+            raise Exception("wrong order argument, choose from `shuffle`, "
+                            "`by_date`, and `by_series`")
 
         return data, label, generation_list, self.__history_length
 
     def get(self, start_date, order="by_date"):
         """
         :param start_date: 该轮训练开始日期，整数YYYYMMDD
-        :param order: 有三种顺序: shuffle, by_date, by_series, 分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先
+        :param order: 有三种顺序: shuffle, by_date, by_series,
+        分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先
         :return: tensorflow dataset, (train, val)
         """
 
@@ -545,30 +611,39 @@ class TrainValData:
 
         # find the actual starting date
         after_start_date = self.__distinct_dates >= start_date
-        if np.sum(after_start_date) < self.__train_length + self.__validate_length:
+        if np.sum(after_start_date) < (self.__train_length +
+                                       self.__validate_length):
             raise Exception("date range exceeded end of dates")
 
         # get train, val periods
         train_start_index = np.argmin(self.__distinct_dates[after_start_date])
         train_end_index = train_start_index + self.__train_length
-        val_start_index = train_end_index - self.__history_length + self.__sample_step
+        val_start_index = (train_end_index -
+                           self.__history_length +
+                           self.__sample_step)
         val_end_index = train_end_index + self.__validate_length
 
-        train_generator_args = self.__get_generator_args__(train_start_index, train_end_index, order=order)
-        val_generator_args = self.__get_generator_args__(val_start_index, val_end_index, order=order)
+        train_args = self.__get_generator_args__(train_start_index,
+                                                 train_end_index,
+                                                 order=order)
+
+        val_args = self.__get_generator_args__(val_start_index,
+                                               val_end_index,
+                                               order=order)
 
         # get rolling sample generator
+        # 通过传递tensor args比直接由generator从环境抓取数据运行速度更快，
+        # 只不过args必须是rectangular tensors
+        types = (tf.float32, tf.float32)
+        shapes = ((self.__history_length, self.__feature_counts), ())
         train_dataset = tf.data.Dataset.from_generator(__generator__,
-                                                       args=train_generator_args,
-                                                       output_types=(tf.float32, tf.float32),
-                                                       output_shapes=((self.__history_length,
-                                                                       self.__feature_counts), ()))
-        # 通过传递tensor args比直接由generator从环境抓取数据运行速度更快，只不过args必须是rectangular tensors
+                                                       args=train_args,
+                                                       output_types=types,
+                                                       output_shapes=shapes)
         val_dataset = tf.data.Dataset.from_generator(__generator__,
-                                                     args=val_generator_args,
-                                                     output_types=(tf.float32, tf.float32),
-                                                     output_shapes=((self.__history_length,
-                                                                     self.__feature_counts), ()))
+                                                     args=val_args,
+                                                     output_types=types,
+                                                     output_shapes=shapes)
 
         return train_dataset, val_dataset
 
@@ -580,7 +655,8 @@ if __name__ == "__main__":
     from tqdm import tqdm
 
     # 测试数据准备
-    csi = pd.read_csv("./data/CSI500.zip", dtype={"代码": "category", "简称": "category"})
+    csi = pd.read_csv("./data/CSI500.zip", dtype={"代码": "category",
+                                                  "简称": "category"})
     csi.drop(columns=["简称"], inplace=True)
 
     # 新增特征
@@ -597,14 +673,24 @@ if __name__ == "__main__":
     dates_shift_dictionary = dict(zip(trading_dates[10:], trading_dates[:-10]))
     csi_slice = csi[["代码", "日期", "收盘价(元)"]].copy()
     csi_slice_date_shift = csi[["代码", "日期", "收盘价(元)"]].copy()
-    csi_slice_date_shift["日期"] = csi_slice_date_shift["日期"].map(lambda x: dates_shift_dictionary.get(x, None))
-    csi_slice_date_shift.rename(columns={"收盘价(元)": "10交易日后收盘价(元)"}, inplace=True)
+    csi_slice_date_shift["日期"] = csi_slice_date_shift["日期"]\
+        .map(lambda x: dates_shift_dictionary.get(x, None))
+    csi_slice_date_shift.rename(columns={"收盘价(元)": "10交易日后收盘价(元)"},
+                                inplace=True)
     csi_slice_date_shift.dropna(inplace=True)
     csi_slice_date_shift["日期"] = [d for d in csi_slice_date_shift["日期"]]
-    csi_slice = csi_slice.merge(csi_slice_date_shift, how="inner", left_on=["代码", "日期"], right_on=["代码", "日期"])
-    csi_slice["10日回报率"] = csi_slice["10交易日后收盘价(元)"] / csi_slice["收盘价(元)"] - 1
+    csi_slice = csi_slice.merge(csi_slice_date_shift,
+                                how="inner",
+                                left_on=["代码", "日期"],
+                                right_on=["代码", "日期"])
+    close_price = csi_slice["收盘价(元)"]
+    future_close_price = csi_slice["10交易日后收盘价(元)"]
+    csi_slice["10日回报率"] = future_close_price / close_price - 1
     csi_slice.drop(columns=["收盘价(元)", "10交易日后收盘价(元)"], inplace=True)
-    csi = csi_slice.merge(csi, how="inner", left_on=["代码", "日期"], right_on=["代码", "日期"])
+    csi = csi_slice.merge(csi,
+                          how="inner",
+                          left_on=["代码", "日期"],
+                          right_on=["代码", "日期"])
 
     codes = csi.代码.cat.categories
     stock_data = []
@@ -623,13 +709,16 @@ if __name__ == "__main__":
     trading_dates.sort()
     full_index = pd.DataFrame([[s, d] for s in codes for d in trading_dates])
     full_index.columns = ["代码", "日期"]
-    full_csi = full_index.merge(csi, how="left", left_on=["代码", "日期"], right_on=["代码", "日期"])
+    full_csi = full_index.merge(csi,
+                                how="left",
+                                left_on=["代码", "日期"],
+                                right_on=["代码", "日期"])
 
     def __is_all_close__(data1, data2, **kwargs):
         return np.all(np.isclose(data1, data2, **kwargs))
 
 
-    def __compute_test_covariance__(data):
+    def __test_covariance__(data):
         data = data.numpy()
         covariances = []
         cov_mat = np.cov(data.T)
@@ -639,7 +728,7 @@ if __name__ == "__main__":
         return covariances
 
 
-    def __compute_test_correlation__(data):
+    def __test_correlation__(data):
         data = data.numpy()
         correlations = []
         corr_coefficient = np.corrcoef(data.T)
@@ -672,8 +761,13 @@ if __name__ == "__main__":
         for start, end, co in tqdm(running_index):
             start_date = trading_dates[start]
             end_date = trading_dates[end]
-            df = full_csi.loc[np.logical_and(np.logical_and(full_csi["代码"] == co, full_csi["日期"] <= end_date),
-                                             full_csi["日期"] >= start_date), :].iloc[:, 3:].values
+            df = full_csi.loc[np.logical_and(
+                np.logical_and(
+                    full_csi["代码"] == co,
+                    full_csi["日期"] <= end_date
+                ),
+                full_csi["日期"] >= start_date
+            ), :].iloc[:, 3:].values
             if np.sum(pd.isnull(df)) == 0:
                 data_list.append(df)
 
@@ -698,9 +792,15 @@ if __name__ == "__main__":
     z = ZScore()(test_data)
     test_result = []
     for j in range(len(test_data)):
-        test1 = __is_all_close__(z[j][0], np.mean(test_data[j][0:10], axis=0) / np.std(test_data[j][0:10], axis=0))
-        test2 = __is_all_close__(z[j][1], np.mean(test_data[j][10:20], axis=0) / np.std(test_data[j][10:20], axis=0))
-        test3 = __is_all_close__(z[j][2], np.mean(test_data[j][20:30], axis=0) / np.std(test_data[j][20:30], axis=0))
+        test1 = __is_all_close__(z[j][0],
+                                 np.mean(test_data[j][0:10], axis=0) /
+                                 np.std(test_data[j][0:10], axis=0))
+        test2 = __is_all_close__(z[j][1],
+                                 np.mean(test_data[j][10:20], axis=0) /
+                                 np.std(test_data[j][10:20], axis=0))
+        test3 = __is_all_close__(z[j][2],
+                                 np.mean(test_data[j][20:30], axis=0) /
+                                 np.std(test_data[j][20:30], axis=0))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
         print("z-score: all tests passed")
@@ -712,9 +812,15 @@ if __name__ == "__main__":
     weights = np.linspace(1, 10, 10)
     test_result = []
     for j in range(len(test_data)):
-        test1 = __is_all_close__(d[j][0], np.average(test_data[j][0:10], axis=0, weights=weights))
-        test2 = __is_all_close__(d[j][1], np.average(test_data[j][10:20], axis=0, weights=weights))
-        test3 = __is_all_close__(d[j][2], np.average(test_data[j][20:30], axis=0, weights=weights))
+        test1 = __is_all_close__(d[j][0], np.average(test_data[j][0:10],
+                                                     axis=0,
+                                                     weights=weights))
+        test2 = __is_all_close__(d[j][1], np.average(test_data[j][10:20],
+                                                     axis=0,
+                                                     weights=weights))
+        test3 = __is_all_close__(d[j][2], np.average(test_data[j][20:30],
+                                                     axis=0,
+                                                     weights=weights))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
         print("linear decay: all tests passed")
@@ -725,9 +831,12 @@ if __name__ == "__main__":
     r = Return()(test_data)
     test_result = []
     for j in range(len(test_data)):
-        test1 = __is_all_close__(r[j][0], test_data[j][10 - 1] / test_data[j][0] - 1)
-        test2 = __is_all_close__(r[j][1], test_data[j][20 - 1] / test_data[j][10] - 1)
-        test3 = __is_all_close__(r[j][2], test_data[j][30 - 1] / test_data[j][20] - 1)
+        test1 = __is_all_close__(r[j][0], test_data[j][10 - 1] /
+                                 test_data[j][0] - 1)
+        test2 = __is_all_close__(r[j][1], test_data[j][20 - 1] /
+                                 test_data[j][10] - 1)
+        test3 = __is_all_close__(r[j][2], test_data[j][30 - 1] /
+                                 test_data[j][20] - 1)
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
         print("return: all tests passed")
@@ -738,9 +847,12 @@ if __name__ == "__main__":
     c = Covariance()(test_data)
     test_result = []
     for j in range(len(test_data)):
-        test1 = __is_all_close__(c[j][0], __compute_test_covariance__(test_data[j][0:10]))
-        test2 = __is_all_close__(c[j][1], __compute_test_covariance__(test_data[j][10:20]))
-        test3 = __is_all_close__(c[j][2], __compute_test_covariance__(test_data[j][20:30]))
+        test1 = __is_all_close__(c[j][0],
+                                 __test_covariance__(test_data[j][0:10]))
+        test2 = __is_all_close__(c[j][1],
+                                 __test_covariance__(test_data[j][10:20]))
+        test3 = __is_all_close__(c[j][2],
+                                 __test_covariance__(test_data[j][20:30]))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
         print("covariance: all tests passed")
@@ -751,9 +863,15 @@ if __name__ == "__main__":
     c = Correlation()(test_data)
     test_result = []
     for j in range(len(test_data)):
-        test1 = __is_all_close__(c[j][0], __compute_test_correlation__(test_data[j][0:10]), atol=1e-5)
-        test2 = __is_all_close__(c[j][1], __compute_test_correlation__(test_data[j][10:20]), atol=1e-5)
-        test3 = __is_all_close__(c[j][2], __compute_test_correlation__(test_data[j][20:30]), atol=1e-5)
+        test1 = __is_all_close__(c[j][0],
+                                 __test_correlation__(test_data[j][0:10]),
+                                 atol=1e-5)
+        test2 = __is_all_close__(c[j][1],
+                                 __test_correlation__(test_data[j][10:20]),
+                                 atol=1e-5)
+        test3 = __is_all_close__(c[j][2],
+                                 __test_correlation__(test_data[j][20:30]),
+                                 atol=1e-5)
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
         print("correlation: all tests passed")
@@ -771,66 +889,84 @@ if __name__ == "__main__":
 
     print("Computing tensorflow dataset: 20110101")
 
-    first_batch_train, first_batch_val, last_batch_train, last_batch_val = __get_batches__(20110101)
+    (first_batch_train,
+     first_batch_val,
+     last_batch_train,
+     last_batch_val) = __get_batches__(20110101)
 
     print("Comparing first batch of training dataset", flush=True)
     first_data_queue = __get_n_batches__(0, 29, 3)
-    if __is_all_close__(first_data_queue[:len(first_batch_train[0])], first_batch_train[0]):
+    if __is_all_close__(first_data_queue[:len(first_batch_train[0])],
+                        first_batch_train[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
     print("Comparing last batch of training dataset", flush=True)
     last_data_queue = __get_n_batches__(1170 - 2, 1199 - 2)
-    if __is_all_close__(last_data_queue[-len(last_batch_train[0]):], last_batch_train[0]):
+    if __is_all_close__(last_data_queue[-len(last_batch_train[0]):],
+                        last_batch_train[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
     print("Comparing first batch of validation dataset", flush=True)
     first_val_data_queue = __get_n_batches__(1200 - 30 + 2, 1201)
-    if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])], first_batch_val[0]):
+    if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])],
+                        first_batch_val[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
     print("Comparing last batch of training dataset", flush=True)
     last_val_data_queue = __get_n_batches__(1470 - 2, 1499 - 2)
-    if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):], last_batch_val[0]):
+    if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):],
+                        last_batch_val[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
-    start_basis = np.where(trading_dates == 20110601)
+    start_basis = np.where(trading_dates == 20110601)[0][0]
 
     print("Computing tensorflow dataset: 20110601")
 
-    first_batch_train, first_batch_val, last_batch_train, last_batch_val = __get_batches__(20110601)
+    (first_batch_train,
+     first_batch_val,
+     last_batch_train,
+     last_batch_val) = __get_batches__(20110601)
 
     print("Comparing first batch of training dataset", flush=True)
-    first_data_queue = __get_n_batches__(start_basis + 0, start_basis + 29, 3)
-    if __is_all_close__(first_data_queue[:len(first_batch_train[0])], first_batch_train[0]):
+    first_data_queue = __get_n_batches__(start_basis + 0,
+                                         start_basis + 29, 3)
+    if __is_all_close__(first_data_queue[:len(first_batch_train[0])],
+                        first_batch_train[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
     print("Comparing last batch of training dataset", flush=True)
-    last_data_queue = __get_n_batches__(start_basis + 1170 - 2, start_basis + 1199 - 2)
-    if __is_all_close__(last_data_queue[-len(last_batch_train[0]):], last_batch_train[0]):
+    last_data_queue = __get_n_batches__(start_basis + 1170 - 2,
+                                        start_basis + 1199 - 2)
+    if __is_all_close__(last_data_queue[-len(last_batch_train[0]):],
+                        last_batch_train[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
     print("Comparing first batch of validation dataset", flush=True)
-    first_val_data_queue = __get_n_batches__(start_basis + 1200 - 30 + 2, start_basis + 1201)
-    if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])], first_batch_val[0]):
+    first_val_data_queue = __get_n_batches__(start_basis + 1200 - 30 + 2,
+                                             start_basis + 1201)
+    if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])],
+                        first_batch_val[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
 
     print("Comparing last batch of training dataset", flush=True)
-    last_val_data_queue = __get_n_batches__(start_basis + 1470 - 2, start_basis + 1499 - 2)
-    if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):], last_batch_val[0]):
+    last_val_data_queue = __get_n_batches__(start_basis + 1470 - 2,
+                                            start_basis + 1499 - 2)
+    if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):],
+                        last_batch_val[0]):
         print("passed", flush=True)
     else:
         raise Exception("failure")
