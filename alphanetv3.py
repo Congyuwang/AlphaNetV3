@@ -654,6 +654,12 @@ if __name__ == "__main__":
     import pandas as pd
     from tqdm import tqdm
 
+    OK_GREEN = "\033[92m"
+    END_CHAR = "\033[0m"
+
+    def __print_green__(string, **kwargs):
+        print(OK_GREEN + string + END_CHAR, **kwargs)
+
     # 测试数据准备
     csi = pd.read_csv("./data/CSI500.zip", dtype={"代码": "category",
                                                   "简称": "category"})
@@ -784,7 +790,7 @@ if __name__ == "__main__":
         test3 = __is_all_close__(s[j][2], np.std(test_data[j][20:30], axis=0))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
-        print("Std: all tests passed")
+        __print_green__("Std: all tests passed")
     else:
         raise Exception("Std incorrect")
 
@@ -803,7 +809,7 @@ if __name__ == "__main__":
                                  np.std(test_data[j][20:30], axis=0))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
-        print("z-score: all tests passed")
+        __print_green__("z-score: all tests passed")
     else:
         raise Exception("z-score incorrect")
 
@@ -823,7 +829,7 @@ if __name__ == "__main__":
                                                      weights=weights))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
-        print("linear decay: all tests passed")
+        __print_green__("linear decay: all tests passed")
     else:
         raise Exception("linear decay incorrect")
 
@@ -839,7 +845,7 @@ if __name__ == "__main__":
                                  test_data[j][20] - 1)
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
-        print("return: all tests passed")
+        __print_green__("return: all tests passed")
     else:
         raise Exception("return incorrect")
 
@@ -855,7 +861,7 @@ if __name__ == "__main__":
                                  __test_covariance__(test_data[j][20:30]))
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
-        print("covariance: all tests passed")
+        __print_green__("covariance: all tests passed")
     else:
         raise Exception("covariance incorrect")
 
@@ -874,7 +880,7 @@ if __name__ == "__main__":
                                  atol=1e-5)
         test_result.extend([test1, test2, test3])
     if np.all(test_result):
-        print("correlation: all tests passed")
+        __print_green__("correlation: all tests passed")
     else:
         raise Exception("correlation incorrect")
 
@@ -898,7 +904,7 @@ if __name__ == "__main__":
     first_data_queue = __get_n_batches__(0, 29, 3)
     if __is_all_close__(first_data_queue[:len(first_batch_train[0])],
                         first_batch_train[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -906,7 +912,7 @@ if __name__ == "__main__":
     last_data_queue = __get_n_batches__(1170 - 2, 1199 - 2)
     if __is_all_close__(last_data_queue[-len(last_batch_train[0]):],
                         last_batch_train[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -914,7 +920,7 @@ if __name__ == "__main__":
     first_val_data_queue = __get_n_batches__(1200 - 30 + 2, 1201)
     if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])],
                         first_batch_val[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -922,7 +928,7 @@ if __name__ == "__main__":
     last_val_data_queue = __get_n_batches__(1470 - 2, 1499 - 2)
     if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):],
                         last_batch_val[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -940,7 +946,7 @@ if __name__ == "__main__":
                                          start_basis + 29, 3)
     if __is_all_close__(first_data_queue[:len(first_batch_train[0])],
                         first_batch_train[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -949,7 +955,7 @@ if __name__ == "__main__":
                                         start_basis + 1199 - 2)
     if __is_all_close__(last_data_queue[-len(last_batch_train[0]):],
                         last_batch_train[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -958,7 +964,7 @@ if __name__ == "__main__":
                                              start_basis + 1201)
     if __is_all_close__(first_val_data_queue[:len(first_batch_val[0])],
                         first_batch_val[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
@@ -967,8 +973,8 @@ if __name__ == "__main__":
                                             start_basis + 1499 - 2)
     if __is_all_close__(last_val_data_queue[-len(last_batch_val[0]):],
                         last_batch_val[0]):
-        print("passed", flush=True)
+        __print_green__("passed", flush=True)
     else:
         raise Exception("failure")
 
-    print("ALL TESTS PASSED")
+    __print_green__("ALL TESTS PASSED")
