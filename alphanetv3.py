@@ -19,6 +19,7 @@ import tensorflow as tf
 import tensorflow.keras.layers as tfl
 import numpy as np
 from tensorflow.keras.layers import Layer
+from typing import List
 
 
 def __get_dimensions__(inputs, stride):
@@ -458,7 +459,7 @@ class TrainValData:
     """
 
     def __init__(self,
-                 time_series_list: list[TimeSeriesData],
+                 time_series_list: List[TimeSeriesData],
                  train_length=1200,
                  validate_length=300,
                  history_length=30,
