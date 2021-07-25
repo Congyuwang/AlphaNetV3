@@ -114,7 +114,7 @@ class TrainValData:
         self.__history_length = history_length
         self.__sample_step = sample_step
 
-    def __get_generator_args__(self, start_index, end_index, order="shuffle"):
+    def __get_generator_args__(self, start_index, end_index, order="by_date"):
         """
         该函数根据每个股票的日期范围给出一个generation_list
         :param start_index: generate 的区间开始的index, inclusive
@@ -125,7 +125,7 @@ class TrainValData:
         length = end_index - start_index
         data = self.__data[:, start_index:end_index, :]
         label = self.__labels[:, start_index:end_index]
-        generation_list = [(series_i, i)
+        generation_list = [[series_i, i]
                            for i in range(0,
                                           length - self.__history_length + 1,
                                           self.__sample_step)
@@ -148,10 +148,15 @@ class TrainValData:
 
     def get(self, start_date, order="by_date"):
         """
+        training set 的开始和结束是指其X, label所有数的时间范围(inclusive)。
+        validation set 的开始和结束则只是指其label的时间范围，因为
+        validation set 可以用到training set内的X历史数据。
+        具体时间信息参考返回的第三个元素dates_info
+
         :param start_date: 该轮训练开始日期，整数YYYYMMDD
         :param order: 有三种顺序: shuffle, by_date, by_series,
         分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先
-        :return: tensorflow dataset, (train, val)
+        :return: tensorflow dataset, (train, val), 以及dates_info
         """
 
         if type(start_date) is not int:
@@ -194,14 +199,31 @@ class TrainValData:
                                                      output_types=types,
                                                      output_shapes=shapes)
 
+        train_index = train_start_index + train_args[2][:, 1]
+        val_index = val_start_index + val_args[2][:, 1]
+
+        actual_training_beginning = tf.reduce_min(train_index)
+        actual_training_end = (tf.reduce_max(train_index) +
+                               self.__history_length - 1)
+        actual_validation_index = val_index + self.__history_length - 1
+
+        # these are all inclusive
         dates_info = {
-            "training set": {
-                "start_date_inc": self.__distinct_dates[train_start_index],
-                "end_date_exc": self.__distinct_dates[train_end_index]
+            "training": {
+                "start_date": self.__distinct_dates[
+                    actual_training_beginning
+                ],
+                "end_date": self.__distinct_dates[
+                    actual_training_end
+                ]
             },
-            "validation set": {
-                "start_date_inc": self.__distinct_dates[val_start_index],
-                "end_date_exc": self.__distinct_dates[val_end_index]
+            "validation": {
+                "start_date": self.__distinct_dates[
+                    tf.reduce_min(actual_validation_index)
+                ],
+                "end_date": self.__distinct_dates[
+                    tf.reduce_max(actual_validation_index)
+                ]
             }
         }
 
