@@ -153,6 +153,8 @@ class TrainValData:
         validation set 可以用到training set内的X历史数据。
         具体时间信息参考返回的第三个元素dates_info
 
+        throws value error if date range exceeded end of dates
+
         :param start_date: 该轮训练开始日期，整数YYYYMMDD
         :param order: 有三种顺序: shuffle, by_date, by_series,
         分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先
@@ -166,7 +168,7 @@ class TrainValData:
         after_start_date = self.__distinct_dates >= start_date
         if np.sum(after_start_date) < (self.__train_length +
                                        self.__validate_length):
-            raise Exception("date range exceeded end of dates")
+            raise ValueError("date range exceeded end of dates")
 
         # get train, val periods
         first_date = np.min(self.__distinct_dates[after_start_date])
