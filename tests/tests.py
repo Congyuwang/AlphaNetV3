@@ -145,7 +145,7 @@ class TestDataModule(unittest.TestCase):
 
     def __get_batches__(self, start_date):
         train_val_generator = TrainValData(self.data)
-        train, val = train_val_generator.get(start_date)
+        train, val, _ = train_val_generator.get(start_date)
         first_train = next(iter(train.batch(500)))
         first_val = next(iter(val.batch(500)))
         last_train = None
