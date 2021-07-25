@@ -12,7 +12,7 @@ from alphanet.metrics import *
 
 class TestLayers(unittest.TestCase):
 
-    def setUp(self):
+    def setUpClass(self):
         self.data, _, _, _, _ = prepare_test_data()
 
     def test_std(self):
@@ -122,7 +122,7 @@ class TestAlphaNet(unittest.TestCase):
 
 class TestDataModule(unittest.TestCase):
 
-    def setUp(self):
+    def setUpClass(self):
         _, data, full_data, codes, trading_dates = prepare_test_data()
         self.data = data
         self.full_data = full_data
