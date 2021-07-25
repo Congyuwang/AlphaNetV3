@@ -10,10 +10,74 @@ from alphanet.data import *
 from alphanet.metrics import *
 
 
+def prepare_test_data():
+    # 测试数据准备
+    csi = pd.read_csv("../data/CSI500.zip", dtype={"代码": "category",
+                                                   "简称": "category"})
+    csi.drop(columns=["简称"], inplace=True)
+
+    # 新增特征
+    csi["close/free_turn"] = csi["收盘价(元)"] / csi["换手率(基准.自由流通股本)"]
+    csi["open/turn"] = csi["开盘价(元)"] / csi["换手率(%)"]
+    csi["volume/low"] = csi["成交量(股)"] / csi["最低价(元)"]
+    csi["vwap/high"] = csi["均价"] / csi["最高价(元)"]
+    csi["low/high"] = csi["最低价(元)"] / csi["最高价(元)"]
+    csi["vwap/close"] = csi["均价"] / csi["收盘价(元)"]
+
+    # 计算十日回报
+    trading_dates = csi["日期"].unique()
+    trading_dates.sort()
+    dates_shift_dictionary = dict(zip(trading_dates[10:], trading_dates[:-10]))
+    csi_slice = csi[["代码", "日期", "收盘价(元)"]].copy()
+    csi_slice_date_shift = csi[["代码", "日期", "收盘价(元)"]].copy()
+    csi_slice_date_shift["日期"] = csi_slice_date_shift["日期"] \
+        .map(lambda x: dates_shift_dictionary.get(x, None))
+    csi_slice_date_shift.rename(columns={"收盘价(元)": "10交易日后收盘价(元)"},
+                                inplace=True)
+    csi_slice_date_shift.dropna(inplace=True)
+    csi_slice_date_shift["日期"] = [d for d in csi_slice_date_shift["日期"]]
+    csi_slice = csi_slice.merge(csi_slice_date_shift,
+                                how="inner",
+                                left_on=["代码", "日期"],
+                                right_on=["代码", "日期"])
+    close_price = csi_slice["收盘价(元)"]
+    future_close_price = csi_slice["10交易日后收盘价(元)"]
+    csi_slice["10日回报率"] = future_close_price / close_price - 1
+    csi_slice.drop(columns=["收盘价(元)", "10交易日后收盘价(元)"], inplace=True)
+    csi = csi_slice.merge(csi,
+                          how="inner",
+                          left_on=["代码", "日期"],
+                          right_on=["代码", "日期"])
+
+    codes = csi.代码.cat.categories
+    stock_data = []
+    for code in codes:
+        table_part = csi.loc[csi.代码 == code, :]
+        stock_data.append(TimeSeriesData(dates=table_part["日期"].values,
+                                         data=table_part.iloc[:, 3:].values,
+                                         labels=table_part["10日回报率"].values))
+
+    test_data = tf.constant([stock_data[0].data[0:30],
+                             stock_data[0].data[2:32],
+                             stock_data[0].data[4:34]], dtype=tf.float32)
+
+    # 补全全部stock与日期组合，用于手动生成batch对比测试
+    trading_dates = csi["日期"].unique()
+    trading_dates.sort()
+    full_index = pd.DataFrame([[s, d] for s in codes for d in trading_dates])
+    full_index.columns = ["代码", "日期"]
+    full_csi = full_index.merge(csi,
+                                how="left",
+                                left_on=["代码", "日期"],
+                                right_on=["代码", "日期"])
+    return test_data, stock_data, full_csi, codes, trading_dates
+
+
 class TestLayers(unittest.TestCase):
 
-    def setUpClass(self):
-        self.data, _, _, _, _ = prepare_test_data()
+    @classmethod
+    def setUpClass(cls):
+        cls.data, _, _, _, _ = prepare_test_data()
 
     def test_std(self):
         s = Std()(self.data)
@@ -122,29 +186,28 @@ class TestAlphaNet(unittest.TestCase):
 
 class TestDataModule(unittest.TestCase):
 
-    def setUpClass(self):
-        _, data, full_data, codes, trading_dates = prepare_test_data()
-        self.data = data
-        self.full_data = full_data
-        self.codes = codes
-        self.trading_dates = trading_dates
-        self.test_date_1 = 20110131
-        self.test_date_2 = 20120201
-        print("getting batches for {}".format(self.test_date_1))
-        (self.first_batch_train_1,
-         self.first_batch_val_1,
-         self.last_batch_train_1,
-         self.last_batch_val_1) = self.__get_batches__(self.test_date_1)
-        print("getting batches for {}".format(self.test_date_2))
-        (self.first_batch_train_2,
-         self.first_batch_val_2,
-         self.last_batch_train_2,
-         self.last_batch_val_2) = self.__get_batches__(self.test_date_2)
-        self.start_basis_1 = np.min(np.where(trading_dates == self.test_date_1))
-        self.start_basis_2 = np.min(np.where(trading_dates == self.test_date_2))
+    _, data, full_data, codes, trading_dates = prepare_test_data()
 
-    def __get_batches__(self, start_date):
-        train_val_generator = TrainValData(self.data)
+    @classmethod
+    def setUpClass(cls):
+        cls.test_date_1 = 20110131
+        cls.test_date_2 = 20120201
+        print("getting batches for {}".format(cls.test_date_1))
+        (cls.first_batch_train_1,
+         cls.first_batch_val_1,
+         cls.last_batch_train_1,
+         cls.last_batch_val_1) = cls.__get_batches__(cls.test_date_1)
+        print("getting batches for {}".format(cls.test_date_2))
+        (cls.first_batch_train_2,
+         cls.first_batch_val_2,
+         cls.last_batch_train_2,
+         cls.last_batch_val_2) = cls.__get_batches__(cls.test_date_2)
+        cls.start_basis_1 = np.min(np.where(cls.trading_dates == cls.test_date_1))
+        cls.start_basis_2 = np.min(np.where(cls.trading_dates == cls.test_date_2))
+
+    @classmethod
+    def __get_batches__(cls, start_date):
+        train_val_generator = TrainValData(cls.data)
         train, val, _ = train_val_generator.get(start_date)
         first_train = next(iter(train.batch(500)))
         first_val = next(iter(val.batch(500)))
@@ -159,7 +222,8 @@ class TestDataModule(unittest.TestCase):
 
         return first_train, first_val, last_train, last_val
 
-    def __get_n_batches__(self,
+    @classmethod
+    def __get_n_batches__(cls,
                           start_date_index,
                           end_date_index,
                           n=2,
@@ -167,16 +231,16 @@ class TestDataModule(unittest.TestCase):
         data_list = []
         running_index = [(start_date_index + day, end_date_index + day, co)
                          for day in range(0, step * n, step)
-                         for co in self.codes]
+                         for co in cls.codes]
         for start, end, co in tqdm(running_index):
-            start_date = self.trading_dates[start]
-            end_date = self.trading_dates[end]
-            df = self.full_data.loc[np.logical_and(
+            start_date = cls.trading_dates[start]
+            end_date = cls.trading_dates[end]
+            df = cls.full_data.loc[np.logical_and(
                 np.logical_and(
-                    self.full_data["代码"] == co,
-                    self.full_data["日期"] <= end_date
+                    cls.full_data["代码"] == co,
+                    cls.full_data["日期"] <= end_date
                 ),
-                self.full_data["日期"] >= start_date
+                cls.full_data["日期"] >= start_date
             ), :].iloc[:, 3:].values
             if np.sum(pd.isnull(df)) == 0:
                 data_list.append(df)
@@ -260,69 +324,6 @@ class TestMetrics(unittest.TestCase):
         self.assertTrue(np.isclose(upd.result(), 4/5), "accuracy incorrect")
         upd.reset_states()
         self.assertTrue(np.isclose(upd.result(), 0.0), "reset failure")
-
-
-def prepare_test_data():
-    # 测试数据准备
-    csi = pd.read_csv("../data/CSI500.zip", dtype={"代码": "category",
-                                                   "简称": "category"})
-    csi.drop(columns=["简称"], inplace=True)
-
-    # 新增特征
-    csi["close/free_turn"] = csi["收盘价(元)"] / csi["换手率(基准.自由流通股本)"]
-    csi["open/turn"] = csi["开盘价(元)"] / csi["换手率(%)"]
-    csi["volume/low"] = csi["成交量(股)"] / csi["最低价(元)"]
-    csi["vwap/high"] = csi["均价"] / csi["最高价(元)"]
-    csi["low/high"] = csi["最低价(元)"] / csi["最高价(元)"]
-    csi["vwap/close"] = csi["均价"] / csi["收盘价(元)"]
-
-    # 计算十日回报
-    trading_dates = csi["日期"].unique()
-    trading_dates.sort()
-    dates_shift_dictionary = dict(zip(trading_dates[10:], trading_dates[:-10]))
-    csi_slice = csi[["代码", "日期", "收盘价(元)"]].copy()
-    csi_slice_date_shift = csi[["代码", "日期", "收盘价(元)"]].copy()
-    csi_slice_date_shift["日期"] = csi_slice_date_shift["日期"] \
-        .map(lambda x: dates_shift_dictionary.get(x, None))
-    csi_slice_date_shift.rename(columns={"收盘价(元)": "10交易日后收盘价(元)"},
-                                inplace=True)
-    csi_slice_date_shift.dropna(inplace=True)
-    csi_slice_date_shift["日期"] = [d for d in csi_slice_date_shift["日期"]]
-    csi_slice = csi_slice.merge(csi_slice_date_shift,
-                                how="inner",
-                                left_on=["代码", "日期"],
-                                right_on=["代码", "日期"])
-    close_price = csi_slice["收盘价(元)"]
-    future_close_price = csi_slice["10交易日后收盘价(元)"]
-    csi_slice["10日回报率"] = future_close_price / close_price - 1
-    csi_slice.drop(columns=["收盘价(元)", "10交易日后收盘价(元)"], inplace=True)
-    csi = csi_slice.merge(csi,
-                          how="inner",
-                          left_on=["代码", "日期"],
-                          right_on=["代码", "日期"])
-
-    codes = csi.代码.cat.categories
-    stock_data = []
-    for code in codes:
-        table_part = csi.loc[csi.代码 == code, :]
-        stock_data.append(TimeSeriesData(dates=table_part["日期"].values,
-                                         data=table_part.iloc[:, 3:].values,
-                                         labels=table_part["10日回报率"].values))
-
-    test_data = tf.constant([stock_data[0].data[0:30],
-                             stock_data[0].data[2:32],
-                             stock_data[0].data[4:34]], dtype=tf.float32)
-
-    # 补全全部stock与日期组合，用于手动生成batch对比测试
-    trading_dates = csi["日期"].unique()
-    trading_dates.sort()
-    full_index = pd.DataFrame([[s, d] for s in codes for d in trading_dates])
-    full_index.columns = ["代码", "日期"]
-    full_csi = full_index.merge(csi,
-                                how="left",
-                                left_on=["代码", "日期"],
-                                right_on=["代码", "日期"])
-    return test_data, stock_data, full_csi, codes, trading_dates
 
 
 def __is_all_close__(data1, data2, **kwargs):
