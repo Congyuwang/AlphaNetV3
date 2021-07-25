@@ -1,6 +1,9 @@
 import tensorflow as tf
 
 
+__all__ = ["UpDownAccuracy"]
+
+
 class UpDownAccuracy(tf.keras.metrics.Metric):
     """
     通过对return的预测来计算涨跌准确率
