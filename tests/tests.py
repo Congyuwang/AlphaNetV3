@@ -105,11 +105,11 @@ class TestAlphaNet(unittest.TestCase):
 
     def test_save_model(self):
         alpha_net_v3 = AlphaNetV3()
-        test_dir = "./.test/"
+        test_dir = "./.test_alpha_net_save/"
         if os.path.exists(test_dir):
             shutil.rmtree(test_dir)
         os.mkdir(test_dir)
-        alpha_net_v3.model().save("./.test/test")
+        alpha_net_v3.model().save("./.test_alpha_net_save/test")
         self.assertIsNotNone(os.listdir(test_dir))
         shutil.rmtree(test_dir)
 

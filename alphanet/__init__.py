@@ -46,6 +46,7 @@ class Std(Layer):
         super(Std, self).__init__(**kwargs)
         self.stride = stride
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -97,6 +98,7 @@ class ZScore(Layer):
         super(ZScore, self).__init__(**kwargs)
         self.stride = stride
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -145,6 +147,7 @@ class LinearDecay(Layer):
         super(LinearDecay, self).__init__(**kwargs)
         self.stride = stride
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -192,6 +195,7 @@ class Return(Layer):
         super(Return, self).__init__(**kwargs)
         self.stride = stride
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -229,6 +233,7 @@ class Covariance(Layer):
         super(Covariance, self).__init__(**kwargs)
         self.stride = stride
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -287,6 +292,7 @@ class Correlation(Layer):
         super(Correlation, self).__init__(**kwargs)
         self.stride = stride
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -366,6 +372,7 @@ class FeatureExpansion(Layer):
         self.covariance = Covariance(stride=stride)
         self.correlation = Correlation(stride=stride)
 
+    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -433,9 +440,6 @@ class AlphaNetV3:
         :return: tensorflow model
         """
         return self.__model
-
-
-
 
 
 def __get_dimensions__(inputs, stride):
