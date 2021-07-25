@@ -31,6 +31,6 @@ class UpDownAccuracy(tf.keras.metrics.Metric):
             return 0.0
         return self.up_down_correct_count / self.length
 
-    def reset_states(self):
+    def reset_state(self):
         self.up_down_correct_count.assign(0.0)
         self.length.assign(0.0)
