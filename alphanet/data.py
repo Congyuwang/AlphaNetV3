@@ -210,20 +210,20 @@ class TrainValData:
         # these are all inclusive
         dates_info = {
             "training": {
-                "start_date": self.__distinct_dates[
+                "start_date": int(self.__distinct_dates[
                     actual_training_beginning
-                ],
-                "end_date": self.__distinct_dates[
+                ]),
+                "end_date": int(self.__distinct_dates[
                     actual_training_end
-                ]
+                ])
             },
             "validation": {
-                "start_date": self.__distinct_dates[
+                "start_date": int(self.__distinct_dates[
                     tf.reduce_min(actual_validation_index)
-                ],
-                "end_date": self.__distinct_dates[
+                ]),
+                "end_date": int(self.__distinct_dates[
                     tf.reduce_max(actual_validation_index)
-                ]
+                ])
             }
         }
 
