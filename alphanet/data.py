@@ -141,7 +141,10 @@ class TrainValData:
             raise Exception("wrong order argument, choose from `shuffle`, "
                             "`by_date`, and `by_series`")
 
-        return data, label, generation_list, self.__history_length
+        generation_list = tf.constant(generation_list, dtype=tf.int32)
+        history_length = tf.constant(self.__history_length, dtype=tf.int32)
+
+        return data, label, generation_list, history_length
 
     def get(self, start_date, order="by_date"):
         """
