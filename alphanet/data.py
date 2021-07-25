@@ -194,7 +194,18 @@ class TrainValData:
                                                      output_types=types,
                                                      output_shapes=shapes)
 
-        return train_dataset, val_dataset
+        dates_info = {
+            "training set": {
+                "start_date_inc": self.__distinct_dates[train_start_index],
+                "end_date_exc": self.__distinct_dates[train_end_index]
+            },
+            "validation set": {
+                "start_date_inc": self.__distinct_dates[val_start_index],
+                "end_date_exc": self.__distinct_dates[val_end_index]
+            }
+        }
+
+        return train_dataset, val_dataset, dates_info
 
 
 def __generator__(data, label, generation_list, history_length):
