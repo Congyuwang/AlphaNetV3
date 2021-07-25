@@ -67,6 +67,11 @@ class Std(Layer):
 
         return std
 
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
+
 
 class ZScore(Layer):
     """
@@ -109,6 +114,11 @@ class ZScore(Layer):
         # divide means by standard deviations for each stride
         z_score = tf.math.divide_no_nan(means, std)
         return z_score
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
 
 
 class LinearDecay(Layer):
@@ -153,6 +163,11 @@ class LinearDecay(Layer):
         linear_decay = tf.reshape(linear_decay, output_shape)
         return linear_decay
 
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
+
 
 class Return(Layer):
     """
@@ -183,6 +198,11 @@ class Return(Layer):
         denominators = inputs[:, 0::self.stride, :]
 
         return tf.math.divide_no_nan(numerators, denominators) - 1.0
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
 
 
 class Covariance(Layer):
@@ -236,6 +256,11 @@ class Covariance(Layer):
         covariances = tf.boolean_mask(covariance_matrix, mask)
         covariances = tf.reshape(covariances, output_shape)
         return covariances
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
 
 
 class Correlation(Layer):
@@ -300,6 +325,11 @@ class Correlation(Layer):
 
         return tf.math.divide_no_nan(covariances, denominators)
 
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
+
 
 class FeatureExpansion(Layer):
     """
@@ -346,6 +376,11 @@ class FeatureExpansion(Layer):
                           return_output,
                           covariance_output,
                           correlation_output], axis=2)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
 
 
 class AlphaNetV3:
