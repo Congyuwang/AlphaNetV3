@@ -441,6 +441,15 @@ class AlphaNetV3:
         """
         return self.__model
 
+    def save(self, filepath):
+        return self.__model.save_weights(filepath)
+
+    def load(self, filepath):
+        self.__model.load_weights(filepath)
+
+    def __call__(self, *args, **kwargs):
+        return self.__model(*args, **kwargs)
+
 
 def __get_dimensions__(inputs, stride):
     """
