@@ -109,11 +109,11 @@ class TestAlphaNet(unittest.TestCase):
         if os.path.exists(test_dir):
             shutil.rmtree(test_dir)
         os.mkdir(test_dir)
-        alpha_net_v3.save("./.test_alpha_net_save/test")
+        alpha_net_v3.save_weights("./.test_alpha_net_save/test")
         random_test = tf.constant(np.random.rand(500, 30, 15))
         output = alpha_net_v3(random_test)
         alpha_net_v3 = AlphaNetV3()
-        alpha_net_v3.load("./.test_alpha_net_save/test")
+        alpha_net_v3.load_weights("./.test_alpha_net_save/test")
         output_2 = alpha_net_v3(random_test)
         self.assertTrue(__is_all_close__(output, output_2),
                         "save and load failed")
