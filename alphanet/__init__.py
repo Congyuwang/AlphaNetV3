@@ -441,10 +441,10 @@ class AlphaNetV3:
         """
         return self.__model
 
-    def save(self, filepath):
+    def save_weights(self, filepath):
         return self.__model.save_weights(filepath)
 
-    def load(self, filepath):
+    def load_weights(self, filepath):
         self.__model.load_weights(filepath)
 
     def __call__(self, *args, **kwargs):
