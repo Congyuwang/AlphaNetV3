@@ -418,19 +418,25 @@ class AlphaNetV3:
                  optimizer=tf.keras.optimizers.Adam,
                  alpha=0.0001,
                  loss="MSE",
+                 dropout=0.05,
+                 l2=0.001,
                  metrics=None):
         inputs = tf.keras.Input(shape=(30, 15))
         expanded_10 = FeatureExpansion(stride=10)(inputs)
         expanded_5 = FeatureExpansion(stride=5)(inputs)
         normalized_10 = tfl.BatchNormalization()(expanded_10)
         normalized_5 = tfl.BatchNormalization()(expanded_5)
-        gru_10 = tfl.GRU(units=30)(normalized_10)
-        gru_5 = tfl.GRU(units=30)(normalized_5)
+        dropout_10 = tfl.Dropout(dropout)(normalized_10)
+        dropout_5 = tfl.Dropout(dropout)(normalized_5)
+        gru_10 = tfl.GRU(units=30)(dropout_10)
+        gru_5 = tfl.GRU(units=30)(dropout_5)
         normalized_10 = tfl.BatchNormalization()(gru_10)
         normalized_5 = tfl.BatchNormalization()(gru_5)
         concat = tfl.Concatenate(axis=-1)([normalized_10, normalized_5])
+        regularize = tf.keras.regularizers.l2(l2)
         outputs = tfl.Dense(1, activation="linear",
-                            kernel_initializer="truncated_normal")(concat)
+                            kernel_initializer="truncated_normal",
+                            kernel_regularizer=regularize)(concat)
         self.__model = tf.keras.Model(inputs=inputs, outputs=outputs)
         self.__model.compile(optimizer(alpha), loss=loss, metrics=metrics)
 
