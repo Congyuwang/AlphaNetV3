@@ -194,6 +194,27 @@ class TestAlphaNet(unittest.TestCase):
         shutil.rmtree(test_dir)
 
 
+class TestDataModuleCrossChecking(unittest.TestCase):
+
+    _, data, full_data, codes, trading_dates = prepare_test_data()
+    producer_1 = TrainValData(data)
+    producer_2 = TrainValData(data)
+    train_1, val_1, _ = producer_1.get(20120301)
+    train_2, val_2, _ = producer_2.get(20120301, mode="generator")
+
+    def test_compare_train(self):
+        for d1, d2 in zip(iter(self.train_1.batch(500)),
+                          iter(self.train_2.batch(500))):
+            self.assertTrue(__is_all_close__(d1[0], d2[0]))
+            self.assertTrue(__is_all_close__(d1[1], d2[1]))
+
+    def test_compare_val(self):
+        for d in zip(iter(self.val_1.batch(500)),
+                     iter(self.val_2.batch(500))):
+            self.assertTrue(__is_all_close__(d[0][0], d[1][0]))
+            self.assertTrue(__is_all_close__(d[0][1], d[1][1]))
+
+
 class TestDataModule(unittest.TestCase):
 
     _, data, full_data, codes, trading_dates = prepare_test_data()
@@ -239,6 +260,7 @@ class TestDataModule(unittest.TestCase):
                           n=2,
                           step=2):
         data_list = []
+        label_list = []
         running_index = [(start_date_index + day, end_date_index + day, co)
                          for day in range(0, step * n, step)
                          for co in cls.codes]
@@ -251,74 +273,117 @@ class TestDataModule(unittest.TestCase):
                     cls.full_data["日期"] <= end_date
                 ),
                 cls.full_data["日期"] >= start_date
-            ), :].iloc[:, 3:].values
-            if np.sum(pd.isnull(df)) == 0:
-                data_list.append(df)
+            ), :]
+            dt = df.iloc[:, 3:].values
+            lb = df["10日回报率"].iloc[-1]
+            if np.sum(pd.isnull(dt)) == 0:
+                data_list.append(dt)
+                label_list.append(lb)
 
-        return data_list
+        return data_list, label_list
 
     def test_first_batch_of_training_dataset_1(self):
         first_data_queue = self.__get_n_batches__(self.start_basis_1 + 0,
                                                   self.start_basis_1 + 29, 3)
+        data, label = first_data_queue
         self.assertTrue(__is_all_close__(
-            first_data_queue[:len(self.first_batch_train_1[0])],
+            data[:len(self.first_batch_train_1[0])],
             self.first_batch_train_1[0]
+        ), "first batch of training dataset (start {}): failure".format(self.test_date_1))
+        self.assertTrue(__is_all_close__(
+            label[:len(self.first_batch_train_1[0])],
+            self.first_batch_train_1[1]
         ), "first batch of training dataset (start {}): failure".format(self.test_date_1))
 
     def test_last_batch_of_training_dataset_1(self):
         last_data_queue = self.__get_n_batches__(self.start_basis_1 + 1170 - 2,
                                                  self.start_basis_1 + 1199 - 2)
+        data, label = last_data_queue
         self.assertTrue(__is_all_close__(
-            last_data_queue[-len(self.last_batch_train_1[0]):],
+            data[-len(self.last_batch_train_1[0]):],
             self.last_batch_train_1[0]
+        ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
+        self.assertTrue(__is_all_close__(
+            label[-len(self.last_batch_train_1[0]):],
+            self.last_batch_train_1[1]
         ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
 
     def test_first_batch_of_validation_dataset_1(self):
         first_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1200 - 29 + 10,
                                                       self.start_basis_1 + 1210)
+        data, label = first_val_data_queue
         self.assertTrue(__is_all_close__(
-            first_val_data_queue[:len(self.first_batch_val_1[0])],
+            data[:len(self.first_batch_val_1[0])],
             self.first_batch_val_1[0]
+        ), "first batch of validation dataset (start {}): failure".format(self.test_date_1))
+        self.assertTrue(__is_all_close__(
+            label[:len(self.first_batch_val_1[0])],
+            self.first_batch_val_1[1]
         ), "first batch of validation dataset (start {}): failure".format(self.test_date_1))
 
     def test_last_batch_of_validation_dataset_1(self):
         last_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1470 + 7,
                                                      self.start_basis_1 + 1499 + 9 - 2)
+        data, label = last_val_data_queue
         self.assertTrue(__is_all_close__(
-            last_val_data_queue[-len(self.last_batch_val_1[0]):],
+            data[-len(self.last_batch_val_1[0]):],
             self.last_batch_val_1[0]
+        ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
+        self.assertTrue(__is_all_close__(
+            label[-len(self.last_batch_val_1[0]):],
+            self.last_batch_val_1[1]
         ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
 
     def test_first_batch_of_training_dataset_2(self):
         first_data_queue = self.__get_n_batches__(self.start_basis_2 + 0,
                                                   self.start_basis_2 + 29, 3)
+        data, label = first_data_queue
         self.assertTrue(__is_all_close__(
-            first_data_queue[:len(self.first_batch_train_2[0])],
+            data[:len(self.first_batch_train_2[0])],
             self.first_batch_train_2[0]
+        ), "first batch of training dataset (start {}): failure".format(self.test_date_2))
+        self.assertTrue(__is_all_close__(
+            label[:len(self.first_batch_train_2[0])],
+            self.first_batch_train_2[1]
         ), "first batch of training dataset (start {}): failure".format(self.test_date_2))
 
     def test_last_batch_of_training_dataset_2(self):
         last_data_queue = self.__get_n_batches__(self.start_basis_2 + 1170 - 2,
                                                  self.start_basis_2 + 1199 - 2)
+        data, label = last_data_queue
         self.assertTrue(__is_all_close__(
-            last_data_queue[-len(self.last_batch_train_2[0]):],
+            data[-len(self.last_batch_train_2[0]):],
             self.last_batch_train_2[0]
+        ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
+        self.assertTrue(__is_all_close__(
+            label[-len(self.last_batch_train_2[0]):],
+            self.last_batch_train_2[1]
         ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
 
     def test_first_batch_of_validation_dataset_2(self):
         first_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1200 - 30 + 1 + 10,
                                                       self.start_basis_2 + 1210)
+        data, label = first_val_data_queue
         self.assertTrue(__is_all_close__(
-            first_val_data_queue[:len(self.first_batch_val_2[0])],
+            data[:len(self.first_batch_val_2[0])],
             self.first_batch_val_2[0]
+        ), "first batch of validation dataset (start {}): failure".format(self.test_date_2))
+        self.assertTrue(__is_all_close__(
+            label[:len(self.first_batch_val_2[0])],
+            self.first_batch_val_2[1]
         ), "first batch of validation dataset (start {}): failure".format(self.test_date_2))
 
     def test_last_batch_of_validation_dataset_2(self):
         last_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1470 + 9 - 2,
                                                      self.start_basis_2 + 1499 + 9 - 2)
+        data, label = last_val_data_queue
         self.assertTrue(__is_all_close__(
-            last_val_data_queue[-len(self.last_batch_val_2[0]):],
+            data[-len(self.last_batch_val_2[0]):],
             self.last_batch_val_2[0]
+        ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
+        self.assertTrue(__is_all_close__(
+            label[-len(self.last_batch_val_2[0]):],
+            self.last_batch_val_2[1]
         ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
 
 

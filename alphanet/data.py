@@ -385,7 +385,7 @@ def __full_tensor_generation__(data, label, generation_list, history):
     data_expanded = __history_expander__(data, history)
 
     # 根据generation_list指定的series，日期，获取标签及数据片段
-    label_all = tf.gather_nd(label, generation_list)
+    label_all = tf.gather_nd(label[:, history - 1:], generation_list)
     data_all = tf.gather_nd(data_expanded, generation_list)
 
     # 去掉所有包含缺失数据的某股票某时间历史片段
