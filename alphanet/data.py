@@ -55,17 +55,31 @@ class TrainValData:
                  train_length=1200,
                  validate_length=300,
                  history_length=30,
+                 train_val_gap=10,
                  sample_step=2,
-                 fill_na = np.NaN):
+                 fill_na=np.NaN):
         """
         储存全部的时间序列信息，通过get(start_date)方法获取从start_date
         开始的训练机和验证集。
+
+        train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，
+        如果是相邻，则train_val_gap = 0。
+
+        设置该参数的目的如下：
+        如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测
+        未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益
+        而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，
+        用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的
+        有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上
+        相差11天，即间隔10天。
 
         :param time_series_list: TimeSeriesData 列表
         :param train_length: 训练集天数
         :param validate_length: 验证集天数
         :param history_length: 每个sample的历史天数
+        :param train_val_gap: 训练集与验证集的间隔
         :param sample_step: 采样sample时步进的天数
+        :param fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本
         """
 
         # 检查参数类型
@@ -82,10 +96,10 @@ class TrainValData:
         # 检查参数数值
         if (history_length < 1 or
                 validate_length < 1 or
+                sample_step < 1 or
+                train_val_gap < 0 or
                 train_length < history_length):
-            raise ValueError("bad argument: either history_length < 1"
-                             " or validate_length < 1"
-                             " or train_length < history_length")
+            raise ValueError("bad arguments")
         # 确保数据特征数量一致
         self.__feature_counts = time_series_list[0].data.shape[1]
         for series in time_series_list:
@@ -126,6 +140,7 @@ class TrainValData:
         self.__validate_length = validate_length
         self.__history_length = history_length
         self.__sample_step = sample_step
+        self.__train_val_gap = train_val_gap
 
     def get(self,
             start_date,
@@ -217,7 +232,8 @@ class TrainValData:
 
         # 查看剩余日期数量是否大于等于训练集验证集总长度
         if np.sum(after_start_date) < (self.__train_length +
-                                       self.__validate_length):
+                                       self.__validate_length +
+                                       self.__train_val_gap):
             raise ValueError("date range exceeded end of dates")
 
         # 计算各个时间节点在时间列表中的位置
@@ -228,9 +244,11 @@ class TrainValData:
         # 验证集开始位置
         val_start_index = (train_end_index -
                            self.__history_length +
-                           self.__sample_step)
+                           self.__train_val_gap + 1)
         # 验证集结束位置(不包含)
-        val_end_index = train_end_index + self.__validate_length
+        val_end_index = (train_end_index +
+                         self.__validate_length +
+                         self.__train_val_gap)
 
         # 根据各个数据集的开始结束位置以及训练数据的顺序选项，获取构建数据的参数
         train_args = self.__get_generator_args__(train_start_index,
