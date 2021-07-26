@@ -24,26 +24,36 @@ def prepare_test_data():
     csi["low/high"] = csi["最低价(元)"] / csi["最高价(元)"]
     csi["vwap/close"] = csi["均价"] / csi["收盘价(元)"]
 
-    # 计算十日回报
+    # 计算t(1)至t(11)回报
     trading_dates = csi["日期"].unique()
     trading_dates.sort()
-    dates_shift_dictionary = dict(zip(trading_dates[10:], trading_dates[:-10]))
+    dates_shift_dictionary_1 = dict(zip(trading_dates[1:], trading_dates[:-1]))
+    dates_shift_dictionary_11 = dict(zip(trading_dates[11:], trading_dates[:-11]))
     csi_slice = csi[["代码", "日期", "收盘价(元)"]].copy()
-    csi_slice_date_shift = csi[["代码", "日期", "收盘价(元)"]].copy()
-    csi_slice_date_shift["日期"] = csi_slice_date_shift["日期"] \
-        .map(lambda x: dates_shift_dictionary.get(x, None))
-    csi_slice_date_shift.rename(columns={"收盘价(元)": "10交易日后收盘价(元)"},
-                                inplace=True)
-    csi_slice_date_shift.dropna(inplace=True)
-    csi_slice_date_shift["日期"] = [d for d in csi_slice_date_shift["日期"]]
-    csi_slice = csi_slice.merge(csi_slice_date_shift,
+    csi_slice_date_shift_1 = csi[["代码", "日期", "收盘价(元)"]].copy()
+    csi_slice_date_shift_11 = csi[["代码", "日期", "收盘价(元)"]].copy()
+    csi_slice_date_shift_1["日期"] = csi_slice_date_shift_11["日期"] \
+        .map(lambda x: dates_shift_dictionary_1.get(x, None))
+    csi_slice_date_shift_11["日期"] = csi_slice_date_shift_11["日期"] \
+        .map(lambda x: dates_shift_dictionary_11.get(x, None))
+    csi_slice_date_shift_11.rename(columns={"收盘价(元)": "11交易日后收盘价(元)"},
+                                   inplace=True)
+    csi_slice_date_shift_11.dropna(inplace=True)
+    csi_slice_date_shift_1.rename(columns={"收盘价(元)": "1交易日后收盘价(元)"},
+                                  inplace=True)
+    csi_slice_date_shift_1.dropna(inplace=True)
+    csi_slice = csi_slice.merge(csi_slice_date_shift_1,
                                 how="inner",
                                 left_on=["代码", "日期"],
                                 right_on=["代码", "日期"])
-    close_price = csi_slice["收盘价(元)"]
-    future_close_price = csi_slice["10交易日后收盘价(元)"]
-    csi_slice["10日回报率"] = future_close_price / close_price - 1
-    csi_slice.drop(columns=["收盘价(元)", "10交易日后收盘价(元)"], inplace=True)
+    csi_slice = csi_slice.merge(csi_slice_date_shift_11,
+                                how="inner",
+                                left_on=["代码", "日期"],
+                                right_on=["代码", "日期"])
+    future_close_price_1 = csi_slice["1交易日后收盘价(元)"]
+    future_close_price_11 = csi_slice["11交易日后收盘价(元)"]
+    csi_slice["10日回报率"] = future_close_price_11 / future_close_price_1 - 1
+    csi_slice.drop(columns=["收盘价(元)", "11交易日后收盘价(元)", "1交易日后收盘价(元)"], inplace=True)
     csi = csi_slice.merge(csi,
                           how="inner",
                           left_on=["代码", "日期"],
