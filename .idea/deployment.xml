@@ -5,8 +5,12 @@
       <paths name="10.27.130.16">
         <serverdata>
           <mappings>
-            <mapping deploy="/alphanet" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/AlphaNet" local="$PROJECT_DIR$" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath path="/AlphaNet/models" />
+            <excludedPath path="/AlphaNet/.ipynb_checkpoints" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
