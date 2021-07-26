@@ -264,16 +264,16 @@ class TestDataModule(unittest.TestCase):
         ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
 
     def test_first_batch_of_validation_dataset_1(self):
-        first_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1200 - 30 + 2,
-                                                      self.start_basis_1 + 1201)
+        first_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1200 - 29 + 10,
+                                                      self.start_basis_1 + 1210)
         self.assertTrue(__is_all_close__(
             first_val_data_queue[:len(self.first_batch_val_1[0])],
             self.first_batch_val_1[0]
         ), "first batch of validation dataset (start {}): failure".format(self.test_date_1))
 
     def test_last_batch_of_validation_dataset_1(self):
-        last_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1470 - 2,
-                                                     self.start_basis_1 + 1499 - 2)
+        last_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1470 + 7,
+                                                     self.start_basis_1 + 1499 + 9 - 2)
         self.assertTrue(__is_all_close__(
             last_val_data_queue[-len(self.last_batch_val_1[0]):],
             self.last_batch_val_1[0]
@@ -296,16 +296,16 @@ class TestDataModule(unittest.TestCase):
         ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
 
     def test_first_batch_of_validation_dataset_2(self):
-        first_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1200 - 30 + 2,
-                                                      self.start_basis_2 + 1201)
+        first_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1200 - 30 + 1 + 10,
+                                                      self.start_basis_2 + 1210)
         self.assertTrue(__is_all_close__(
             first_val_data_queue[:len(self.first_batch_val_2[0])],
             self.first_batch_val_2[0]
         ), "first batch of validation dataset (start {}): failure".format(self.test_date_2))
 
     def test_last_batch_of_validation_dataset_2(self):
-        last_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1470 - 2,
-                                                     self.start_basis_2 + 1499 - 2)
+        last_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1470 + 9 - 2,
+                                                     self.start_basis_2 + 1499 + 9 - 2)
         self.assertTrue(__is_all_close__(
             last_val_data_queue[-len(self.last_batch_val_2[0]):],
             self.last_batch_val_2[0]
