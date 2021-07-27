@@ -348,22 +348,6 @@ class TrainValData:
         return dates_info
 
 
-def __get_file_names__(dates_info, order):
-    """
-    :return: train_x_file, train_y_file, val_x_file, val_y_file
-    """
-    train_start_date = dates_info["training"]["start_date"]
-    train_end_date = dates_info["training"]["end_date"]
-    val_start_date = dates_info["validation"]["start_date"]
-    val_end_date = dates_info["validation"]["end_date"]
-    train_x_file = f"train_x_{train_start_date}_{train_end_date}_{order}"
-    train_y_file = f"train_y_{train_start_date}_{train_end_date}_{order}"
-    val_x_file = f"val_x_{val_start_date}_{val_end_date}_{order}"
-    val_y_file = f"val_y_{val_start_date}_{val_end_date}_{order}"
-    json_file = f"{train_start_date}_{val_end_date}.json"
-    return train_x_file, train_y_file, val_x_file, val_y_file, json_file
-
-
 def __history_expander__(data_tensor, history_length):
     """
     错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度
