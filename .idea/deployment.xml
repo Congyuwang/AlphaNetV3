@@ -20,6 +20,13 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="server3">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/AlphaNet3" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
     </serverData>
   </component>
 </project>
