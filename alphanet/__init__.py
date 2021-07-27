@@ -416,12 +416,13 @@ class AlphaNetV3:
 
     def __init__(self,
                  optimizer=tf.keras.optimizers.Adam,
+                 input_shape=(30, 15),
                  alpha=0.0001,
                  loss="MSE",
-                 dropout=0.05,
+                 dropout=0.10,
                  l2=0.001,
                  metrics=None):
-        inputs = tf.keras.Input(shape=(30, 15))
+        inputs = tf.keras.Input(shape=input_shape)
         expanded_10 = FeatureExpansion(stride=10)(inputs)
         expanded_5 = FeatureExpansion(stride=5)(inputs)
         normalized_10 = tfl.BatchNormalization()(expanded_10)
