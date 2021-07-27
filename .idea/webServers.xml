@@ -10,14 +10,21 @@
         </fileTransfer>
       </webServer>
       <webServer id="0eeb3b62-0251-4557-84d1-7be0a4740efa" name="server2">
-        <fileTransfer rootFolder="/116020237" accessType="SFTP" host="10.27.130.16" port="57092" sshConfigId="71b480bf-1ac5-4ae3-a7a7-963813d00ca0" sshConfig="root@10.27.130.16:57092 password">
+        <fileTransfer rootFolder="/116020237" accessType="SFTP" host="10.27.130.16" port="54687" sshConfigId="71b480bf-1ac5-4ae3-a7a7-963813d00ca0" sshConfig="root@10.27.130.16:54687 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>
-      <webServer id="1fc14a14-d5a9-4e9d-8023-c05f09a1a6fa" name="server3">
-        <fileTransfer rootFolder="/116020237" accessType="SFTP" host="10.27.130.16" port="35787" sshConfigId="8d8174b9-2faa-4e8e-94a0-84eddb1961e5" sshConfig="root@10.27.130.16:35787 password">
+      <webServer id="5618762b-befe-4ffa-b7a2-0e96b6d798fd" name="server4yyj">
+        <fileTransfer rootFolder="/118020486" accessType="SFTP" host="10.27.130.16" port="52700" sshConfigId="708897d3-e42c-40fd-8b77-1cd337075a80" sshConfig="root@10.27.130.16:52700 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="8daebfe5-ff92-47dc-8327-13c5bcb9068e" name="server5yyj">
+        <fileTransfer rootFolder="/118020486" accessType="SFTP" host="10.27.130.16" port="54687" sshConfigId="71b480bf-1ac5-4ae3-a7a7-963813d00ca0" sshConfig="root@10.27.130.16:54687 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

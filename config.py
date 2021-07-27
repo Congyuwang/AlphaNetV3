@@ -1,9 +1,9 @@
 # 数据路径
-DATA = "./data/CSI500.zip"
+DATA = "./data/CSI800.zip"
 
 # 时间序列训练参数
 HISTORY_LENGTH = 60
-TRAIN_LENGTH = 1000
+TRAIN_LENGTH = 750
 VALIDATE_LENGTH = 150
 SAMPLE_STEP = 2
 
@@ -30,7 +30,12 @@ ROLLING_BEGINNING_LIST = [20110131,
                           20140731,
                           20150131,
                           20150731,
-                          20160131]
+                          20160131,
+                          20160731,
+                          20170131,
+                          20170731,
+                          20180131,
+                          20180731]
 
 # 多次training，降低初始化偶然性的影响
-TRAINING_ID = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+TRAINING_ID = [0, 1, 2, 3, 4]

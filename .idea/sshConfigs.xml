@@ -3,8 +3,9 @@
   <component name="SshConfigs">
     <configs>
       <sshConfig authType="PASSWORD" host="10.27.130.16" id="8bb2b54f-5296-49f0-af60-b3584ba60b34" port="53140" nameFormat="DESCRIPTIVE" username="root" />
-      <sshConfig authType="PASSWORD" host="10.27.130.16" id="71b480bf-1ac5-4ae3-a7a7-963813d00ca0" port="57092" nameFormat="DESCRIPTIVE" username="root" />
-      <sshConfig authType="PASSWORD" host="10.27.130.16" id="8d8174b9-2faa-4e8e-94a0-84eddb1961e5" port="35787" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig authType="PASSWORD" host="10.27.130.16" id="71b480bf-1ac5-4ae3-a7a7-963813d00ca0" port="54687" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig authType="PASSWORD" host="10.27.130.16" id="708897d3-e42c-40fd-8b77-1cd337075a80" port="52700" nameFormat="DESCRIPTIVE" username="root" />
+      <sshConfig authType="PASSWORD" host="10.27.130.16" id="49ddd4fb-908e-4e9d-b271-dbc82a673005" port="35665" nameFormat="DESCRIPTIVE" username="root" />
     </configs>
   </component>
 </project>
