@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="10.27.130.16" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" serverName="server1" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="10.27.130.16">
+      <paths name="server1">
         <serverdata>
           <mappings>
             <mapping deploy="/AlphaNet" local="$PROJECT_DIR$" web="/" />
@@ -11,6 +11,13 @@
             <excludedPath path="/AlphaNet/models" />
             <excludedPath path="/AlphaNet/.ipynb_checkpoints" />
           </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="server2">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/AlphaNet2" local="$PROJECT_DIR$" web="/" />
+          </mappings>
         </serverdata>
       </paths>
     </serverData>
