@@ -9,4 +9,6 @@ Requirement: tensorflow 2.
 3. Model Configuration is in `config.py`.
 4. To run the model, execute `python main.py`.
 5. The loss plot pictures and models will be stored by each epoch and training period in `./models/` folder.
+5. Tests of layers and time series data tools are in `./tests/` folder. To run the test, execute `python test.py`
+
 (There is also a development notebook in `./notebook/` folder.)
