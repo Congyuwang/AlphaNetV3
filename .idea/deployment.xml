@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="server1" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" serverName="server1" remoteFilesAllowedToDisappearOnAutoupload="false" showNewOnTargetInSync="false">
     <serverData>
       <paths name="server1">
         <serverdata>
@@ -20,10 +20,17 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="server3">
+      <paths name="server4yyj">
         <serverdata>
           <mappings>
-            <mapping deploy="/AlphaNet3" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/AlphaNet4" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="server5yyj">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/AlphaNet5" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
