@@ -23,14 +23,14 @@
       <paths name="server4yyj">
         <serverdata>
           <mappings>
-            <mapping deploy="/AlphaNet4" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/AlphaNet" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
       <paths name="server5yyj">
         <serverdata>
           <mappings>
-            <mapping deploy="/AlphaNet5" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/AlphaNet120" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
