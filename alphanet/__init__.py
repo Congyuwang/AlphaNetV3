@@ -41,8 +41,8 @@ class Std(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(Std, self).__init__(**kwargs)
         self.stride = stride
 
@@ -93,8 +93,8 @@ class ZScore(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(ZScore, self).__init__(**kwargs)
         self.stride = stride
 
@@ -142,8 +142,8 @@ class LinearDecay(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(LinearDecay, self).__init__(**kwargs)
         self.stride = stride
 
@@ -190,8 +190,8 @@ class Return(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(Return, self).__init__(**kwargs)
         self.stride = stride
 
@@ -228,8 +228,8 @@ class Covariance(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(Covariance, self).__init__(**kwargs)
         self.stride = stride
 
@@ -287,8 +287,8 @@ class Correlation(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(Correlation, self).__init__(**kwargs)
         self.stride = stride
 
@@ -361,8 +361,8 @@ class FeatureExpansion(Layer):
         :param stride: time steps需要是stride的整数倍
         """
         if stride <= 1:
-            raise Exception("Illegal Argument: stride should be "
-                            "greater than 1")
+            raise ValueError("Illegal Argument: stride should be "
+                             "greater than 1")
         super(FeatureExpansion, self).__init__(**kwargs)
         self.stride = stride
         self.std = Std(stride=stride)
@@ -471,7 +471,7 @@ def __get_dimensions__(inputs, stride):
     output_length = time_steps // stride
 
     if time_steps % stride != 0:
-        raise Exception("Error, time_steps 应该是 stride的整数倍")
+        raise ValueError("Error, time_steps 应该是 stride的整数倍")
 
     return time_steps, features, output_length
 
