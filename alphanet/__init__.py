@@ -473,6 +473,9 @@ class AlphaNetV3:
     def load_weights(self, filepath):
         self.__model.load_weights(filepath)
 
+    def predict(self, x, batch_size=500):
+        return self.__model.predict(x, batch_size=batch_size)
+
     def __call__(self, *args, **kwargs):
         return self.__model(*args, **kwargs)
 

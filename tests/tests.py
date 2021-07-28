@@ -141,11 +141,11 @@ class TestAlphaNet(unittest.TestCase):
         # save weights
         alpha_net_v3 = AlphaNetV3()
         alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
-        output = alpha_net_v3(self.random_test)
+        output = alpha_net_v3.predict(self.random_test)
         # load weights
         alpha_net_v3 = AlphaNetV3()
         alpha_net_v3.load_weights("./.test_alpha_net_save/weights")
-        output_2 = alpha_net_v3(self.random_test)
+        output_2 = alpha_net_v3.predict(self.random_test)
 
         self.assertTrue(__is_all_close__(output, output_2),
                         "save and load weights failed")
@@ -153,12 +153,12 @@ class TestAlphaNet(unittest.TestCase):
     def test_save_model(self):
         # save models
         alpha_net_v3 = AlphaNetV3()
-        alpha_net_v3.model().save("./.test_alpha_net_save/model")
-        output = alpha_net_v3(self.random_test)
+        alpha_net_v3.save("./.test_alpha_net_save/model")
+        output = alpha_net_v3.predict(self.random_test)
         # load models
         model = tf.keras.models.load_model("./.test_alpha_net_save/model")
-        output_2 = model(self.random_test)
-        self.assertTrue(__is_all_close__(output, output_2, atol=1e-5),
+        output_2 = model.predict(self.random_test, batch_size=500)
+        self.assertTrue(__is_all_close__(output, output_2),
                         "save and load model failed")
 
     @classmethod
