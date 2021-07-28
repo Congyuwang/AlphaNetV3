@@ -1,6 +1,7 @@
 # AlphaNetV3
 
 ![unittest](https://github.com/Congyuwang/AlphaNetV3/actions/workflows/tests.yml/badge.svg)
+[![Congyuwang](https://circleci.com/gh/Congyuwang/AlphaNetV3.svg?style=shield)](https://circleci.com/gh/Congyuwang/AlphaNetV3)
 
 ## A Recurrent Neural Network For Predicting Stock Prices
 
