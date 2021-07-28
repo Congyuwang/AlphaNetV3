@@ -128,21 +128,42 @@ class TestLayers(unittest.TestCase):
 
 class TestAlphaNet(unittest.TestCase):
 
-    def test_save_model(self):
+    test_dir = "./.test_alpha_net_save/"
+
+    @classmethod
+    def setUpClass(cls):
+        if os.path.exists(cls.test_dir):
+            shutil.rmtree(cls.test_dir)
+        os.mkdir(cls.test_dir)
+        cls.random_test = tf.constant(np.random.rand(500, 30, 15))
+
+    def test_save_weights(self):
+        # save weights
         alpha_net_v3 = AlphaNetV3()
-        test_dir = "./.test_alpha_net_save/"
-        if os.path.exists(test_dir):
-            shutil.rmtree(test_dir)
-        os.mkdir(test_dir)
-        alpha_net_v3.save_weights("./.test_alpha_net_save/test")
-        random_test = tf.constant(np.random.rand(500, 30, 15))
-        output = alpha_net_v3(random_test)
+        alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
+        output = alpha_net_v3(self.random_test)
+        # load weights
         alpha_net_v3 = AlphaNetV3()
-        alpha_net_v3.load_weights("./.test_alpha_net_save/test")
-        output_2 = alpha_net_v3(random_test)
+        alpha_net_v3.load_weights("./.test_alpha_net_save/weights")
+        output_2 = alpha_net_v3(self.random_test)
+
         self.assertTrue(__is_all_close__(output, output_2),
-                        "save and load failed")
-        shutil.rmtree(test_dir)
+                        "save and load weights failed")
+
+    def test_save_model(self):
+        # save models
+        alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3.model().save("./.test_alpha_net_save/model")
+        output = alpha_net_v3(self.random_test)
+        # load models
+        model = tf.keras.models.load_model("./.test_alpha_net_save/model")
+        output_2 = model(self.random_test)
+        self.assertTrue(__is_all_close__(output, output_2, atol=1e-5),
+                        "save and load model failed")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.test_dir, ignore_errors=True)
 
 
 class TestDataModuleCrossChecking(unittest.TestCase):
