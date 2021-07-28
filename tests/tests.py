@@ -8,45 +8,24 @@ import shutil
 from alphanet import *
 from alphanet.data import *
 from alphanet.metrics import *
-from preprocessing import process_df, build_data_list
-
-
-def prepare_test_data():
-    # 测试数据准备
-    csi = process_df("../data/CSI500.zip")
-
-    codes = csi.代码.cat.categories
-    stock_data = build_data_list(csi)
-
-    test_data = tf.constant([stock_data[0].data[0:30],
-                             stock_data[0].data[2:32],
-                             stock_data[0].data[4:34]], dtype=tf.float32)
-
-    # 补全全部stock与日期组合，用于手动生成batch对比测试
-    trading_dates = csi["日期"].unique()
-    trading_dates.sort()
-    full_index = pd.DataFrame([[s, d] for s in codes for d in trading_dates])
-    full_index.columns = ["代码", "日期"]
-    full_csi = full_index.merge(csi,
-                                how="left",
-                                left_on=["代码", "日期"],
-                                right_on=["代码", "日期"])
-    return test_data, stock_data, full_csi, codes, trading_dates
 
 
 class TestLayers(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data, _, _, _, _ = prepare_test_data()
+        cls.data = np.maximum(np.abs(np.random.rand(3, 30, 15)), 0.1)
 
     def test_std(self):
         s = Std()(self.data)
         test_result = []
         for j in range(len(self.data)):
-            test1 = __is_all_close__(s[j][0], np.std(self.data[j][0:10], axis=0))
-            test2 = __is_all_close__(s[j][1], np.std(self.data[j][10:20], axis=0))
-            test3 = __is_all_close__(s[j][2], np.std(self.data[j][20:30], axis=0))
+            test1 = __is_all_close__(s[j][0],
+                                     np.std(self.data[j][0:10], axis=0))
+            test2 = __is_all_close__(s[j][1],
+                                     np.std(self.data[j][10:20], axis=0))
+            test3 = __is_all_close__(s[j][2],
+                                     np.std(self.data[j][20:30], axis=0))
             test_result.extend([test1, test2, test3])
         self.assertTrue(np.all(test_result), "std incorrect")
 
@@ -70,12 +49,15 @@ class TestLayers(unittest.TestCase):
         r = Return()(self.data)
         test_result = []
         for j in range(len(self.data)):
-            test1 = __is_all_close__(r[j][0], self.data[j][10 - 1] /
-                                     self.data[j][0] - 1)
-            test2 = __is_all_close__(r[j][1], self.data[j][20 - 1] /
-                                     self.data[j][10] - 1)
-            test3 = __is_all_close__(r[j][2], self.data[j][30 - 1] /
-                                     self.data[j][20] - 1)
+            test1 = __is_all_close__(r[j][0],
+                                     (self.data[j][10 - 1] /
+                                      self.data[j][0]) - 1, atol=1e-5)
+            test2 = __is_all_close__(r[j][1],
+                                     (self.data[j][20 - 1] /
+                                      self.data[j][10]) - 1, atol=1e-5)
+            test3 = __is_all_close__(r[j][2],
+                                     (self.data[j][30 - 1] /
+                                      self.data[j][20]) - 1, atol=1e-5)
             test_result.extend([test1, test2, test3])
         self.assertTrue(np.all(test_result), "return incorrect")
 
@@ -101,11 +83,11 @@ class TestLayers(unittest.TestCase):
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(c[j][0],
-                                     __test_covariance__(self.data[j][0:10]))
+                                     self.__covariance__(self.data[j][0:10]))
             test2 = __is_all_close__(c[j][1],
-                                     __test_covariance__(self.data[j][10:20]))
+                                     self.__covariance__(self.data[j][10:20]))
             test3 = __is_all_close__(c[j][2],
-                                     __test_covariance__(self.data[j][20:30]))
+                                     self.__covariance__(self.data[j][20:30]))
             test_result.extend([test1, test2, test3])
         self.assertTrue(np.all(test_result), "covariance incorrect")
 
@@ -114,16 +96,34 @@ class TestLayers(unittest.TestCase):
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(c[j][0],
-                                     __test_correlation__(self.data[j][0:10]),
+                                     self.__correlation__(self.data[j][0:10]),
                                      atol=1e-5)
             test2 = __is_all_close__(c[j][1],
-                                     __test_correlation__(self.data[j][10:20]),
+                                     self.__correlation__(self.data[j][10:20]),
                                      atol=1e-5)
             test3 = __is_all_close__(c[j][2],
-                                     __test_correlation__(self.data[j][20:30]),
+                                     self.__correlation__(self.data[j][20:30]),
                                      atol=1e-5)
             test_result.extend([test1, test2, test3])
         self.assertTrue(np.all(test_result), "correlation incorrect")
+
+    @classmethod
+    def __covariance__(cls, data):
+        covariances = []
+        cov_mat = np.cov(data.T)
+        for i in range(cov_mat.shape[0]):
+            for m in range(i):
+                covariances.append(cov_mat[i, m])
+        return covariances
+
+    @classmethod
+    def __correlation__(cls, data):
+        correlations = []
+        corr_coefficient = np.corrcoef(data.T)
+        for i in range(corr_coefficient.shape[0]):
+            for m in range(i):
+                correlations.append(corr_coefficient[i, m])
+        return correlations
 
 
 class TestAlphaNet(unittest.TestCase):
@@ -147,49 +147,85 @@ class TestAlphaNet(unittest.TestCase):
 
 class TestDataModuleCrossChecking(unittest.TestCase):
 
-    _, data, full_data, codes, trading_dates = prepare_test_data()
-    producer_1 = TrainValData(data)
-    producer_2 = TrainValData(data)
-    train_1, val_1, _ = producer_1.get(20120301)
-    train_2, val_2, _ = producer_2.get(20120301, mode="generator")
+    @classmethod
+    def setUpClass(cls):
+        data, full_data, codes, trading_dates = __test_data__()
+        producer = TrainValData(data)
+        producer_2 = TrainValData(data)
+        cls.train, cls.val, _ = producer.get(20120301)
+        cls.train_2, cls.val_2, _ = producer_2.get(20120301, mode="generator")
 
     def test_compare_train(self):
-        for d1, d2 in zip(iter(self.train_1.batch(500)),
+        for d1, d2 in zip(iter(self.train.batch(500)),
                           iter(self.train_2.batch(500))):
             self.assertTrue(__is_all_close__(d1[0], d2[0]))
             self.assertTrue(__is_all_close__(d1[1], d2[1]))
 
     def test_compare_val(self):
-        for d in zip(iter(self.val_1.batch(500)),
+        for d in zip(iter(self.val.batch(500)),
                      iter(self.val_2.batch(500))):
             self.assertTrue(__is_all_close__(d[0][0], d[1][0]))
             self.assertTrue(__is_all_close__(d[0][1], d[1][1]))
 
 
 class TestDataModule(unittest.TestCase):
-
-    _, data, full_data, codes, trading_dates = prepare_test_data()
+    """
+    Test the data ranges of data and label for `alphanet.data`
+    """
 
     @classmethod
     def setUpClass(cls):
-        cls.test_date_1 = 20110131
-        cls.test_date_2 = 20120201
-        print("getting batches for {}".format(cls.test_date_1))
-        (cls.first_batch_train_1,
-         cls.first_batch_val_1,
-         cls.last_batch_train_1,
-         cls.last_batch_val_1) = cls.__get_batches__(cls.test_date_1)
-        print("getting batches for {}".format(cls.test_date_2))
-        (cls.first_batch_train_2,
-         cls.first_batch_val_2,
-         cls.last_batch_train_2,
-         cls.last_batch_val_2) = cls.__get_batches__(cls.test_date_2)
-        cls.start_basis_1 = np.min(np.where(cls.trading_dates == cls.test_date_1))
-        cls.start_basis_2 = np.min(np.where(cls.trading_dates == cls.test_date_2))
+        (cls.data,
+         cls.full_data,
+         cls.codes,
+         cls.trading_dates) = __test_data__()
+        cls.test_date = np.random.randint(20110101, 20133331)
+        print("getting batches for {}".format(cls.test_date))
+        (cls.first_batch_train,
+         cls.first_batch_val,
+         cls.last_batch_train,
+         cls.last_batch_val) = cls.__get_batches__(cls.data, cls.test_date)
+        cls.start_basis = np.min(np.where(cls.trading_dates >= cls.test_date))
+
+    def test_first_batch_of_training_dataset(self):
+        data_label = self.__get_first_batches__(self.start_basis, 0, 100)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][:len(self.first_batch_train[k])],
+                self.first_batch_train[k]
+            ), "first batch of training {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    def test_last_batch_of_training_dataset(self):
+        data_label = self.__get_last_batches__(self.start_basis, 1200, 100)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][-len(self.last_batch_train[0]):],
+                self.last_batch_train[k]
+            ), "last batch of training {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    def test_first_batch_of_validation_dataset(self):
+        data_label = self.__get_first_batches__(self.start_basis, 1210-29, 100)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][:len(self.first_batch_val[k])],
+                self.first_batch_val[k]
+            ), "first batch of validation {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    def test_last_batch_of_validation_dataset(self):
+        data_label = self.__get_last_batches__(self.start_basis, 1510-1, 100)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][-len(self.last_batch_val[0]):],
+                self.last_batch_val[k]
+            ), "last batch of validation {} "
+               "(start {}): failure".format(name, self.test_date))
 
     @classmethod
-    def __get_batches__(cls, start_date):
-        train_val_generator = TrainValData(cls.data)
+    def __get_batches__(cls, data, start_date):
+        train_val_generator = TrainValData(data)
         train, val, _ = train_val_generator.get(start_date)
         first_train = next(iter(train.batch(500)))
         first_val = next(iter(val.batch(500)))
@@ -204,8 +240,7 @@ class TestDataModule(unittest.TestCase):
 
         return first_train, first_val, last_train, last_val
 
-    @classmethod
-    def __get_n_batches__(cls,
+    def __get_n_batches__(self,
                           start_date_index,
                           end_date_index,
                           n=2,
@@ -214,16 +249,16 @@ class TestDataModule(unittest.TestCase):
         label_list = []
         running_index = [(start_date_index + day, end_date_index + day, co)
                          for day in range(0, step * n, step)
-                         for co in cls.codes]
+                         for co in self.codes]
         for start, end, co in tqdm(running_index):
-            start_date = cls.trading_dates[start]
-            end_date = cls.trading_dates[end]
-            df = cls.full_data.loc[np.logical_and(
+            start_date = self.trading_dates[start]
+            end_date = self.trading_dates[end]
+            df = self.full_data.loc[np.logical_and(
                 np.logical_and(
-                    cls.full_data["代码"] == co,
-                    cls.full_data["日期"] <= end_date
+                    self.full_data["代码"] == co,
+                    self.full_data["日期"] <= end_date
                 ),
-                cls.full_data["日期"] >= start_date
+                self.full_data["日期"] >= start_date
             ), :]
             dt = df.iloc[:, 3:].values
             lb = df["10日回报率"].iloc[-1]
@@ -233,109 +268,20 @@ class TestDataModule(unittest.TestCase):
 
         return data_list, label_list
 
-    def test_first_batch_of_training_dataset_1(self):
-        first_data_queue = self.__get_n_batches__(self.start_basis_1 + 0,
-                                                  self.start_basis_1 + 29, 3)
-        data, label = first_data_queue
-        self.assertTrue(__is_all_close__(
-            data[:len(self.first_batch_train_1[0])],
-            self.first_batch_train_1[0]
-        ), "first batch of training dataset (start {}): failure".format(self.test_date_1))
-        self.assertTrue(__is_all_close__(
-            label[:len(self.first_batch_train_1[0])],
-            self.first_batch_train_1[1]
-        ), "first batch of training dataset (start {}): failure".format(self.test_date_1))
+    def __get_first_batches__(self, start_basis, start, n, history=30, step=2):
+        return self.__get_n_batches__(start_basis + start,
+                                      start_basis + start + history - 1,
+                                      n=n,
+                                      step=step)
 
-    def test_last_batch_of_training_dataset_1(self):
-        last_data_queue = self.__get_n_batches__(self.start_basis_1 + 1170 - 2,
-                                                 self.start_basis_1 + 1199 - 2)
-        data, label = last_data_queue
-        self.assertTrue(__is_all_close__(
-            data[-len(self.last_batch_train_1[0]):],
-            self.last_batch_train_1[0]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
-        self.assertTrue(__is_all_close__(
-            label[-len(self.last_batch_train_1[0]):],
-            self.last_batch_train_1[1]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
-
-    def test_first_batch_of_validation_dataset_1(self):
-        first_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1200 - 29 + 10,
-                                                      self.start_basis_1 + 1210)
-        data, label = first_val_data_queue
-        self.assertTrue(__is_all_close__(
-            data[:len(self.first_batch_val_1[0])],
-            self.first_batch_val_1[0]
-        ), "first batch of validation dataset (start {}): failure".format(self.test_date_1))
-        self.assertTrue(__is_all_close__(
-            label[:len(self.first_batch_val_1[0])],
-            self.first_batch_val_1[1]
-        ), "first batch of validation dataset (start {}): failure".format(self.test_date_1))
-
-    def test_last_batch_of_validation_dataset_1(self):
-        last_val_data_queue = self.__get_n_batches__(self.start_basis_1 + 1470 + 7,
-                                                     self.start_basis_1 + 1499 + 9 - 2)
-        data, label = last_val_data_queue
-        self.assertTrue(__is_all_close__(
-            data[-len(self.last_batch_val_1[0]):],
-            self.last_batch_val_1[0]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
-        self.assertTrue(__is_all_close__(
-            label[-len(self.last_batch_val_1[0]):],
-            self.last_batch_val_1[1]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_1))
-
-    def test_first_batch_of_training_dataset_2(self):
-        first_data_queue = self.__get_n_batches__(self.start_basis_2 + 0,
-                                                  self.start_basis_2 + 29, 3)
-        data, label = first_data_queue
-        self.assertTrue(__is_all_close__(
-            data[:len(self.first_batch_train_2[0])],
-            self.first_batch_train_2[0]
-        ), "first batch of training dataset (start {}): failure".format(self.test_date_2))
-        self.assertTrue(__is_all_close__(
-            label[:len(self.first_batch_train_2[0])],
-            self.first_batch_train_2[1]
-        ), "first batch of training dataset (start {}): failure".format(self.test_date_2))
-
-    def test_last_batch_of_training_dataset_2(self):
-        last_data_queue = self.__get_n_batches__(self.start_basis_2 + 1170 - 2,
-                                                 self.start_basis_2 + 1199 - 2)
-        data, label = last_data_queue
-        self.assertTrue(__is_all_close__(
-            data[-len(self.last_batch_train_2[0]):],
-            self.last_batch_train_2[0]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
-        self.assertTrue(__is_all_close__(
-            label[-len(self.last_batch_train_2[0]):],
-            self.last_batch_train_2[1]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
-
-    def test_first_batch_of_validation_dataset_2(self):
-        first_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1200 - 30 + 1 + 10,
-                                                      self.start_basis_2 + 1210)
-        data, label = first_val_data_queue
-        self.assertTrue(__is_all_close__(
-            data[:len(self.first_batch_val_2[0])],
-            self.first_batch_val_2[0]
-        ), "first batch of validation dataset (start {}): failure".format(self.test_date_2))
-        self.assertTrue(__is_all_close__(
-            label[:len(self.first_batch_val_2[0])],
-            self.first_batch_val_2[1]
-        ), "first batch of validation dataset (start {}): failure".format(self.test_date_2))
-
-    def test_last_batch_of_validation_dataset_2(self):
-        last_val_data_queue = self.__get_n_batches__(self.start_basis_2 + 1470 + 9 - 2,
-                                                     self.start_basis_2 + 1499 + 9 - 2)
-        data, label = last_val_data_queue
-        self.assertTrue(__is_all_close__(
-            data[-len(self.last_batch_val_2[0]):],
-            self.last_batch_val_2[0]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
-        self.assertTrue(__is_all_close__(
-            label[-len(self.last_batch_val_2[0]):],
-            self.last_batch_val_2[1]
-        ), "last batch of training dataset (start {}): failure".format(self.test_date_2))
+    def __get_last_batches__(self, start_basis, end, n, history=30, step=2):
+        """
+        :param end: exclusive
+        """
+        return self.__get_n_batches__(start_basis + end - history - step * (n - 1),
+                                      start_basis + end - 1 - step * (n - 1),
+                                      n=n,
+                                      step=step)
 
 
 class TestMetrics(unittest.TestCase):
@@ -352,28 +298,36 @@ class TestMetrics(unittest.TestCase):
         self.assertTrue(np.isclose(upd.result(), 0.0), "reset failure")
 
 
+def __test_data__():
+    # 测试数据准备
+    path_1 = "./tests/test_data/test_data.zip"
+    path_2 = "./test_data/test_data.zip"
+    if os.path.exists(path_1):
+        df = pd.read_csv(path_1, dtype={"代码": "category"})
+    elif os.path.exists(path_2):
+        df = pd.read_csv(path_2, dtype={"代码": "category"})
+    else:
+        raise FileNotFoundError("test data missing")
+    codes = df.代码.cat.categories
+    df_parts = [df.loc[df.代码 == code, :] for code in codes]
+    stock_data = [TimeSeriesData(dates=p["日期"].values,
+                                 data=p.iloc[:, 3:].values,
+                                 labels=p["10日回报率"].values)
+                  for p in df_parts]
+    # 补全全部stock与日期组合，用于手动生成batch对比测试
+    trading_dates = df["日期"].unique()
+    trading_dates.sort()
+    full_index = pd.DataFrame([[s, d] for s in codes for d in trading_dates])
+    full_index.columns = ["代码", "日期"]
+    full_csi = full_index.merge(df,
+                                how="left",
+                                left_on=["代码", "日期"],
+                                right_on=["代码", "日期"])
+    return stock_data, full_csi, codes, trading_dates
+
+
 def __is_all_close__(data1, data2, **kwargs):
     return np.all(np.isclose(data1, data2, **kwargs))
-
-
-def __test_covariance__(data):
-    data = data.numpy()
-    covariances = []
-    cov_mat = np.cov(data.T)
-    for i in range(cov_mat.shape[0]):
-        for m in range(i):
-            covariances.append(cov_mat[i, m])
-    return covariances
-
-
-def __test_correlation__(data):
-    data = data.numpy()
-    correlations = []
-    corr_coefficient = np.corrcoef(data.T)
-    for i in range(corr_coefficient.shape[0]):
-        for m in range(i):
-            correlations.append(corr_coefficient[i, m])
-    return correlations
 
 
 # unit test
