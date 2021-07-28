@@ -467,6 +467,9 @@ class AlphaNetV3:
         """
         return self.__model
 
+    def save(self, filepath):
+        return self.__model.save(filepath)
+
     def save_weights(self, filepath):
         return self.__model.save_weights(filepath)
 
