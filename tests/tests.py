@@ -139,11 +139,11 @@ class TestAlphaNet(unittest.TestCase):
 
     def test_save_weights(self):
         # save weights
-        alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3 = AlphaNetV3(input_shape=(30, 15))
         alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
         output = alpha_net_v3.predict(self.random_test)
         # load weights
-        alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3 = AlphaNetV3(input_shape=(30, 15))
         alpha_net_v3.load_weights("./.test_alpha_net_save/weights")
         output_2 = alpha_net_v3.predict(self.random_test)
 
@@ -152,7 +152,7 @@ class TestAlphaNet(unittest.TestCase):
 
     def test_save_model(self):
         # save models
-        alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3 = AlphaNetV3(input_shape=(30, 15))
         alpha_net_v3.save("./.test_alpha_net_save/model")
         output = alpha_net_v3.predict(self.random_test)
         # load models
