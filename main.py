@@ -82,6 +82,10 @@ def do_training(beginning_date,
                                   beginning_date=beginning_date)
     try_mkdirs(folder_path)
 
+    # writes one model
+    model_path = folder_path + "model"
+    net.save(model_path)
+
     # write dates information
     json_path = folder_path + "dates_info.json"
     with open(json_path, "w") as fp:
