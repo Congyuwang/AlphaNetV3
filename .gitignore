@@ -4,3 +4,5 @@
 */sshConfigs.xml
 */webServers.xml
 */deployment.xml
+/dist
+/src/alphanet.egg-info
