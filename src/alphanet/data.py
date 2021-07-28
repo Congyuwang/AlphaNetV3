@@ -15,19 +15,23 @@ __all__ = ["TimeSeriesData", "TrainValData"]
 
 class TimeSeriesData:
     """
-    储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: `YYYYMMDD`.
+
+    Notes:
+        储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.
+
     """
 
     def __init__(self,
                  dates: _np.ndarray,
                  data: _np.ndarray,
                  labels: _np.ndarray):
-        """
-        储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: `YYYYMMDD`
+        """储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``
 
-        :param dates: 日期列, 1D numpy array
-        :param data: 训练输入的X，2D numpy array, (日期长度 x 特征数量)
-        :param labels: 训练标签Y, 1D numpy array, 长度与dates相同
+        Args:
+            dates: 日期列, 1D ``numpy.ndarray``
+            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)
+            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同
+
         """
         # 检查参数类型
         if (not type(dates) is _np.ndarray or
@@ -47,7 +51,7 @@ class TimeSeriesData:
 
 class TrainValData:
     """
-    获取train, validation tensorflow dataset, 以及日期信息
+    该类用于生成不同训练阶段的tensorflow dataset
     """
 
     def __init__(self,
@@ -58,33 +62,37 @@ class TrainValData:
                  train_val_gap: int = 10,
                  sample_step: int = 2,
                  fill_na=_np.NaN):
-        """
-        储存全部的时间序列信息，通过get(start_date)方法获取从start_date
-        开始的训练机和验证集。
+        """用于获取不同阶段的训练集和验证集
 
-        train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，
-        如果是相临，则train_val_gap = 0。
+        Notes:
+            储存全部的时间序列信息，通过get(start_date)方法获取从start_date
+            开始的训练机和验证集。
 
-        设置该参数的目的如下：
+            train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，
+            如果是相临，则train_val_gap = 0。
 
-        如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测
-        未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益
-        而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，
-        用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的
-        有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上
-        相差11天，即间隔10天，因此使用train_val_gap=10。
+            设置该参数的目的如下：
 
-        时间为t(0)的每个样本数据的历史数据时间范围为t(-30)至t(0)，即用到了当天的收盘数据。
-        标签数据为 p(11) / p(1) - 1，即往后11天的收盘价除以明天的收盘价减去1。
-        不用 p(10) / p(0) - 1 的原因是，当天收盘时未做预测，不能以当天收盘价购入。
+            如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测
+            未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益
+            而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，
+            用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的
+            有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上
+            相差11天，即间隔10天，因此使用train_val_gap=10。
 
-        :param time_series_list: TimeSeriesData 列表
-        :param train_length: 训练集天数
-        :param validate_length: 验证集天数
-        :param history_length: 每个sample的历史天数
-        :param train_val_gap: 训练集与验证集的间隔
-        :param sample_step: 采样sample时步进的天数
-        :param fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本
+            时间为t(0)的每个样本数据的历史数据时间范围为t(-30)至t(0)，
+            即用到了当天的收盘数据。标签数据为 p(11) / p(1) - 1，
+            即往后11天的收盘价除以明天的收盘价减去1。不用 p(10) / p(0) - 1 的原因是，
+            当天收盘时未做预测，不能以当天收盘价购入。
+
+        Args:
+            time_series_list: TimeSeriesData 列表
+            train_length: 训练集天数
+            validate_length: 验证集天数
+            history_length: 每个sample的历史天数
+            train_val_gap: 训练集与验证集的间隔
+            sample_step: 采样sample时步进的天数
+            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本
         """
 
         # 检查参数类型
@@ -160,26 +168,31 @@ class TrainValData:
             start_date: int,
             order="by_date",
             mode="in_memory"):
-        """
-        根据设定的训练集天数以及验证集天数，从start_date开始获取正确的
-        训练集以及验证集，以及他们各自的日期范围信息(该信息以字典形式返回)。
+        """获取从某天开始的训练集和验证集
 
-        training set 的开始和结束是指其data, label所有的时间范围(inclusive)。
-        validation set 的开始和结束则只是指其label的时间范围，
-        因为validation set允许用到training set内的X历史数据。
-        具体时间信息参考返回的第三个元素dates_info。
+        Notes:
+            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的
+            训练集以及验证集，以及他们各自的日期范围信息(该信息以字典形式返回)。
 
-        如果日期范围超出最大日期会报ValueError。
+            training set 的开始和结束是指其data, label所有的时间范围(inclusive)。
+            validation set 的开始和结束则只是指其label的时间范围，
+            因为validation set允许用到training set内的X历史数据。
+            具体时间信息参考返回的第三个元素dates_info。
 
-        :param start_date: 该轮训练开始日期，整数YYYYMMDD。
-        :param order: 有三种顺序: shuffle, by_date, by_series,
-        分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。
-        :param mode: `generator` 或 `in_memory`. generator 速度极慢，
-        in_memory速度较快，默认in_memory。feature、series数量大内存不足时
-        可以使用generator。'in_memory'模式股票数量较大以及step较小时，
-        可能会要求较大内存。
+            如果日期范围超出最大日期会报ValueError。
 
-        :return: train, val, dates_info(dict)
+        Args:
+            start_date: 该轮训练开始日期，整数``YYYYMMDD``
+            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。
+                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。
+            mode: `generator` 或 `in_memory`. generator 速度极慢，
+                in_memory速度较快，默认in_memory。feature、series数量大内存不足时
+                可以使用generator。'in_memory'模式股票数量较大以及step较小时，
+                可能会要求较大内存。
+
+        Returns:
+            (train, val, dates_info(dict))
+
         """
 
         if mode == "generator":
@@ -280,17 +293,20 @@ class TrainValData:
 
     def __get_generator_args__(self, start_index, end_index, order="by_date"):
         """
-        根据数据集的开始、结束位置以及的顺序选项，获取该训练集的数据、标签片段
-        以及用于生成训练数据的(序列, 日期)pair列表的顺序信息(generation_list)。
+        Notes:
+            根据数据集的开始、结束位置以及的顺序选项，获取该训练集的数据、标签片段
+            以及用于生成训练数据的(序列, 日期)pair列表的顺序信息(generation_list)。
 
-        generation_list第一列为序列编号，第二列为日期。
+            generation_list第一列为序列编号，第二列为日期。
 
-        generation_list中的日期数字代表*每个历史数据片段*的第一个日期相对
-        该数据集片段（start_index:end_index）的位置。
+            generation_list中的日期数字代表*每个历史数据片段*的第一个日期相对
+            该数据集片段（start_index:end_index）的位置。
 
-        注意：
-        1. 该处的日期列表不代表每个历史片段的结束位置
-        2. 也不是相对TrainValData类日期列表的位置
+            注意：
+
+                - 该处的日期列表不代表每个历史片段的结束位置
+
+                - 也不是相对TrainValData类日期列表的位置
         """
         length = end_index - start_index
         data = self.__data[:, start_index:end_index, :]
@@ -321,9 +337,7 @@ class TrainValData:
                        val_start_index,
                        train_args,
                        val_args):
-        """
-        根据生成数据的列表，计算用于显示的日期信息
-        """
+        """根据生成数据的列表，计算用于显示的日期信息"""
 
         # 获取generation_list(生成数据的顺序信息)的时间列
         # 该时间列为相对数据片段开头的时间位置
@@ -363,9 +377,7 @@ class TrainValData:
 
 
 def __history_expander__(data_tensor, history_length):
-    """
-    错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度
-    """
+    """错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度"""
     total_time_length = data_tensor.shape[1]
     data_expanded = _tf.stack([data_tensor[:, i: (total_time_length + i
                                                   - history_length + 1), :]
@@ -375,9 +387,7 @@ def __history_expander__(data_tensor, history_length):
 
 
 def __full_tensor_generation__(data, label, generation_list, history):
-    """
-    将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息
-    """
+    """将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息"""
 
     # 先将该数据片段的历史维度展开
     data_expanded = __history_expander__(data, history)
@@ -395,9 +405,7 @@ def __full_tensor_generation__(data, label, generation_list, history):
 
 
 def __training_example_getter__(data, label, series_i, i, history_length):
-    """
-    DataSet.from_generator会用到的函数，获取单个训练数据
-    """
+    """``DataSet.from_generator``会用到的函数，获取单个训练数据"""
     x = data[series_i][i: i + history_length]
     y = label[series_i][i + history_length - 1]
 
@@ -409,9 +417,7 @@ def __training_example_getter__(data, label, series_i, i, history_length):
 
 
 def __generator__(data, label, generation_list, history_length):
-    """
-    DataSet.from_generator会用到的generator
-    """
+    """``DataSet.from_generator``会用到的generator"""
     for series_i, i in generation_list:
         d = __training_example_getter__(data, label, series_i, i, history_length)
         if d:
@@ -420,7 +426,5 @@ def __generator__(data, label, generation_list, history_length):
 
 
 def __first_index__(array, element):
-    """
-    计算第一个出现的元素的位置
-    """
+    """计算第一个出现的元素的位置"""
     return _np.min(_np.where(array == element))

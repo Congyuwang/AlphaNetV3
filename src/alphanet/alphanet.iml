@@ -7,7 +7,12 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="" />
     <option name="versionSpecifier" value="Greater or equal (&gt;=x.y.z)" />
     <option name="keepMatchingSpecifier" value="false" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
   </component>
 </module>

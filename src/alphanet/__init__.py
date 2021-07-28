@@ -35,12 +35,18 @@ __all__ = ["Std",
 
 class Std(_Layer):
     """
-    计算每个feature各个stride的standard deviation
+
+    Notes:
+        计算每个feature各个stride的standard deviation
+
     """
 
     def __init__(self, stride: int = 10, **kwargs):
         """
-        :param stride: time steps需要是stride的整数倍
+
+        Args:
+            stride (int): time steps需要是stride的整数倍
+
         """
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
@@ -59,8 +65,13 @@ class Std(_Layer):
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features)
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride, features)
+
         """
 
         # compute means for each stride
@@ -91,13 +102,19 @@ class Std(_Layer):
 
 class ZScore(_Layer):
     """
-    并非严格意义上的z-score,
-    计算公式为每个feature各个stride的mean除以各自的standard deviation
+
+    Notes:
+        并非严格意义上的z-score,
+        计算公式为每个feature各个stride的mean除以各自的standard deviation
+
     """
 
     def __init__(self, stride: int = 10, **kwargs):
         """
-        :param stride: time steps需要是stride的整数倍
+
+        Args:
+            stride (int): time steps需要是stride的整数倍
+
         """
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
@@ -116,8 +133,13 @@ class ZScore(_Layer):
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features)
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride, features)
+
         """
 
         # compute means for each stride
@@ -145,13 +167,19 @@ class ZScore(_Layer):
 
 class LinearDecay(_Layer):
     """
-    以线性衰减为权重，计算每个feature各个stride的均值：
-    如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    Notes:
+        以线性衰减为权重，计算每个feature各个stride的均值：
+        如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
     """
 
     def __init__(self, stride=10, **kwargs):
         """
-        :param stride: time steps需要是stride的整数倍
+
+        Args:
+            stride (int): time steps需要是stride的整数倍
+
         """
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
@@ -169,8 +197,13 @@ class LinearDecay(_Layer):
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features)
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride, features)
+
         """
 
         # get linear decay kernel
@@ -196,13 +229,20 @@ class LinearDecay(_Layer):
 
 class Return(_Layer):
     """
-    计算公式为每个stride最后一个数除以第一个数再减去一
+
+    Notes:
+        计算公式为每个stride最后一个数除以第一个数再减去一
+
     """
 
     def __init__(self, stride=10, **kwargs):
         """
-        :param stride: time steps需要是stride的整数倍
+
+        Args:
+            stride (int): time steps需要是stride的整数倍
+
         """
+
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
                              "greater than 1")
@@ -216,8 +256,13 @@ class Return(_Layer):
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride, features)
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride, features)
+
         """
 
         # get the endings of each strides as numerators
@@ -234,16 +279,19 @@ class Return(_Layer):
         return config
 
 
-class OuterProductLayer(_Layer, _ABC):
+class _OuterProductLayer(_Layer, _ABC):
 
     def __init__(self, stride=10, **kwargs):
         """
-        :param stride: time steps需要是stride的整数倍
+
+        Args:
+            stride (int): time steps需要是stride的整数倍
+
         """
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
                              "greater than 1")
-        super(OuterProductLayer, self).__init__(**kwargs)
+        super(_OuterProductLayer, self).__init__(**kwargs)
         self.stride = stride
         self.intermediate_shape = None
         self.out_shape = None
@@ -267,17 +315,25 @@ class OuterProductLayer(_Layer, _ABC):
         ...
 
 
-class Covariance(OuterProductLayer):
+class Covariance(_OuterProductLayer):
     """
-    计算每个stride每两个feature之间的covariance大小，
-    输出feature数量为features * (features - 1) / 2
+
+    Notes:
+        计算每个stride每两个feature之间的covariance大小，
+        输出feature数量为features * (features - 1) / 2
+
     """
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride,
-        features * (features - 1) / 2)
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride,
+            features * (features - 1) / 2)
+
         """
 
         # compute means for each stride
@@ -307,17 +363,23 @@ class Covariance(OuterProductLayer):
         return covariances
 
 
-class Correlation(OuterProductLayer):
+class Correlation(_OuterProductLayer):
     """
-    计算每个stride每两个feature之间的correlation coefficient，
-    输出feature数量为features * (features - 1) / 2
+    Notes:
+        计算每个stride每两个feature之间的correlation coefficient，
+        输出feature数量为features * (features - 1) / 2
     """
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride,
-        features * (features - 1) / 2)
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride,
+            features * (features - 1) / 2)
+
         """
 
         # compute means for each stride
@@ -360,18 +422,31 @@ class Correlation(OuterProductLayer):
 
 class FeatureExpansion(_Layer):
     """
-    该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，其包括一下一些feature:
-    - standard deviation
-    - mean / standard deviation
-    - linear decay average
-    - return of each stride
-    - covariance of each two features for each stride
-    - correlation coefficient of each two features for each stride
+
+    Notes:
+        该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，
+        其包括一下一些feature:
+
+            - standard deviation
+
+            - mean / standard deviation
+
+            - linear decay average
+
+            - return of each stride
+
+            - covariance of each two features for each stride
+
+            - correlation coefficient of each two features for each stride
+
     """
 
     def __init__(self, stride=10, **kwargs):
         """
-        :param stride: time steps需要是stride的整数倍
+
+        Args:
+            stride (int): time steps需要是stride的整数倍
+
         """
         if type(stride) is not int or stride <= 1:
             raise ValueError("Illegal Argument: stride should be an integer "
@@ -395,9 +470,14 @@ class FeatureExpansion(_Layer):
 
     def call(self, inputs, *args, **kwargs):
         """
-        :param inputs: 输入dimension为(batch_size, time_steps, features)
-        :return: return dimension 为(batch_size, time_steps / stride,
-        features * (features + 3))
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride,
+            features * (features + 3))
+
         """
         std_output = self.std(inputs)
         z_score_output = self.z_score(inputs)
@@ -420,28 +500,45 @@ class FeatureExpansion(_Layer):
 
 class AlphaNetV3:
     """
-    复现华泰金工 alpha net V3 版本
 
-    ```
-    input: (batch_size, history time steps, features)
+    Notes:
+        复现华泰金工 alpha net V3 版本
+        ::
 
-                    stride = 5
-            +-> expand features -> BN -> GRU -> BN -+
-    input --|       stride = 10                     |- concat -> Dense(linear)
-            +-> expand features -> BN -> GRU -> BN -+
-    ```
+            input: (batch_size, history time steps, features)
 
-    (BN: batch normalization)
+                            stride = 5
+                    +-> expand -> BN -> GRU -> BN -+
+            input --|       stride = 10            |- concat -> Dense(linear)
+                    +-> expand -> BN -> GRU -> BN -+
+
+        (BN: batch normalization)
+
     """
 
     def __init__(self,
-                 input_shape,
+                 input_shape: (int, int),
                  optimizer=_tf.keras.optimizers.Adam,
-                 alpha=0.0001,
+                 learning_rate=0.0001,
                  loss="MSE",
-                 dropout=0.10,
+                 dropout=0.0,
                  l2=0.001,
                  metrics=None):
+        """alpha net v3
+
+        Notes:
+            alpha net v3 版本的全tensorflow实现，结构详见代码展开
+
+        Args:
+            input_shape: (int, int), 分别代表 (历史长度, 特征数量)
+            optimizer: 优化器
+            learning_rate: 优化参数，学习速度
+            loss: 损失函数
+            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
+            l2: 输出层的l2-regularization参数
+            metrics: 训练过程中的metric
+
+        """
         inputs = _tf.keras.Input(shape=input_shape)
         expanded_10 = FeatureExpansion(stride=10)(inputs)
         expanded_5 = FeatureExpansion(stride=5)(inputs)
@@ -459,25 +556,55 @@ class AlphaNetV3:
                              kernel_initializer="truncated_normal",
                              kernel_regularizer=regularize)(concat)
         self.__model = _tf.keras.Model(inputs=inputs, outputs=outputs)
-        self.__model.compile(optimizer(alpha), loss=loss, metrics=metrics)
+        self.__model.compile(optimizer(learning_rate), loss=loss, metrics=metrics)
 
     def model(self):
-        """
-        返回model
-        :return: tensorflow model
+        """返回tensorflow模型
+
+        Returns:
+            ``tensorflow.keras.models.Model``
+
         """
         return self.__model
 
-    def save(self, filepath):
-        return self.__model.save(filepath)
+    def save(self, filepath: str):
+        """保存模型参数以及模型的计算graph
+
+        Args:
+            filepath: 保存模型的文件路径
+
+        """
+        self.__model.save(filepath)
 
     def save_weights(self, filepath):
-        return self.__model.save_weights(filepath)
+        """保存模型参数
+
+        Args:
+            filepath: 文件路径
+
+        """
+        self.__model.save_weights(filepath)
 
     def load_weights(self, filepath):
+        """载入模型参数
+
+        Args:
+            filepath: 参数文件位置
+
+        """
         self.__model.load_weights(filepath)
 
     def predict(self, x, batch_size=500):
+        """批量预测
+
+        Args:
+            x: numpy array, tensor, 或者tensorflow dataset
+            batch_size: 批处理大小
+
+        Returns:
+            预测值
+
+        """
         return self.__model.predict(x, batch_size=batch_size)
 
     def __call__(self, *args, **kwargs):
@@ -486,8 +613,9 @@ class AlphaNetV3:
 
 class LowerNoDiagonalMask(_Initializer):
     """
-    Provide a mask giving the lower triangular of a matrix
-    without diagonal elements.
+    Notes:
+        Provide a mask giving the lower triangular of a matrix
+        without diagonal elements.
     """
 
     def __init__(self):
@@ -504,11 +632,17 @@ class LowerNoDiagonalMask(_Initializer):
 
 def __get_dimensions__(input_shape, stride):
     """
-    return time_steps, features, and output_length based on inputs and stride
 
-    :param input_shape: pass the inputs of layer to the function
-    :param stride: the stride of the custom layer
-    :return: (time_steps, features, output_length)
+    Notes:
+        compute output shapes
+
+    Args:
+        input_shape: pass the inputs of layer to the function
+        stride (int): the stride of the custom layer
+
+    Returns:
+        (features, output_length)
+
     """
     if type(stride) is not int or stride <= 1:
         raise ValueError("Illegal Argument: stride should be an integer "
