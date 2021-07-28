@@ -1,5 +1,5 @@
 tensorflow >= 2.3
-pandas>=1.2
+pandas>=1.1
 numpy>=1.18
 tqdm>=4.48.0
 matplotlib>=3.2
