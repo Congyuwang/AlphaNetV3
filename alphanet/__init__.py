@@ -19,6 +19,8 @@ date: 2021-07-22
 import tensorflow as tf
 import tensorflow.keras.layers as tfl
 from tensorflow.keras.layers import Layer
+from tensorflow.keras.initializers import Initializer
+from abc import ABC, abstractmethod
 
 __all__ = ["Std",
            "Return",
@@ -82,8 +84,7 @@ class Std(Layer):
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride,
-                       'intermediate_shape': self.intermediate_shape})
+        config.update({'stride': self.stride})
         return config
 
 
@@ -137,8 +138,7 @@ class ZScore(Layer):
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride,
-                       'intermediate_shape': self.intermediate_shape})
+        config.update({'stride': self.stride})
         return config
 
 
@@ -189,9 +189,7 @@ class LinearDecay(Layer):
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride,
-                       'out_shape': self.out_shape,
-                       'intermediate_shape': self.intermediate_shape})
+        config.update({'stride': self.stride})
         return config
 
 
@@ -235,11 +233,7 @@ class Return(Layer):
         return config
 
 
-class Covariance(Layer):
-    """
-    计算每个stride每两个feature之间的covariance大小，
-    输出feature数量为features * (features - 1) / 2
-    """
+class OuterProductLayer(Layer, ABC):
 
     def __init__(self, stride=10, **kwargs):
         """
@@ -248,13 +242,11 @@ class Covariance(Layer):
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
                              "greater than 1")
-        super(Covariance, self).__init__(**kwargs)
-        self.lower_mask = self.add_weight(name="mask",
-                                          dtype=tf.bool,
-                                          trainable=False)
+        super(OuterProductLayer, self).__init__(**kwargs)
         self.stride = stride
         self.intermediate_shape = None
         self.out_shape = None
+        self.lower_mask = None
 
     def build(self, input_shape):
         (features,
@@ -262,7 +254,23 @@ class Covariance(Layer):
         self.intermediate_shape = (-1, self.stride, features)
         output_features = int(features * (features - 1) / 2)
         self.out_shape = (-1, output_length, output_features)
-        self.lower_mask = __lower_no_diagonal_mask__((features, features))
+        self.lower_mask = LowerNoDiagonalMask()((features, features))
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
+
+    @abstractmethod
+    def call(self, inputs, *args, **kwargs):
+        ...
+
+
+class Covariance(OuterProductLayer):
+    """
+    计算每个stride每两个feature之间的covariance大小，
+    输出feature数量为features * (features - 1) / 2
+    """
 
     def call(self, inputs, *args, **kwargs):
         """
@@ -297,15 +305,8 @@ class Covariance(Layer):
         covariances = tf.reshape(covariances, self.out_shape)
         return covariances
 
-    def get_config(self):
-        config = super().get_config().copy()
-        config.update({'stride': self.stride,
-                       'out_shape': self.out_shape,
-                       'intermediate_shape': self.intermediate_shape})
-        return config
 
-
-class Correlation(Covariance):
+class Correlation(OuterProductLayer):
     """
     计算每个stride每两个feature之间的correlation coefficient，
     输出feature数量为features * (features - 1) / 2
@@ -376,12 +377,20 @@ class FeatureExpansion(Layer):
                              "greater than 1")
         super(FeatureExpansion, self).__init__(**kwargs)
         self.stride = stride
-        self.std = Std(stride=stride)
-        self.z_score = ZScore(stride=stride)
-        self.linear_decay = LinearDecay(stride=stride)
-        self.return_ = Return(stride=stride)
-        self.covariance = Covariance(stride=stride)
-        self.correlation = Correlation(stride=stride)
+        self.std = None
+        self.z_score = None
+        self.linear_decay = None
+        self.return_ = None
+        self.covariance = None
+        self.correlation = None
+
+    def build(self, input_shape):
+        self.std = tf.function(Std(stride=self.stride))
+        self.z_score = tf.function(ZScore(stride=self.stride))
+        self.linear_decay = tf.function(LinearDecay(stride=self.stride))
+        self.return_ = tf.function(Return(stride=self.stride))
+        self.covariance = tf.function(Covariance(stride=self.stride))
+        self.correlation = tf.function(Correlation(stride=self.stride))
 
     def call(self, inputs, *args, **kwargs):
         """
@@ -468,6 +477,24 @@ class AlphaNetV3:
         return self.__model(*args, **kwargs)
 
 
+class LowerNoDiagonalMask(Initializer):
+    """
+    Provide a mask giving the lower triangular of a matrix
+    without diagonal elements.
+    """
+
+    def __init__(self):
+        super(LowerNoDiagonalMask, self).__init__()
+
+    def __call__(self, shape, **kwargs):
+        ones = tf.ones(shape)
+        mask_lower = tf.linalg.band_part(ones, -1, 0)
+        mask_diag = tf.linalg.band_part(ones, 0, 0)
+        # lower triangle removing the diagonal elements
+        mask = tf.cast(mask_lower - mask_diag, dtype=tf.bool)
+        return mask
+
+
 def __get_dimensions__(input_shape, stride):
     """
     return time_steps, features, and output_length based on inputs and stride
@@ -484,19 +511,3 @@ def __get_dimensions__(input_shape, stride):
         raise ValueError("Error, time_steps 应该是 stride的整数倍")
 
     return features, output_length
-
-
-def __lower_no_diagonal_mask__(shape):
-    """
-    the boolean mask of lower triangular part of the matrix without
-    the diagonal elements.
-
-    :param shape: the shape matrix
-    :return: boolean mask the the same shape as the input matrix
-    """
-    ones = tf.ones(shape)
-    mask_lower = tf.linalg.band_part(ones, -1, 0)
-    mask_diag = tf.linalg.band_part(ones, 0, 0)
-    # lower triangle removing the diagonal elements
-    mask = tf.cast(mask_lower - mask_diag, dtype=tf.bool)
-    return mask
