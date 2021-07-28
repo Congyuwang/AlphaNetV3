@@ -10,6 +10,6 @@ Requirement: tensorflow 2.
 4. To run the model, execute `python main.py`.
 5. The loss plot pictures and models will be stored by each epoch and training period in `./models/` folder.
 6. Tests of layers and time series data tools are in `./tests/` folder.
-   To run the test, execute `python -m unittest tests.tests` with project root as working directory.
+   To run the test, execute `python -m unittest tests.tests`.
 
 (There is also a development notebook in `./notebook/` folder.)

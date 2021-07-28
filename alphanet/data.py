@@ -33,13 +33,13 @@ class TimeSeriesData:
         if (not type(dates) is np.ndarray or
                 not type(data) is np.ndarray or
                 not type(labels) is np.ndarray):
-            raise Exception("Data should be numpy arrays")
+            raise ValueError("Data should be numpy arrays")
         # 检查日期、数据、标签长度是否一致
         if len(dates) != len(data) or len(dates) != len(labels):
-            raise Exception("Bad data shape")
+            raise ValueError("Bad data shape")
         # 检查维度是否正确
         if dates.ndim != 1 or data.ndim != 2 or labels.ndim != 1:
-            raise Exception("Wrong dimensions")
+            raise ValueError("Wrong dimensions")
         self.dates = dates.astype(np.int32)
         self.data = data
         self.labels = labels
@@ -84,15 +84,15 @@ class TrainValData:
 
         # 检查参数类型
         if type(time_series_list) is not list:
-            raise Exception("time_series_list should be a list")
+            raise ValueError("time_series_list should be a list")
         # 不允许空列表
         if len(time_series_list) == 0:
-            raise Exception("Empty time_series_list")
+            raise ValueError("Empty time_series_list")
         # 检查列表元素类型
         for t in time_series_list:
             if type(t) is not TimeSeriesData:
-                raise Exception("time_series_data should be a list "
-                                "of TimeSeriesData objects")
+                raise ValueError("time_series_data should be a list "
+                                 "of TimeSeriesData objects")
         # 检查参数数值
         if (history_length < 1 or
                 validate_length < 1 or
@@ -104,8 +104,8 @@ class TrainValData:
         self.__feature_counts = time_series_list[0].data.shape[1]
         for series in time_series_list:
             if series.data.shape[1] != self.__feature_counts:
-                raise Exception("time series do not have "
-                                "the same number of features")
+                raise ValueError("time series do not have "
+                                 "the same number of features")
 
         # 获取日期列表（所有时间序列日期的并集）
         self.__distinct_dates = np.unique([date for stock in time_series_list
@@ -224,7 +224,7 @@ class TrainValData:
         根据开始时间计算用于构建训练集、验证集的相关信息
         """
         if type(start_date) is not int:
-            raise Exception("start date should be an integer YYYYMMDD")
+            raise ValueError("start date should be an integer YYYYMMDD")
 
         # 找到大于等于start_date的最小日期
         after_start_date = self.__distinct_dates >= start_date
@@ -294,8 +294,8 @@ class TrainValData:
         elif order == "by_series":
             generation_list = sorted(generation_list, key=lambda k: k[0])
         else:
-            raise Exception("wrong order argument, choose from `shuffle`, "
-                            "`by_date`, and `by_series`")
+            raise ValueError("wrong order argument, choose from `shuffle`, "
+                             "`by_date`, and `by_series`")
 
         generation_list = tf.constant(generation_list, dtype=tf.int32)
         history_length = tf.constant(self.__history_length, dtype=tf.int32)
