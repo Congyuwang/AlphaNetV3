@@ -20,7 +20,6 @@ import tensorflow as tf
 import tensorflow.keras.layers as tfl
 from tensorflow.keras.layers import Layer
 
-
 __all__ = ["Std",
            "Return",
            "Correlation",
@@ -45,16 +44,21 @@ class Std(Layer):
                              "greater than 1")
         super(Std, self).__init__(**kwargs)
         self.stride = stride
+        self.intermediate_shape = None
 
-    @tf.function
+    def build(self, input_shape):
+        (features,
+         output_length) = __get_dimensions__(input_shape, self.stride)
+        self.intermediate_shape = [-1,
+                                   output_length,
+                                   self.stride,
+                                   features]
+
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs,
-                                                                 self.stride)
-        intermediate_shape = (-1, output_length, self.stride, features)
 
         # compute means for each stride
         means = tf.repeat(
@@ -68,7 +72,7 @@ class Std(Layer):
 
         # subtract means for each stride
         squared_diff = tf.square(tf.subtract(inputs, means))
-        squared_diff = tf.reshape(squared_diff, intermediate_shape)
+        squared_diff = tf.reshape(squared_diff, self.intermediate_shape)
 
         # compute standard deviation for each stride
         mean_squared_diff = tf.reduce_mean(squared_diff, axis=2)
@@ -78,7 +82,8 @@ class Std(Layer):
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride})
+        config.update({'stride': self.stride,
+                       'intermediate_shape': self.intermediate_shape})
         return config
 
 
@@ -97,16 +102,21 @@ class ZScore(Layer):
                              "greater than 1")
         super(ZScore, self).__init__(**kwargs)
         self.stride = stride
+        self.intermediate_shape = None
 
-    @tf.function
+    def build(self, input_shape):
+        (features,
+         output_length) = __get_dimensions__(input_shape, self.stride)
+        self.intermediate_shape = [-1,
+                                   output_length,
+                                   self.stride,
+                                   features]
+
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs,
-                                                                 self.stride)
-        intermediate_shape = (-1, output_length, self.stride, features)
 
         # compute means for each stride
         means = tf.nn.avg_pool(inputs,
@@ -117,7 +127,7 @@ class ZScore(Layer):
         # compute standard deviations for each stride
         means_broadcast = tf.repeat(means, self.stride, axis=1)
         squared_diff = tf.square(tf.subtract(inputs, means_broadcast))
-        squared_diff = tf.reshape(squared_diff, intermediate_shape)
+        squared_diff = tf.reshape(squared_diff, self.intermediate_shape)
         mean_squared_diff = tf.reduce_mean(squared_diff, axis=2)
         std = tf.sqrt(mean_squared_diff)
 
@@ -127,7 +137,8 @@ class ZScore(Layer):
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride})
+        config.update({'stride': self.stride,
+                       'intermediate_shape': self.intermediate_shape})
         return config
 
 
@@ -146,37 +157,41 @@ class LinearDecay(Layer):
                              "greater than 1")
         super(LinearDecay, self).__init__(**kwargs)
         self.stride = stride
+        self.out_shape = None
+        self.intermediate_shape = None
 
-    @tf.function
+    def build(self, input_shape):
+        (features,
+         output_length) = __get_dimensions__(input_shape, self.stride)
+        self.out_shape = [-1, output_length, features]
+        self.intermediate_shape = [-1, self.stride, features]
+
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs,
-                                                                 self.stride)
-
-        output_shape = (-1, output_length, features)
-        intermediate_shape = (-1, self.stride, features)
 
         # get linear decay kernel
         single_kernel = tf.linspace(1.0, self.stride, num=self.stride)
-        kernel = tf.repeat(single_kernel, intermediate_shape[2])
+        kernel = tf.repeat(single_kernel, self.intermediate_shape[2])
         kernel = kernel / tf.reduce_sum(single_kernel)
 
         # reshape tensors into:
         # (bash_size * (time_steps / stride), stride, features)
-        kernel = tf.reshape(kernel, intermediate_shape[1:])
-        inputs = tf.reshape(inputs, intermediate_shape)
+        kernel = tf.reshape(kernel, self.intermediate_shape[1:])
+        inputs = tf.reshape(inputs, self.intermediate_shape)
 
         # broadcasting kernel to inputs batch dimension
         linear_decay = tf.reduce_sum(kernel * inputs, axis=1)
-        linear_decay = tf.reshape(linear_decay, output_shape)
+        linear_decay = tf.reshape(linear_decay, self.out_shape)
         return linear_decay
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride})
+        config.update({'stride': self.stride,
+                       'out_shape': self.out_shape,
+                       'intermediate_shape': self.intermediate_shape})
         return config
 
 
@@ -195,13 +210,16 @@ class Return(Layer):
         super(Return, self).__init__(**kwargs)
         self.stride = stride
 
-    @tf.function
+    def build(self, input_shape):
+        time_steps = input_shape[1]
+        if time_steps % self.stride != 0:
+            raise ValueError("Error, time_steps 应该是 stride的整数倍")
+
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride, features)
         """
-        time_steps, _, _ = __get_dimensions__(inputs, self.stride)
 
         # get the endings of each strides as numerators
         numerators = inputs[:, (self.stride - 1)::self.stride, :]
@@ -231,20 +249,27 @@ class Covariance(Layer):
             raise ValueError("Illegal Argument: stride should be "
                              "greater than 1")
         super(Covariance, self).__init__(**kwargs)
+        self.lower_mask = self.add_weight(name="mask",
+                                          dtype=tf.bool,
+                                          trainable=False)
         self.stride = stride
+        self.intermediate_shape = None
+        self.out_shape = None
 
-    @tf.function
+    def build(self, input_shape):
+        (features,
+         output_length) = __get_dimensions__(input_shape, self.stride)
+        self.intermediate_shape = (-1, self.stride, features)
+        output_features = int(features * (features - 1) / 2)
+        self.out_shape = (-1, output_length, output_features)
+        self.lower_mask = __lower_no_diagonal_mask__((features, features))
+
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride,
         features * (features - 1) / 2)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs,
-                                                                 self.stride)
-        intermediate_shape = (-1, self.stride, features)
-        output_features = int(features * (features - 1) / 2)
-        output_shape = (-1, output_length, output_features)
 
         # compute means for each stride
         means = tf.nn.avg_pool(inputs,
@@ -255,7 +280,8 @@ class Covariance(Layer):
         # subtract means for each stride
         means_broadcast = tf.repeat(means, self.stride, axis=1)
         means_subtracted = tf.subtract(inputs, means_broadcast)
-        means_subtracted = tf.reshape(means_subtracted, intermediate_shape)
+        means_subtracted = tf.reshape(means_subtracted,
+                                      self.intermediate_shape)
 
         # compute covariance matrix
         covariance_matrix = tf.einsum("ijk,ijm->ikm",
@@ -265,45 +291,32 @@ class Covariance(Layer):
 
         # get the lower part of the covariance matrix
         # without the diagonal elements
-        mask = __lower_triangle_without_diagonal_mask__(covariance_matrix)
-        covariances = tf.boolean_mask(covariance_matrix, mask)
-        covariances = tf.reshape(covariances, output_shape)
+        covariances = tf.boolean_mask(covariance_matrix,
+                                      self.lower_mask,
+                                      axis=1)
+        covariances = tf.reshape(covariances, self.out_shape)
         return covariances
 
     def get_config(self):
         config = super().get_config().copy()
-        config.update({'stride': self.stride})
+        config.update({'stride': self.stride,
+                       'out_shape': self.out_shape,
+                       'intermediate_shape': self.intermediate_shape})
         return config
 
 
-class Correlation(Layer):
+class Correlation(Covariance):
     """
     计算每个stride每两个feature之间的correlation coefficient，
     输出feature数量为features * (features - 1) / 2
     """
 
-    def __init__(self, stride=10, **kwargs):
-        """
-        :param stride: time steps需要是stride的整数倍
-        """
-        if stride <= 1:
-            raise ValueError("Illegal Argument: stride should be "
-                             "greater than 1")
-        super(Correlation, self).__init__(**kwargs)
-        self.stride = stride
-
-    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
         :return: return dimension 为(batch_size, time_steps / stride,
         features * (features - 1) / 2)
         """
-        time_steps, features, output_length = __get_dimensions__(inputs,
-                                                                 self.stride)
-        output_features = int(features * (features - 1) / 2)
-        output_shape = (-1, output_length, output_features)
-        intermediate_shape = (-1, self.stride, features)
 
         # compute means for each stride
         means = tf.nn.avg_pool(inputs,
@@ -314,7 +327,8 @@ class Correlation(Layer):
         # subtract means for each stride
         means_broadcast = tf.repeat(means, self.stride, axis=1)
         means_subtracted = tf.subtract(inputs, means_broadcast)
-        means_subtracted = tf.reshape(means_subtracted, intermediate_shape)
+        means_subtracted = tf.reshape(means_subtracted,
+                                      self.intermediate_shape)
 
         # compute standard deviations for each strides
         squared_diff = tf.square(means_subtracted)
@@ -331,18 +345,15 @@ class Correlation(Layer):
         covariance_matrix = covariance_matrix / self.stride
 
         # take the lower triangle of each matrix without diagonal
-        mask = __lower_triangle_without_diagonal_mask__(covariance_matrix)
-        covariances = tf.reshape(tf.boolean_mask(covariance_matrix, mask),
-                                 output_shape)
-        denominators = tf.reshape(tf.boolean_mask(denominator_matrix, mask),
-                                  output_shape)
-
-        return tf.math.divide_no_nan(covariances, denominators)
-
-    def get_config(self):
-        config = super().get_config().copy()
-        config.update({'stride': self.stride})
-        return config
+        covariances = tf.boolean_mask(covariance_matrix,
+                                      self.lower_mask,
+                                      axis=1)
+        denominators = tf.boolean_mask(denominator_matrix,
+                                       self.lower_mask,
+                                       axis=1)
+        correlations = tf.math.divide_no_nan(covariances, denominators)
+        correlations = tf.reshape(correlations, self.out_shape)
+        return correlations
 
 
 class FeatureExpansion(Layer):
@@ -372,7 +383,6 @@ class FeatureExpansion(Layer):
         self.covariance = Covariance(stride=stride)
         self.correlation = Correlation(stride=stride)
 
-    @tf.function
     def call(self, inputs, *args, **kwargs):
         """
         :param inputs: 输入dimension为(batch_size, time_steps, features)
@@ -458,33 +468,33 @@ class AlphaNetV3:
         return self.__model(*args, **kwargs)
 
 
-def __get_dimensions__(inputs, stride):
+def __get_dimensions__(input_shape, stride):
     """
     return time_steps, features, and output_length based on inputs and stride
 
-    :param inputs: pass the inputs of layer to the function
+    :param input_shape: pass the inputs of layer to the function
     :param stride: the stride of the custom layer
     :return: (time_steps, features, output_length)
     """
-    time_steps = inputs.shape[1]
-    features = inputs.shape[2]
+    time_steps = input_shape[1]
+    features = input_shape[2]
     output_length = time_steps // stride
 
     if time_steps % stride != 0:
         raise ValueError("Error, time_steps 应该是 stride的整数倍")
 
-    return time_steps, features, output_length
+    return features, output_length
 
 
-def __lower_triangle_without_diagonal_mask__(matrix):
+def __lower_no_diagonal_mask__(shape):
     """
     the boolean mask of lower triangular part of the matrix without
     the diagonal elements.
 
-    :param matrix: the input matrix
+    :param shape: the shape matrix
     :return: boolean mask the the same shape as the input matrix
     """
-    ones = tf.ones_like(matrix)
+    ones = tf.ones(shape)
     mask_lower = tf.linalg.band_part(ones, -1, 0)
     mask_diag = tf.linalg.band_part(ones, 0, 0)
     # lower triangle removing the diagonal elements
