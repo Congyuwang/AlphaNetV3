@@ -434,8 +434,8 @@ class AlphaNetV3:
     """
 
     def __init__(self,
-                 optimizer=tf.keras.optimizers.Adam,
-                 input_shape=(30, 15),
+                 input_shape,
+                 optimizer=_tf.keras.optimizers.Adam,
                  alpha=0.0001,
                  loss="MSE",
                  dropout=0.10,
