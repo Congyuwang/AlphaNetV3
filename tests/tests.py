@@ -5,9 +5,9 @@ import numpy as np
 import os
 from tqdm import tqdm
 import shutil
-from alphanet import *
-from alphanet.data import *
-from alphanet.metrics import *
+from src.alphanet import *
+from src.alphanet.data import *
+from src.alphanet.metrics import *
 
 
 class TestLayers(unittest.TestCase):
@@ -200,7 +200,7 @@ class TestDataModule(unittest.TestCase):
          cls.full_data,
          cls.codes,
          cls.trading_dates) = __test_data__()
-        cls.test_date = np.random.randint(20110101, 20133331)
+        cls.test_date = np.random.randint(20110101, 20121231)
         print("getting batches for {}".format(cls.test_date))
         (cls.first_batch_train,
          cls.first_batch_val,
@@ -209,7 +209,7 @@ class TestDataModule(unittest.TestCase):
         cls.start_basis = np.min(np.where(cls.trading_dates >= cls.test_date))
 
     def test_first_batch_of_training_dataset(self):
-        data_label = self.__get_first_batches__(self.start_basis, 0, 100)
+        data_label = self.__get_first_batches__(self.start_basis, 0, 120)
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][:len(self.first_batch_train[k])],
@@ -218,7 +218,7 @@ class TestDataModule(unittest.TestCase):
                "(start {}): failure".format(name, self.test_date))
 
     def test_last_batch_of_training_dataset(self):
-        data_label = self.__get_last_batches__(self.start_basis, 1200, 100)
+        data_label = self.__get_last_batches__(self.start_basis, 1200, 120)
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][-len(self.last_batch_train[0]):],
@@ -227,7 +227,7 @@ class TestDataModule(unittest.TestCase):
                "(start {}): failure".format(name, self.test_date))
 
     def test_first_batch_of_validation_dataset(self):
-        data_label = self.__get_first_batches__(self.start_basis, 1210-29, 100)
+        data_label = self.__get_first_batches__(self.start_basis, 1210-29, 120)
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][:len(self.first_batch_val[k])],
@@ -236,7 +236,7 @@ class TestDataModule(unittest.TestCase):
                "(start {}): failure".format(name, self.test_date))
 
     def test_last_batch_of_validation_dataset(self):
-        data_label = self.__get_last_batches__(self.start_basis, 1510-1, 100)
+        data_label = self.__get_last_batches__(self.start_basis, 1510-1, 120)
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][-len(self.last_batch_val[0]):],
