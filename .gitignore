@@ -1,3 +1,6 @@
 /models
 **/.DS_Store
 **/__pycache__
+*/sshConfigs.xml
+*/webServers.xml
+*/deployment.xml
