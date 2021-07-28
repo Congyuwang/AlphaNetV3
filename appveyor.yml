@@ -15,7 +15,7 @@ environment:
 build: off
 
 install:
-  - "py -3.6 -m pip install wheel tox tox-appveyor"
+  - "python3 -m pip install wheel tox tox-appveyor"
 
 test_script:
-  - "py -3.6 -m tox"
+  - "python3 -m tox"
