@@ -88,10 +88,9 @@ def do_training(beginning_date,
         json.dump(dates_info, fp)
 
     # save model weights per epoch in folders
-    file_path = folder_path + "{epoch:04d}-{val_loss:.6f}.hdf5"
+    file_path = folder_path + "{epoch:04d}-{val_loss:.6f}"
     ckp = tf.keras.callbacks.ModelCheckpoint(filepath=file_path,
-                                             save_freq="epoch",
-                                             save_weights_only=True)
+                                             save_freq="epoch")
 
     # early stopping
     es = tf.keras.callbacks.EarlyStopping(monitor="val_loss",
@@ -105,7 +104,7 @@ def do_training(beginning_date,
               callbacks=[es, ckp])
 
     # save weights of the best model
-    net.save_weights(folder_path + "best.hdf5")
+    net.save_weights(folder_path + "best")
 
     # plot loss
     plot_history(h, folder_path)
