@@ -16,11 +16,12 @@ version: 0.2
 author: Congyu Wang
 date: 2021-07-22
 """
-import tensorflow as tf
-import tensorflow.keras.layers as tfl
-from tensorflow.keras.layers import Layer
-from tensorflow.keras.initializers import Initializer
-from abc import ABC, abstractmethod
+import tensorflow as _tf
+import tensorflow.keras.layers as _tfl
+from tensorflow.keras.layers import Layer as _Layer
+from tensorflow.keras.initializers import Initializer as _Initializer
+from abc import ABC as _ABC
+from abc import abstractmethod as _abstractmethod
 
 __all__ = ["Std",
            "Return",
@@ -32,12 +33,12 @@ __all__ = ["Std",
            "AlphaNetV3"]
 
 
-class Std(Layer):
+class Std(_Layer):
     """
     计算每个feature各个stride的standard deviation
     """
 
-    def __init__(self, stride=10, **kwargs):
+    def __init__(self, stride: int = 10, **kwargs):
         """
         :param stride: time steps需要是stride的整数倍
         """
@@ -63,22 +64,22 @@ class Std(Layer):
         """
 
         # compute means for each stride
-        means = tf.repeat(
-            tf.nn.avg_pool(inputs,
-                           ksize=self.stride,
-                           strides=self.stride,
-                           padding="VALID"),
+        means = _tf.repeat(
+            _tf.nn.avg_pool(inputs,
+                            ksize=self.stride,
+                            strides=self.stride,
+                            padding="VALID"),
             self.stride,
             axis=1
         )
 
         # subtract means for each stride
-        squared_diff = tf.square(tf.subtract(inputs, means))
-        squared_diff = tf.reshape(squared_diff, self.intermediate_shape)
+        squared_diff = _tf.square(_tf.subtract(inputs, means))
+        squared_diff = _tf.reshape(squared_diff, self.intermediate_shape)
 
         # compute standard deviation for each stride
-        mean_squared_diff = tf.reduce_mean(squared_diff, axis=2)
-        std = tf.sqrt(mean_squared_diff)
+        mean_squared_diff = _tf.reduce_mean(squared_diff, axis=2)
+        std = _tf.sqrt(mean_squared_diff)
 
         return std
 
@@ -88,13 +89,13 @@ class Std(Layer):
         return config
 
 
-class ZScore(Layer):
+class ZScore(_Layer):
     """
     并非严格意义上的z-score,
     计算公式为每个feature各个stride的mean除以各自的standard deviation
     """
 
-    def __init__(self, stride=10, **kwargs):
+    def __init__(self, stride: int = 10, **kwargs):
         """
         :param stride: time steps需要是stride的整数倍
         """
@@ -120,20 +121,20 @@ class ZScore(Layer):
         """
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs,
-                               ksize=self.stride,
-                               strides=self.stride,
-                               padding="VALID")
+        means = _tf.nn.avg_pool(inputs,
+                                ksize=self.stride,
+                                strides=self.stride,
+                                padding="VALID")
 
         # compute standard deviations for each stride
-        means_broadcast = tf.repeat(means, self.stride, axis=1)
-        squared_diff = tf.square(tf.subtract(inputs, means_broadcast))
-        squared_diff = tf.reshape(squared_diff, self.intermediate_shape)
-        mean_squared_diff = tf.reduce_mean(squared_diff, axis=2)
-        std = tf.sqrt(mean_squared_diff)
+        means_broadcast = _tf.repeat(means, self.stride, axis=1)
+        squared_diff = _tf.square(_tf.subtract(inputs, means_broadcast))
+        squared_diff = _tf.reshape(squared_diff, self.intermediate_shape)
+        mean_squared_diff = _tf.reduce_mean(squared_diff, axis=2)
+        std = _tf.sqrt(mean_squared_diff)
 
         # divide means by standard deviations for each stride
-        z_score = tf.math.divide_no_nan(means, std)
+        z_score = _tf.math.divide_no_nan(means, std)
         return z_score
 
     def get_config(self):
@@ -142,7 +143,7 @@ class ZScore(Layer):
         return config
 
 
-class LinearDecay(Layer):
+class LinearDecay(_Layer):
     """
     以线性衰减为权重，计算每个feature各个stride的均值：
     如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -173,18 +174,18 @@ class LinearDecay(Layer):
         """
 
         # get linear decay kernel
-        single_kernel = tf.linspace(1.0, self.stride, num=self.stride)
-        kernel = tf.repeat(single_kernel, self.intermediate_shape[2])
-        kernel = kernel / tf.reduce_sum(single_kernel)
+        single_kernel = _tf.linspace(1.0, self.stride, num=self.stride)
+        kernel = _tf.repeat(single_kernel, self.intermediate_shape[2])
+        kernel = kernel / _tf.reduce_sum(single_kernel)
 
         # reshape tensors into:
         # (bash_size * (time_steps / stride), stride, features)
-        kernel = tf.reshape(kernel, self.intermediate_shape[1:])
-        inputs = tf.reshape(inputs, self.intermediate_shape)
+        kernel = _tf.reshape(kernel, self.intermediate_shape[1:])
+        inputs = _tf.reshape(inputs, self.intermediate_shape)
 
         # broadcasting kernel to inputs batch dimension
-        linear_decay = tf.reduce_sum(kernel * inputs, axis=1)
-        linear_decay = tf.reshape(linear_decay, self.out_shape)
+        linear_decay = _tf.reduce_sum(kernel * inputs, axis=1)
+        linear_decay = _tf.reshape(linear_decay, self.out_shape)
         return linear_decay
 
     def get_config(self):
@@ -193,7 +194,7 @@ class LinearDecay(Layer):
         return config
 
 
-class Return(Layer):
+class Return(_Layer):
     """
     计算公式为每个stride最后一个数除以第一个数再减去一
     """
@@ -225,7 +226,7 @@ class Return(Layer):
         # get the beginnings of each strides as denominators
         denominators = inputs[:, 0::self.stride, :]
 
-        return tf.math.divide_no_nan(numerators, denominators) - 1.0
+        return _tf.math.divide_no_nan(numerators, denominators) - 1.0
 
     def get_config(self):
         config = super().get_config().copy()
@@ -233,7 +234,7 @@ class Return(Layer):
         return config
 
 
-class OuterProductLayer(Layer, ABC):
+class OuterProductLayer(_Layer, _ABC):
 
     def __init__(self, stride=10, **kwargs):
         """
@@ -261,7 +262,7 @@ class OuterProductLayer(Layer, ABC):
         config.update({'stride': self.stride})
         return config
 
-    @abstractmethod
+    @_abstractmethod
     def call(self, inputs, *args, **kwargs):
         ...
 
@@ -280,29 +281,29 @@ class Covariance(OuterProductLayer):
         """
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs,
-                               ksize=self.stride,
-                               strides=self.stride,
-                               padding="VALID")
+        means = _tf.nn.avg_pool(inputs,
+                                ksize=self.stride,
+                                strides=self.stride,
+                                padding="VALID")
 
         # subtract means for each stride
-        means_broadcast = tf.repeat(means, self.stride, axis=1)
-        means_subtracted = tf.subtract(inputs, means_broadcast)
-        means_subtracted = tf.reshape(means_subtracted,
-                                      self.intermediate_shape)
+        means_broadcast = _tf.repeat(means, self.stride, axis=1)
+        means_subtracted = _tf.subtract(inputs, means_broadcast)
+        means_subtracted = _tf.reshape(means_subtracted,
+                                       self.intermediate_shape)
 
         # compute covariance matrix
-        covariance_matrix = tf.einsum("ijk,ijm->ikm",
-                                      means_subtracted,
-                                      means_subtracted)
+        covariance_matrix = _tf.einsum("ijk,ijm->ikm",
+                                       means_subtracted,
+                                       means_subtracted)
         covariance_matrix = covariance_matrix / (self.stride - 1)
 
         # get the lower part of the covariance matrix
         # without the diagonal elements
-        covariances = tf.boolean_mask(covariance_matrix,
-                                      self.lower_mask,
-                                      axis=1)
-        covariances = tf.reshape(covariances, self.out_shape)
+        covariances = _tf.boolean_mask(covariance_matrix,
+                                       self.lower_mask,
+                                       axis=1)
+        covariances = _tf.reshape(covariances, self.out_shape)
         return covariances
 
 
@@ -320,44 +321,44 @@ class Correlation(OuterProductLayer):
         """
 
         # compute means for each stride
-        means = tf.nn.avg_pool(inputs,
-                               ksize=self.stride,
-                               strides=self.stride,
-                               padding="VALID")
+        means = _tf.nn.avg_pool(inputs,
+                                ksize=self.stride,
+                                strides=self.stride,
+                                padding="VALID")
 
         # subtract means for each stride
-        means_broadcast = tf.repeat(means, self.stride, axis=1)
-        means_subtracted = tf.subtract(inputs, means_broadcast)
-        means_subtracted = tf.reshape(means_subtracted,
-                                      self.intermediate_shape)
+        means_broadcast = _tf.repeat(means, self.stride, axis=1)
+        means_subtracted = _tf.subtract(inputs, means_broadcast)
+        means_subtracted = _tf.reshape(means_subtracted,
+                                       self.intermediate_shape)
 
         # compute standard deviations for each strides
-        squared_diff = tf.square(means_subtracted)
-        mean_squared_error = tf.reduce_mean(squared_diff, axis=1)
-        std = tf.sqrt(mean_squared_error)
+        squared_diff = _tf.square(means_subtracted)
+        mean_squared_error = _tf.reduce_mean(squared_diff, axis=1)
+        std = _tf.sqrt(mean_squared_error)
 
         # get denominator of correlation matrix
-        denominator_matrix = tf.einsum("ik,im->ikm", std, std)
+        denominator_matrix = _tf.einsum("ik,im->ikm", std, std)
 
         # compute covariance matrix
-        covariance_matrix = tf.einsum("ijk,ijm->ikm",
-                                      means_subtracted,
-                                      means_subtracted)
+        covariance_matrix = _tf.einsum("ijk,ijm->ikm",
+                                       means_subtracted,
+                                       means_subtracted)
         covariance_matrix = covariance_matrix / self.stride
 
         # take the lower triangle of each matrix without diagonal
-        covariances = tf.boolean_mask(covariance_matrix,
-                                      self.lower_mask,
-                                      axis=1)
-        denominators = tf.boolean_mask(denominator_matrix,
+        covariances = _tf.boolean_mask(covariance_matrix,
                                        self.lower_mask,
                                        axis=1)
-        correlations = tf.math.divide_no_nan(covariances, denominators)
-        correlations = tf.reshape(correlations, self.out_shape)
+        denominators = _tf.boolean_mask(denominator_matrix,
+                                        self.lower_mask,
+                                        axis=1)
+        correlations = _tf.math.divide_no_nan(covariances, denominators)
+        correlations = _tf.reshape(correlations, self.out_shape)
         return correlations
 
 
-class FeatureExpansion(Layer):
+class FeatureExpansion(_Layer):
     """
     该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，其包括一下一些feature:
     - standard deviation
@@ -372,8 +373,8 @@ class FeatureExpansion(Layer):
         """
         :param stride: time steps需要是stride的整数倍
         """
-        if stride <= 1:
-            raise ValueError("Illegal Argument: stride should be "
+        if type(stride) is not int or stride <= 1:
+            raise ValueError("Illegal Argument: stride should be an integer "
                              "greater than 1")
         super(FeatureExpansion, self).__init__(**kwargs)
         self.stride = stride
@@ -385,12 +386,12 @@ class FeatureExpansion(Layer):
         self.correlation = None
 
     def build(self, input_shape):
-        self.std = tf.function(Std(stride=self.stride))
-        self.z_score = tf.function(ZScore(stride=self.stride))
-        self.linear_decay = tf.function(LinearDecay(stride=self.stride))
-        self.return_ = tf.function(Return(stride=self.stride))
-        self.covariance = tf.function(Covariance(stride=self.stride))
-        self.correlation = tf.function(Correlation(stride=self.stride))
+        self.std = _tf.function(Std(stride=self.stride))
+        self.z_score = _tf.function(ZScore(stride=self.stride))
+        self.linear_decay = _tf.function(LinearDecay(stride=self.stride))
+        self.return_ = _tf.function(Return(stride=self.stride))
+        self.covariance = _tf.function(Covariance(stride=self.stride))
+        self.correlation = _tf.function(Correlation(stride=self.stride))
 
     def call(self, inputs, *args, **kwargs):
         """
@@ -404,12 +405,12 @@ class FeatureExpansion(Layer):
         return_output = self.return_(inputs)
         covariance_output = self.covariance(inputs)
         correlation_output = self.correlation(inputs)
-        return tf.concat([std_output,
-                          z_score_output,
-                          decay_linear_output,
-                          return_output,
-                          covariance_output,
-                          correlation_output], axis=2)
+        return _tf.concat([std_output,
+                           z_score_output,
+                           decay_linear_output,
+                           return_output,
+                           covariance_output,
+                           correlation_output], axis=2)
 
     def get_config(self):
         config = super().get_config().copy()
@@ -441,23 +442,23 @@ class AlphaNetV3:
                  dropout=0.10,
                  l2=0.001,
                  metrics=None):
-        inputs = tf.keras.Input(shape=input_shape)
+        inputs = _tf.keras.Input(shape=input_shape)
         expanded_10 = FeatureExpansion(stride=10)(inputs)
         expanded_5 = FeatureExpansion(stride=5)(inputs)
-        normalized_10 = tfl.BatchNormalization()(expanded_10)
-        normalized_5 = tfl.BatchNormalization()(expanded_5)
-        dropout_10 = tfl.Dropout(dropout)(normalized_10)
-        dropout_5 = tfl.Dropout(dropout)(normalized_5)
-        gru_10 = tfl.GRU(units=30)(dropout_10)
-        gru_5 = tfl.GRU(units=30)(dropout_5)
-        normalized_10 = tfl.BatchNormalization()(gru_10)
-        normalized_5 = tfl.BatchNormalization()(gru_5)
-        concat = tfl.Concatenate(axis=-1)([normalized_10, normalized_5])
-        regularize = tf.keras.regularizers.l2(l2)
-        outputs = tfl.Dense(1, activation="linear",
-                            kernel_initializer="truncated_normal",
-                            kernel_regularizer=regularize)(concat)
-        self.__model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        normalized_10 = _tfl.BatchNormalization()(expanded_10)
+        normalized_5 = _tfl.BatchNormalization()(expanded_5)
+        dropout_10 = _tfl.Dropout(dropout)(normalized_10)
+        dropout_5 = _tfl.Dropout(dropout)(normalized_5)
+        gru_10 = _tfl.GRU(units=30)(dropout_10)
+        gru_5 = _tfl.GRU(units=30)(dropout_5)
+        normalized_10 = _tfl.BatchNormalization()(gru_10)
+        normalized_5 = _tfl.BatchNormalization()(gru_5)
+        concat = _tfl.Concatenate(axis=-1)([normalized_10, normalized_5])
+        regularize = _tf.keras.regularizers.l2(l2)
+        outputs = _tfl.Dense(1, activation="linear",
+                             kernel_initializer="truncated_normal",
+                             kernel_regularizer=regularize)(concat)
+        self.__model = _tf.keras.Model(inputs=inputs, outputs=outputs)
         self.__model.compile(optimizer(alpha), loss=loss, metrics=metrics)
 
     def model(self):
@@ -483,7 +484,7 @@ class AlphaNetV3:
         return self.__model(*args, **kwargs)
 
 
-class LowerNoDiagonalMask(Initializer):
+class LowerNoDiagonalMask(_Initializer):
     """
     Provide a mask giving the lower triangular of a matrix
     without diagonal elements.
@@ -493,11 +494,11 @@ class LowerNoDiagonalMask(Initializer):
         super(LowerNoDiagonalMask, self).__init__()
 
     def __call__(self, shape, **kwargs):
-        ones = tf.ones(shape)
-        mask_lower = tf.linalg.band_part(ones, -1, 0)
-        mask_diag = tf.linalg.band_part(ones, 0, 0)
+        ones = _tf.ones(shape)
+        mask_lower = _tf.linalg.band_part(ones, -1, 0)
+        mask_diag = _tf.linalg.band_part(ones, 0, 0)
         # lower triangle removing the diagonal elements
-        mask = tf.cast(mask_lower - mask_diag, dtype=tf.bool)
+        mask = _tf.cast(mask_lower - mask_diag, dtype=_tf.bool)
         return mask
 
 
@@ -509,6 +510,9 @@ def __get_dimensions__(input_shape, stride):
     :param stride: the stride of the custom layer
     :return: (time_steps, features, output_length)
     """
+    if type(stride) is not int or stride <= 1:
+        raise ValueError("Illegal Argument: stride should be an integer "
+                         "greater than 1")
     time_steps = input_shape[1]
     features = input_shape[2]
     output_length = time_steps // stride
