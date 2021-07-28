@@ -1,5 +1,7 @@
 # AlphaNetV3
 
+![unittest](https://github.com/Congyuwang/AlphaNetV3/actions/workflows/tests.yml/badge.svg)
+
 ## A Recurrent Neural Network For Predicting Stock Prices
 
 Requirement: tensorflow 2.
