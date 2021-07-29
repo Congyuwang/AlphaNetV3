@@ -560,6 +560,7 @@ class AlphaNetV3(_Model):
                                   kernel_initializer="truncated_normal",
                                   kernel_regularizer=self.regularizer)
 
+    @_tf.function
     def call(self, inputs, training=None, mask=None):
         """计算逻辑实现."""
         expanded10 = self.expanded10(inputs)
