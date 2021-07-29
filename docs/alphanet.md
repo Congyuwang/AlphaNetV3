@@ -32,7 +32,7 @@ date: 2021-07-29
 
 ---
 
-<a href="../src/alphanet/__init__.py#L608"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L600"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `load_model`
 
@@ -3219,13 +3219,10 @@ alpha net v3版本模型.
 
 **Notes:**
 
-> 复现华泰金工 alpha net V3 版本 :
-``` 
->input: (batch_size, history time steps, features) 
->stride = 5 +-> expand -> BN -> GRU -> BN -+ input --|       stride = 10            |- concat -> Dense(linear) +-> expand -> BN -> GRU -> BN -+ 
->(BN: batch normalization) 
+> 复现华泰金工 alpha net V3 版本 
+>``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L533"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L525"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -3698,13 +3695,13 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L584"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L576"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fd8efe46e20>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fac8ae7ddf0>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -3718,7 +3715,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L600"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L592"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 

@@ -718,16 +718,8 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <span class="sd">    Notes:</span>
 <span class="sd">        复现华泰金工 alpha net V3 版本</span>
-<span class="sd">        ::</span>
 
-<span class="sd">            input: (batch_size, history time steps, features)</span>
-
-<span class="sd">                            stride = 5</span>
-<span class="sd">                    +-&gt; expand -&gt; BN -&gt; GRU -&gt; BN -+</span>
-<span class="sd">            input --|       stride = 10            |- concat -&gt; Dense(linear)</span>
-<span class="sd">                    +-&gt; expand -&gt; BN -&gt; GRU -&gt; BN -+</span>
-
-<span class="sd">        (BN: batch normalization)</span>
+<span class="sd">        ``input: (batch_size, history time steps, features)``</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -759,7 +751,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
         <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
                                   <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
@@ -2788,16 +2780,8 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <span class="sd">    Notes:</span>
 <span class="sd">        复现华泰金工 alpha net V3 版本</span>
-<span class="sd">        ::</span>
 
-<span class="sd">            input: (batch_size, history time steps, features)</span>
-
-<span class="sd">                            stride = 5</span>
-<span class="sd">                    +-&gt; expand -&gt; BN -&gt; GRU -&gt; BN -+</span>
-<span class="sd">            input --|       stride = 10            |- concat -&gt; Dense(linear)</span>
-<span class="sd">                    +-&gt; expand -&gt; BN -&gt; GRU -&gt; BN -+</span>
-
-<span class="sd">        (BN: batch normalization)</span>
+<span class="sd">        ``input: (batch_size, history time steps, features)``</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -2829,7 +2813,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
         <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
                                   <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
@@ -2885,18 +2869,9 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 <h6 id="notes">Notes</h6>
 
 <blockquote>
-  <p>复现华泰金工 alpha net V3 版本
-  ::</p>
-
-<pre><code>input: (batch_size, history time steps, features)
-
-                stride = 5
-        +-&gt; expand -&gt; BN -&gt; GRU -&gt; BN -+
-input --|       stride = 10            |- concat -&gt; Dense(linear)
-        +-&gt; expand -&gt; BN -&gt; GRU -&gt; BN -+
-</code></pre>
+  <p>复现华泰金工 alpha net V3 版本</p>
   
-  <p>(BN: batch normalization)</p>
+  <p><code>input: (batch_size, history time steps, features)</code></p>
 </blockquote>
 </div>
 
@@ -2938,7 +2913,7 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
         <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
                                   <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
