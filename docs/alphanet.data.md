@@ -1,6 +1,6 @@
 <!-- markdownlint-disable -->
 
-<a href="../../src/alphanet/data.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 # <kbd>module</kbd> `alphanet.data`
 多维多时间序列神经网络滚动训练数据工具箱. 
@@ -15,7 +15,7 @@ date: 2021-07-26
 
 ---
 
-<a href="../../src/alphanet/data.py#L17"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L17"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TimeSeriesData`
 单个时间序列信息. 
@@ -26,7 +26,7 @@ date: 2021-07-26
 
 > 储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``. 
 
-<a href="../../src/alphanet/data.py#L25"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L25"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -50,12 +50,12 @@ __init__(dates: ndarray, data: ndarray, labels: ndarray)
 
 ---
 
-<a href="../../src/alphanet/data.py#L53"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L53"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TrainValData`
 该类用于生成不同训练阶段的tensorflow dataset. 
 
-<a href="../../src/alphanet/data.py#L56"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L56"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -99,7 +99,7 @@ __init__(
 
 ---
 
-<a href="../../src/alphanet/data.py#L165"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L165"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get`
 
