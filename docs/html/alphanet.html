@@ -193,7 +193,17 @@ alphanet    </h1>
 
                         <div class="docstring"><p>时间序列计算层、神经网络模型定义.</p>
 
-<p>复现华泰金工 alpha net V3 版本.</p>
+<p>复现华泰金工 alpha net V2、V3 版本.</p>
+
+<p>V2:</p>
+
+<pre><code>input: (batch_size, history time steps, features)
+
+                 stride = 5
+input -&gt; expand features -&gt; BN -&gt; LSTM -&gt; BN -&gt; Dense(linear)
+</code></pre>
+
+<p>V3:</p>
 
 <pre><code>input: (batch_size, history time steps, features)
 
@@ -205,7 +215,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <p>(BN: batch normalization)</p>
 
-<p>version: 0.0.4</p>
+<p>version: 0.0.7</p>
 
 <p>author: Congyu Wang</p>
 
@@ -219,7 +229,18 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;时间序列计算层、神经网络模型定义.</span>
 
-<span class="sd">复现华泰金工 alpha net V3 版本.</span>
+<span class="sd">复现华泰金工 alpha net V2、V3 版本.</span>
+
+<span class="sd">V2:</span>
+
+<span class="sd">```</span>
+<span class="sd">input: (batch_size, history time steps, features)</span>
+
+<span class="sd">                 stride = 5</span>
+<span class="sd">input -&gt; expand features -&gt; BN -&gt; LSTM -&gt; BN -&gt; Dense(linear)</span>
+<span class="sd">```</span>
+
+<span class="sd">V3:</span>
 
 <span class="sd">```</span>
 <span class="sd">input: (batch_size, history time steps, features)</span>
@@ -232,7 +253,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <span class="sd">(BN: batch normalization)</span>
 
-<span class="sd">version: 0.0.4</span>
+<span class="sd">version: 0.0.7</span>
 
 <span class="sd">author: Congyu Wang</span>
 

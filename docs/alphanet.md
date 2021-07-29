@@ -5,7 +5,18 @@
 # <kbd>module</kbd> `alphanet`
 时间序列计算层、神经网络模型定义. 
 
-复现华泰金工 alpha net V3 版本. 
+复现华泰金工 alpha net V2、V3 版本. 
+
+V2: 
+
+```
+input: (batch_size, history time steps, features)
+
+                  stride = 5
+input -> expand features -> BN -> LSTM -> BN -> Dense(linear)
+``` 
+
+V3: 
 
 ```
 input: (batch_size, history time steps, features)
@@ -18,7 +29,7 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 
 (BN: batch normalization) 
 
-version: 0.0.4 
+version: 0.0.7 
 
 author: Congyu Wang 
 
@@ -32,7 +43,7 @@ date: 2021-07-29
 
 ---
 
-<a href="../src/alphanet/__init__.py#L679"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L690"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `load_model`
 
@@ -78,7 +89,7 @@ load_model(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L50"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L61"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Std`
 计算每个序列各stride的标准差. 
@@ -89,7 +100,7 @@ load_model(
 
 > 计算每个feature各个stride的standard deviation 
 
-<a href="../src/alphanet/__init__.py#L58"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L69"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -478,7 +489,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L72"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L83"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -490,7 +501,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L81"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L92"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -513,7 +524,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L111"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L122"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -526,7 +537,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L118"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L129"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `ZScore`
 计算每个序列各stride的均值除以其标准差. 
@@ -537,7 +548,7 @@ get_config()
 
 > 并非严格意义上的z-score, 计算公式为每个feature各个stride的mean除以各自的standard deviation 
 
-<a href="../src/alphanet/__init__.py#L127"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L138"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -926,7 +937,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L141"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L152"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -938,7 +949,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L150"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L161"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -961,7 +972,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L177"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L188"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -974,7 +985,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L184"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L195"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `LinearDecay`
 计算每个序列各stride的线性衰减加权平均. 
@@ -985,7 +996,7 @@ get_config()
 
 > 以线性衰减为权重，计算每个feature各个stride的均值： 如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) 
 
-<a href="../src/alphanet/__init__.py#L193"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L204"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1374,7 +1385,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L208"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L219"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1386,7 +1397,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L215"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L226"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -1409,7 +1420,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L240"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L251"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -1422,7 +1433,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L247"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L258"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Return`
 计算每个序列各stride的回报率. 
@@ -1433,7 +1444,7 @@ get_config()
 
 > 计算公式为每个stride最后一个数除以第一个数再减去一 
 
-<a href="../src/alphanet/__init__.py#L255"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L266"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1822,7 +1833,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L268"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L279"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1834,7 +1845,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L274"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L285"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -1857,7 +1868,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L292"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L303"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -1870,7 +1881,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L338"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L349"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Covariance`
 计算每个stride各时间序列片段的covariance. 
@@ -1881,7 +1892,7 @@ get_config()
 
 > 计算每个stride每两个feature之间的covariance大小， 输出feature数量为features * (features - 1) / 2 
 
-<a href="../src/alphanet/__init__.py#L301"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L312"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -2270,7 +2281,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L317"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L328"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -2282,7 +2293,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L347"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L358"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -2305,7 +2316,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L326"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L337"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -2318,7 +2329,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L385"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L396"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Correlation`
 计算每个stride各时间序列的相关系数. 
@@ -2329,7 +2340,7 @@ get_config()
 
 > 计算每个stride每两个feature之间的correlation coefficient， 输出feature数量为features * (features - 1) / 2 
 
-<a href="../src/alphanet/__init__.py#L301"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L312"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -2718,7 +2729,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L317"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L328"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -2730,7 +2741,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L394"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L405"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -2753,7 +2764,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L326"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L337"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -2766,7 +2777,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L443"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L454"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `FeatureExpansion`
 计算时间序列特征扩张层，汇总6个计算层. 
@@ -2783,7 +2794,7 @@ get_config()
 >- covariance of each two features for each stride 
 >- correlation coefficient of each two features for each stride 
 
-<a href="../src/alphanet/__init__.py#L464"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L475"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -3172,7 +3183,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L483"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L494"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -3195,7 +3206,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L507"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L518"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -3208,7 +3219,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L514"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L525"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV2`
 神经网络模型，继承``keras.Model``类. 
@@ -3222,7 +3233,7 @@ alpha net v2版本模型.
 > 复现华泰金工 alpha net V2 版本 
 >``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L526"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L537"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -3695,13 +3706,13 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L567"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L578"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7f82abd46e80>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7febbcd46e80>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -3715,7 +3726,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L583"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L594"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -3728,7 +3739,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L592"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L603"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV3`
 神经网络模型，继承``keras.Model``类. 
@@ -3742,7 +3753,7 @@ alpha net v3版本模型.
 > 复现华泰金工 alpha net V3 版本 
 >``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L604"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L615"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -4215,13 +4226,13 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L655"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L666"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7f82abd82520>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7febbcd82520>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -4235,7 +4246,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L671"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L682"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
