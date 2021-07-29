@@ -332,9 +332,10 @@
                 <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
             <span class="p">)</span>
         <span class="p">)</span>
-
-        <span class="n">shapes</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">),</span> <span class="p">())</span>
-        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
+        <span class="n">shapes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">)),</span>
+                  <span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(()))</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
                                                       <span class="n">args</span><span class="o">=</span><span class="n">val_args</span><span class="p">,</span>
                                                       <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
@@ -860,9 +861,10 @@
                 <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
             <span class="p">)</span>
         <span class="p">)</span>
-
-        <span class="n">shapes</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">),</span> <span class="p">())</span>
-        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
+        <span class="n">shapes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">)),</span>
+                  <span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(()))</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
                                                       <span class="n">args</span><span class="o">=</span><span class="n">val_args</span><span class="p">,</span>
                                                       <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>

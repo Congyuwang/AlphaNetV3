@@ -228,6 +228,10 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span> <span class="k">as</span> <span class="n">_ABC</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span> <span class="k">as</span> <span class="n">_abstractmethod</span>
 
+<span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;2.3.0&quot;</span> <span class="o">&lt;=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;=</span> <span class="s2">&quot;2.5.0&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;requires tensorflow version &gt;= 2.2.0, &lt;=2.5.0&quot;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Std&quot;</span><span class="p">,</span>
            <span class="s2">&quot;Return&quot;</span><span class="p">,</span>
            <span class="s2">&quot;Correlation&quot;</span><span class="p">,</span>

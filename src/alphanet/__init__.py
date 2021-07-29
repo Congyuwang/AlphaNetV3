@@ -11,7 +11,7 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 
 (BN: batch normalization)
 
-version: 0.0.2
+version: 0.0.4
 
 author: Congyu Wang
 
