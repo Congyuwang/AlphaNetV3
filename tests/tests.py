@@ -197,8 +197,14 @@ class TestDataModuleCrossChecking(unittest.TestCase):
         data, full_data, codes, trading_dates = __test_data__()
         producer = TrainValData(data)
         producer_2 = TrainValData(data)
+        producer_3 = TrainValData(data)
+        producer_4 = TrainValData(data)
         cls.train, cls.val, _ = producer.get(20120301)
         cls.train_2, cls.val_2, _ = producer_2.get(20120301, mode="generator")
+        cls.val_3, _ = producer_3.get(20120301, validate_only=True)
+        cls.val_4, _ = producer_4.get(20120301,
+                                      mode="generator",
+                                      validate_only=True)
 
     def test_compare_train(self):
         for d1, d2 in zip(iter(self.train.batch(500)),
@@ -209,6 +215,18 @@ class TestDataModuleCrossChecking(unittest.TestCase):
     def test_compare_val(self):
         for d in zip(iter(self.val.batch(500)),
                      iter(self.val_2.batch(500))):
+            self.assertTrue(__is_all_close__(d[0][0], d[1][0]))
+            self.assertTrue(__is_all_close__(d[0][1], d[1][1]))
+
+    def test_val_only(self):
+        for d in zip(iter(self.val.batch(500)),
+                     iter(self.val_3.batch(500))):
+            self.assertTrue(__is_all_close__(d[0][0], d[1][0]))
+            self.assertTrue(__is_all_close__(d[0][1], d[1][1]))
+
+    def test_val_only_gen(self):
+        for d in zip(iter(self.val.batch(500)),
+                     iter(self.val_4.batch(500))):
             self.assertTrue(__is_all_close__(d[0][0], d[1][0]))
             self.assertTrue(__is_all_close__(d[0][1], d[1][1]))
 

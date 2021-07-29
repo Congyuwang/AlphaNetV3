@@ -165,7 +165,8 @@ class TrainValData:
     def get(self,
             start_date: int,
             order="by_date",
-            mode="in_memory"):
+            mode="in_memory",
+            validate_only=False):
         """获取从某天开始的训练集和验证集.
 
         Notes:
@@ -187,20 +188,31 @@ class TrainValData:
                 in_memory速度较快，默认in_memory。feature、series数量大内存不足时
                 可以使用generator。'in_memory'模式股票数量较大以及step较小时，
                 可能会要求较大显卡内存。
+            validate_only: 如果设置为True，则只返回validate set
+                和训练集、验证集时间信息
 
         Returns:
-            (train, val, dates_info(dict))
+            如果``validate_only=False``，返回训练集、验证集，以及日期信息：
+            (train, val, dates_info(dict))。如果为``True``，则返回
+            验证集以及日期信息。
 
         """
         if mode == "generator":
-            return self.__get_from_generator__(start_date, order)
+            return self.__get_from_generator__(start_date,
+                                               order,
+                                               validate_only)
         elif mode == "in_memory":
-            return self.__get_in_memory__(start_date, order)
+            return self.__get_in_memory__(start_date,
+                                          order,
+                                          validate_only)
         else:
             raise ValueError("mode unimplemented, choose from `generator` "
                              "and `in_memory`")
 
-    def __get_in_memory__(self, start_date, order="by_date"):
+    def __get_in_memory__(self,
+                          start_date,
+                          order="by_date",
+                          validate_only=False):
         """使用显存生成历史数据.
 
         使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，
@@ -211,15 +223,21 @@ class TrainValData:
         train_args, val_args, dates_info = self.__get_period_info__(start_date,
                                                                     order)
         # 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息
-        train_x, train_y = __full_tensor_generation__(*train_args)
         val_x, val_y = __full_tensor_generation__(*val_args)
-
         # 转化为tensorflow DataSet
-        train = _tf.data.Dataset.from_tensor_slices((train_x, train_y))
         val = _tf.data.Dataset.from_tensor_slices((val_x, val_y))
+
+        if validate_only:
+            return val, dates_info
+
+        train_x, train_y = __full_tensor_generation__(*train_args)
+        train = _tf.data.Dataset.from_tensor_slices((train_x, train_y))
         return train, val, dates_info
 
-    def __get_from_generator__(self, start_date, order="by_date"):
+    def __get_from_generator__(self,
+                               start_date,
+                               order="by_date",
+                               validate_only=False):
         """使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢."""
         # 获取用于构建训练集、验证集的相关信息
         train_args, val_args, dates_info = self.__get_period_info__(start_date,
@@ -235,12 +253,22 @@ class TrainValData:
                 dtype=_tf.float32
             )
         )
-        train_dataset = _tf.data.Dataset.from_generator(__generator__,
-                                                        args=train_args,
-                                                        output_signature=sig)
+
+        shapes = ((self.__history_length, self.__feature_counts), ())
+        types = [_tf.float32, _tf.float32]
         val_dataset = _tf.data.Dataset.from_generator(__generator__,
                                                       args=val_args,
-                                                      output_signature=sig)
+                                                      output_shapes=shapes,
+                                                      output_types=types)
+
+        if validate_only:
+            return val_dataset, dates_info
+
+        train_dataset = _tf.data.Dataset.from_generator(__generator__,
+                                                        args=train_args,
+                                                        output_shapes=shapes,
+                                                        output_types=types)
+
         return train_dataset, val_dataset, dates_info
 
     def __get_period_info__(self, start_date, order="by_date"):
