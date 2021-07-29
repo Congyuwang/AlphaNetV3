@@ -151,9 +151,7 @@ class TestAlphaNet(unittest.TestCase):
 
         # load weights
         alpha_net_v3 = AlphaNetV3()
-        alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
-                             loss="MSE",
-                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
+        alpha_net_v3.compile(metrics=[tf.keras.metrics.RootMeanSquaredError(),
                                       UpDownAccuracy()])
         alpha_net_v3.load_weights("./.test_alpha_net_save/weights")
         output_2 = alpha_net_v3.predict(self.random_test)
@@ -165,9 +163,7 @@ class TestAlphaNet(unittest.TestCase):
 
         # save models
         alpha_net_v3 = AlphaNetV3()
-        alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
-                             loss="MSE",
-                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
+        alpha_net_v3.compile(metrics=[tf.keras.metrics.RootMeanSquaredError(),
                                       UpDownAccuracy()])
         alpha_net_v3.fit(self.random_test, self.random_label, batch_size=20)
         output = alpha_net_v3.predict(self.random_test)

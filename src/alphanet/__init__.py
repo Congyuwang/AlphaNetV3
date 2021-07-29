@@ -570,6 +570,24 @@ class AlphaNetV3(_Model):
         output = self.outputs(concat)
         return output
 
+    def compile(self,
+                optimizer=_tf.keras.optimizers.Adam(0.0001),
+                loss="MSE",
+                metrics=None,
+                loss_weights=None,
+                weighted_metrics=None,
+                run_eagerly=None,
+                steps_per_execution=None,
+                **kwargs):
+        """设置优化器、loss、metric等."""
+        super().compile(optimizer=optimizer,
+                        loss=loss,
+                        metrics=metrics,
+                        loss_weights=loss_weights,
+                        weighted_metrics=weighted_metrics,
+                        run_eagerly=run_eagerly,
+                        steps_per_execution=steps_per_execution)
+
     def get_config(self):
         """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
