@@ -1,8 +1,12 @@
 from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+    long_description_1 = fh.read()
 
+with open("docs/md/README.md", "r", encoding="utf-8") as fh:
+    long_description_2 = fh.read()
+
+long_description = long_description_1 + long_description_2
 
 setup(
     name='alphanet',

@@ -66,20 +66,23 @@
                     <h1 class="modulename">
 <a href="./../alphanet.html">alphanet</a><wbr>.data    </h1>
 
-                        <div class="docstring"><p>多维多时间序列神经网络滚动训练数据工具箱</p>
+                        <div class="docstring"><p>多维多时间序列神经网络滚动训练数据工具箱.</p>
 
-<p>version: 0.3
-author: Congyu Wang
-date: 2021-07-26</p>
+<p>version:0.3</p>
+
+<p>author: Congyu Wang</p>
+
+<p>date: 2021-07-26</p>
 </div>
 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">多维多时间序列神经网络滚动训练数据工具箱</span>
+            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;多维多时间序列神经网络滚动训练数据工具箱.</span>
 
-<span class="sd">version: 0.3</span>
+<span class="sd">version:0.3</span>
+
 <span class="sd">author: Congyu Wang</span>
+
 <span class="sd">date: 2021-07-26</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">_tf</span>
@@ -91,7 +94,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">class</span> <span class="nc">TimeSeriesData</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;单个时间序列信息.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
@@ -102,7 +105,7 @@ date: 2021-07-26</p>
                  <span class="n">dates</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">data</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">labels</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``</span>
+        <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dates: 日期列, 1D ``numpy.ndarray``</span>
@@ -127,9 +130,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">class</span> <span class="nc">TrainValData</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    该类用于生成不同训练阶段的tensorflow dataset</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;该类用于生成不同训练阶段的tensorflow dataset.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time_series_list</span><span class="p">:</span> <span class="n">_List</span><span class="p">[</span><span class="n">TimeSeriesData</span><span class="p">],</span>
@@ -138,8 +139,8 @@ date: 2021-07-26</p>
                  <span class="n">history_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
                  <span class="n">train_val_gap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                  <span class="n">sample_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-                 <span class="n">fill_na</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">NaN</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集</span>
+                 <span class="n">fill_na</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">NaN</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            储存全部的时间序列信息，通过get(start_date)方法获取从start_date</span>
@@ -171,7 +172,6 @@ date: 2021-07-26</p>
 <span class="sd">            sample_step: 采样sample时步进的天数</span>
 <span class="sd">            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># 检查参数类型</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time_series_list should be a list&quot;</span><span class="p">)</span>
@@ -245,7 +245,7 @@ date: 2021-07-26</p>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集</span>
+        <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的</span>
@@ -265,13 +265,12 @@ date: 2021-07-26</p>
 <span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
 <span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
 <span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
-<span class="sd">                可能会要求较大内存。</span>
+<span class="sd">                可能会要求较大显卡内存。</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            (train, val, dates_info(dict))</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
@@ -281,9 +280,11 @@ date: 2021-07-26</p>
                              <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;使用显存生成历史数据.</span>
+
 <span class="sd">        使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，</span>
 <span class="sd">        股票数量大时，需要较大内存</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
@@ -298,9 +299,7 @@ date: 2021-07-26</p>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢.&quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
@@ -324,9 +323,7 @@ date: 2021-07-26</p>
         <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        根据开始时间计算用于构建训练集、验证集的相关信息</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;根据开始时间计算用于构建训练集、验证集的相关信息.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start date should be an integer YYYYMMDD&quot;</span><span class="p">)</span>
 
@@ -369,7 +366,8 @@ date: 2021-07-26</p>
         <span class="k">return</span> <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_generator_args__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_index</span><span class="p">,</span> <span class="n">end_index</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;获取单个generator需要的数据片段.</span>
+
 <span class="sd">        Notes:</span>
 <span class="sd">            根据数据集的开始、结束位置以及的顺序选项，获取该训练集的数据、标签片段</span>
 <span class="sd">            以及用于生成训练数据的(序列, 日期)pair列表的顺序信息(generation_list)。</span>
@@ -414,8 +412,7 @@ date: 2021-07-26</p>
                        <span class="n">val_start_index</span><span class="p">,</span>
                        <span class="n">train_args</span><span class="p">,</span>
                        <span class="n">val_args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;根据生成数据的列表，计算用于显示的日期信息&quot;&quot;&quot;</span>
-
+        <span class="sd">&quot;&quot;&quot;根据生成数据的列表，计算用于显示的日期信息.&quot;&quot;&quot;</span>
         <span class="c1"># 获取generation_list(生成数据的顺序信息)的时间列</span>
         <span class="c1"># 该时间列为相对数据片段开头的时间位置</span>
         <span class="n">train_generation_list</span> <span class="o">=</span> <span class="n">train_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -454,7 +451,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">def</span> <span class="nf">__history_expander__</span><span class="p">(</span><span class="n">data_tensor</span><span class="p">,</span> <span class="n">history_length</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度.&quot;&quot;&quot;</span>
     <span class="n">total_time_length</span> <span class="o">=</span> <span class="n">data_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">data_expanded</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">data_tensor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">:</span> <span class="p">(</span><span class="n">total_time_length</span> <span class="o">+</span> <span class="n">i</span>
                                                   <span class="o">-</span> <span class="n">history_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">:]</span>
@@ -464,8 +461,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">def</span> <span class="nf">__full_tensor_generation__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息&quot;&quot;&quot;</span>
-
+    <span class="sd">&quot;&quot;&quot;将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息.&quot;&quot;&quot;</span>
     <span class="c1"># 先将该数据片段的历史维度展开</span>
     <span class="n">data_expanded</span> <span class="o">=</span> <span class="n">__history_expander__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">history</span><span class="p">)</span>
 
@@ -482,7 +478,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">def</span> <span class="nf">__training_example_getter__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">series_i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">history_length</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;``DataSet.from_generator``会用到的函数，获取单个训练数据&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;``DataSet.from_generator``会用到的函数，获取单个训练数据.&quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">series_i</span><span class="p">][</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">history_length</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">series_i</span><span class="p">][</span><span class="n">i</span> <span class="o">+</span> <span class="n">history_length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
 
@@ -494,7 +490,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">def</span> <span class="nf">__generator__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history_length</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;``DataSet.from_generator``会用到的generator&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;``DataSet.from_generator``会用到的generator.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">series_i</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">generation_list</span><span class="p">:</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">__training_example_getter__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">series_i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">history_length</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">d</span><span class="p">:</span>
@@ -503,7 +499,7 @@ date: 2021-07-26</p>
 
 
 <span class="k">def</span> <span class="nf">__first_index__</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;计算第一个出现的元素的位置&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;计算第一个出现的元素的位置.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">_np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">array</span> <span class="o">==</span> <span class="n">element</span><span class="p">))</span>
 </pre></div>
 
@@ -522,7 +518,7 @@ date: 2021-07-26</p>
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TimeSeriesData</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;单个时间序列信息.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
@@ -533,7 +529,7 @@ date: 2021-07-26</p>
                  <span class="n">dates</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">data</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">labels</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``</span>
+        <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dates: 日期列, 1D ``numpy.ndarray``</span>
@@ -559,7 +555,9 @@ date: 2021-07-26</p>
 
         </details>
 
-            <div class="docstring"><h6 id="notes">Notes</h6>
+            <div class="docstring"><p>单个时间序列信息.</p>
+
+<h6 id="notes">Notes</h6>
 
 <blockquote>
   <p>储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: <code>YYYYMMDD</code>.</p>
@@ -580,7 +578,7 @@ date: 2021-07-26</p>
                  <span class="n">dates</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">data</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">labels</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``</span>
+        <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dates: 日期列, 1D ``numpy.ndarray``</span>
@@ -606,7 +604,7 @@ date: 2021-07-26</p>
 
         </details>
 
-            <div class="docstring"><p>储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: <code>YYYYMMDD</code></p>
+            <div class="docstring"><p>储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: <code>YYYYMMDD</code>.</p>
 
 <h6 id="args">Args</h6>
 
@@ -632,9 +630,7 @@ date: 2021-07-26</p>
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TrainValData</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    该类用于生成不同训练阶段的tensorflow dataset</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;该类用于生成不同训练阶段的tensorflow dataset.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time_series_list</span><span class="p">:</span> <span class="n">_List</span><span class="p">[</span><span class="n">TimeSeriesData</span><span class="p">],</span>
@@ -643,8 +639,8 @@ date: 2021-07-26</p>
                  <span class="n">history_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
                  <span class="n">train_val_gap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                  <span class="n">sample_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-                 <span class="n">fill_na</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">NaN</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集</span>
+                 <span class="n">fill_na</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">NaN</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            储存全部的时间序列信息，通过get(start_date)方法获取从start_date</span>
@@ -676,7 +672,6 @@ date: 2021-07-26</p>
 <span class="sd">            sample_step: 采样sample时步进的天数</span>
 <span class="sd">            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># 检查参数类型</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time_series_list should be a list&quot;</span><span class="p">)</span>
@@ -750,7 +745,7 @@ date: 2021-07-26</p>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集</span>
+        <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的</span>
@@ -770,13 +765,12 @@ date: 2021-07-26</p>
 <span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
 <span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
 <span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
-<span class="sd">                可能会要求较大内存。</span>
+<span class="sd">                可能会要求较大显卡内存。</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            (train, val, dates_info(dict))</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
@@ -786,9 +780,11 @@ date: 2021-07-26</p>
                              <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;使用显存生成历史数据.</span>
+
 <span class="sd">        使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，</span>
 <span class="sd">        股票数量大时，需要较大内存</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
@@ -803,9 +799,7 @@ date: 2021-07-26</p>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢.&quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
@@ -829,9 +823,7 @@ date: 2021-07-26</p>
         <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        根据开始时间计算用于构建训练集、验证集的相关信息</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;根据开始时间计算用于构建训练集、验证集的相关信息.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start date should be an integer YYYYMMDD&quot;</span><span class="p">)</span>
 
@@ -874,7 +866,8 @@ date: 2021-07-26</p>
         <span class="k">return</span> <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_generator_args__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_index</span><span class="p">,</span> <span class="n">end_index</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;获取单个generator需要的数据片段.</span>
+
 <span class="sd">        Notes:</span>
 <span class="sd">            根据数据集的开始、结束位置以及的顺序选项，获取该训练集的数据、标签片段</span>
 <span class="sd">            以及用于生成训练数据的(序列, 日期)pair列表的顺序信息(generation_list)。</span>
@@ -919,8 +912,7 @@ date: 2021-07-26</p>
                        <span class="n">val_start_index</span><span class="p">,</span>
                        <span class="n">train_args</span><span class="p">,</span>
                        <span class="n">val_args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;根据生成数据的列表，计算用于显示的日期信息&quot;&quot;&quot;</span>
-
+        <span class="sd">&quot;&quot;&quot;根据生成数据的列表，计算用于显示的日期信息.&quot;&quot;&quot;</span>
         <span class="c1"># 获取generation_list(生成数据的顺序信息)的时间列</span>
         <span class="c1"># 该时间列为相对数据片段开头的时间位置</span>
         <span class="n">train_generation_list</span> <span class="o">=</span> <span class="n">train_args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -960,7 +952,7 @@ date: 2021-07-26</p>
 
         </details>
 
-            <div class="docstring"><p>该类用于生成不同训练阶段的tensorflow dataset</p>
+            <div class="docstring"><p>该类用于生成不同训练阶段的tensorflow dataset.</p>
 </div>
 
 
@@ -975,7 +967,7 @@ date: 2021-07-26</p>
     history_length: int = 30,
     train_val_gap: int = 10,
     sample_step: int = 2,
-    fill_na=nan
+    fill_na: float = nan
 )</span>
     </div>
 
@@ -988,8 +980,8 @@ date: 2021-07-26</p>
                  <span class="n">history_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
                  <span class="n">train_val_gap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                  <span class="n">sample_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-                 <span class="n">fill_na</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">NaN</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集</span>
+                 <span class="n">fill_na</span><span class="p">:</span> <span class="n">_np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">NaN</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            储存全部的时间序列信息，通过get(start_date)方法获取从start_date</span>
@@ -1021,7 +1013,6 @@ date: 2021-07-26</p>
 <span class="sd">            sample_step: 采样sample时步进的天数</span>
 <span class="sd">            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># 检查参数类型</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time_series_list should be a list&quot;</span><span class="p">)</span>
@@ -1094,7 +1085,7 @@ date: 2021-07-26</p>
 
         </details>
 
-            <div class="docstring"><p>用于获取不同阶段的训练集和验证集</p>
+            <div class="docstring"><p>用于获取不同阶段的训练集和验证集.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -1149,7 +1140,7 @@ date: 2021-07-26</p>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集</span>
+        <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的</span>
@@ -1169,13 +1160,12 @@ date: 2021-07-26</p>
 <span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
 <span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
 <span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
-<span class="sd">                可能会要求较大内存。</span>
+<span class="sd">                可能会要求较大显卡内存。</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            (train, val, dates_info(dict))</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
@@ -1187,7 +1177,7 @@ date: 2021-07-26</p>
 
         </details>
 
-            <div class="docstring"><p>获取从某天开始的训练集和验证集</p>
+            <div class="docstring"><p>获取从某天开始的训练集和验证集.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -1212,7 +1202,7 @@ date: 2021-07-26</p>
 <li><strong>mode:</strong>  <code>generator</code> 或 <code>in_memory</code>. generator 速度极慢，
 in_memory速度较快，默认in_memory。feature、series数量大内存不足时
 可以使用generator。'in_memory'模式股票数量较大以及step较小时，
-可能会要求较大内存。</li>
+可能会要求较大显卡内存。</li>
 </ul>
 
 <h6 id="returns">Returns</h6>

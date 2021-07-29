@@ -11,11 +11,11 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 
 (BN: batch normalization)
 
-version: 0.2
+version: 0.0.2
 
 author: Congyu Wang
 
-date: 2021-07-22
+date: 2021-07-29
 
 该module定义了计算不同时间序列特征的层，工程上使用tensorflow
 进行高度向量化的计算，训练时较高效。
