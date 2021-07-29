@@ -1,6 +1,6 @@
 """多维多时间序列神经网络滚动训练的数据工具.
 
-version:0.3
+version: 0.0.7
 
 author: Congyu Wang
 

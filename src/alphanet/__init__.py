@@ -1,6 +1,17 @@
 """时间序列计算层、神经网络模型定义.
 
-复现华泰金工 alpha net V3 版本.
+复现华泰金工 alpha net V2、V3 版本.
+
+V2:
+
+```
+input: (batch_size, history time steps, features)
+
+                 stride = 5
+input -> expand features -> BN -> LSTM -> BN -> Dense(linear)
+```
+
+V3:
 
 ```
 input: (batch_size, history time steps, features)
@@ -13,7 +24,7 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 
 (BN: batch normalization)
 
-version: 0.0.4
+version: 0.0.7
 
 author: Congyu Wang
 
