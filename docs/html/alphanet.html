@@ -759,6 +759,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                                   <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
                                   <span class="n">kernel_regularizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span><span class="p">)</span>
 
+    <span class="nd">@_tf</span><span class="o">.</span><span class="n">function</span>
     <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;计算逻辑实现.&quot;&quot;&quot;</span>
         <span class="n">expanded10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
@@ -2827,6 +2828,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                                   <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
                                   <span class="n">kernel_regularizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span><span class="p">)</span>
 
+    <span class="nd">@_tf</span><span class="o">.</span><span class="n">function</span>
     <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;计算逻辑实现.&quot;&quot;&quot;</span>
         <span class="n">expanded10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
@@ -2964,7 +2966,8 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="codehilite"><pre><span></span>    <span class="nd">@_tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;计算逻辑实现.&quot;&quot;&quot;</span>
         <span class="n">expanded10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
         <span class="n">expanded5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
