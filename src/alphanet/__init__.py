@@ -517,16 +517,8 @@ class AlphaNetV3(_Model):
 
     Notes:
         复现华泰金工 alpha net V3 版本
-        ::
 
-            input: (batch_size, history time steps, features)
-
-                            stride = 5
-                    +-> expand -> BN -> GRU -> BN -+
-            input --|       stride = 10            |- concat -> Dense(linear)
-                    +-> expand -> BN -> GRU -> BN -+
-
-        (BN: batch normalization)
+        ``input: (batch_size, history time steps, features)``
 
     """
 
@@ -558,7 +550,7 @@ class AlphaNetV3(_Model):
         self.gru5 = _tfl.GRU(units=30)
         self.normalized10_2 = _tfl.BatchNormalization()
         self.normalized5_2 = _tfl.BatchNormalization()
-        self.concat = _tf.function(_tfl.Concatenate(axis=-1))
+        self.concat = _tfl.Concatenate(axis=-1)
         self.regularizer = _tf.keras.regularizers.l2(self.l2)
         self.outputs = _tfl.Dense(1, activation="linear",
                                   kernel_initializer="truncated_normal",
