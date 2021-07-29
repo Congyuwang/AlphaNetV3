@@ -253,9 +253,10 @@ class TrainValData:
                 dtype=_tf.float32
             )
         )
-
-        shapes = ((self.__history_length, self.__feature_counts), ())
-        types = [_tf.float32, _tf.float32]
+        shapes = (_tf.TensorShape((self.__history_length,
+                                   self.__feature_counts)),
+                  _tf.TensorShape(()))
+        types = (_tf.float32, _tf.float32)
         val_dataset = _tf.data.Dataset.from_generator(__generator__,
                                                       args=val_args,
                                                       output_shapes=shapes,

@@ -29,6 +29,10 @@ from .metrics import UpDownAccuracy as _UpDownAccuracy
 from abc import ABC as _ABC
 from abc import abstractmethod as _abstractmethod
 
+if not "2.3.0" <= _tf.__version__ <= "2.5.0":
+    print("requires tensorflow version >= 2.2.0, <=2.5.0")
+    exit(1)
+
 __all__ = ["Std",
            "Return",
            "Correlation",
