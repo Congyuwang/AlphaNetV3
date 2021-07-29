@@ -621,9 +621,11 @@ def load_model(filepath,
         ImportError: if loading from an hdf5 file and h5py is not available.
         IOError: In case of an invalid savefile
     """
-    custom_objects.update({"UpDownAccuracy": _UpDownAccuracy})
+    object_dict = {"UpDownAccuracy": _UpDownAccuracy}
+    if custom_objects is not None:
+        object_dict.update(custom_objects)
     return _tf.keras.models.load_model(filepath,
-                                       custom_objects=custom_objects,
+                                       custom_objects=object_dict,
                                        compile=compile,
                                        options=options)
 
