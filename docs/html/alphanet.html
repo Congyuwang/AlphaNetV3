@@ -173,7 +173,9 @@
                     <h1 class="modulename">
 alphanet    </h1>
 
-                        <div class="docstring"><p>复现华泰金工 alpha net V3 版本.</p>
+                        <div class="docstring"><p>时间序列计算层、神经网络模型定义.</p>
+
+<p>复现华泰金工 alpha net V3 版本.</p>
 
 <pre><code>input: (batch_size, history time steps, features)
 
@@ -197,7 +199,9 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;复现华泰金工 alpha net V3 版本.</span>
+            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;时间序列计算层、神经网络模型定义.</span>
+
+<span class="sd">复现华泰金工 alpha net V3 版本.</span>
 
 <span class="sd">```</span>
 <span class="sd">input: (batch_size, history time steps, features)</span>
@@ -244,7 +248,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">Std</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的标准差.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的标准差.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算每个feature各个stride的standard deviation</span>
@@ -312,7 +316,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">ZScore</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的均值除以其标准差.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的均值除以其标准差.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        并非严格意义上的z-score,</span>
@@ -378,7 +382,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">LinearDecay</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的线性衰减加权平均.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的线性衰减加权平均.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        以线性衰减为权重，计算每个feature各个stride的均值：</span>
@@ -441,7 +445,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">Return</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的回报率.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的回报率.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算公式为每个stride最后一个数除以第一个数再减去一</span>
@@ -532,7 +536,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">Covariance</span><span class="p">(</span><span class="n">_OuterProductLayer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个stride各个时间序列的covariance.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个stride各时间序列片段的covariance.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算每个stride每两个feature之间的covariance大小，</span>
@@ -579,7 +583,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">Correlation</span><span class="p">(</span><span class="n">_OuterProductLayer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个stride各个时间序列的相关系数.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个stride各时间序列的相关系数.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算每个stride每两个feature之间的correlation coefficient，</span>
@@ -637,7 +641,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">FeatureExpansion</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;时间序列特征扩张层.</span>
+    <span class="sd">&quot;&quot;&quot;计算时间序列特征扩张层，汇总6个计算层.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，</span>
@@ -708,7 +712,9 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 
 <span class="k">class</span> <span class="nc">AlphaNetV3</span><span class="p">(</span><span class="n">_Model</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;alpha net v3版本模型.</span>
+    <span class="sd">&quot;&quot;&quot;神经网络模型，继承``keras.Model``类.</span>
+
+<span class="sd">    alpha net v3版本模型.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        复现华泰金工 alpha net V3 版本</span>
@@ -804,7 +810,10 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                <span class="n">custom_objects</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                <span class="nb">compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;包装``tf.kreas``的``load_model``，添加``UpDownAccuracy``.</span>
+    <span class="sd">&quot;&quot;&quot;用于读取已存储的模型，可识别自定义metric: UpDownAccuracy.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        包装``tf.keras``的``load_model``函数，添加``UpDownAccuracy``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        filepath: 文件路径:</span>
@@ -815,11 +824,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 <span class="sd">        options: 其他 `tf.saved_model.LoadOptions`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A Keras model instance. If the original model was compiled, and saved with</span>
-<span class="sd">        the optimizer, then the returned model will be compiled. Otherwise, the</span>
-<span class="sd">        model will be left uncompiled. In the case that an uncompiled model is</span>
-<span class="sd">        returned, a warning is displayed if the `compile` argument is set to</span>
-<span class="sd">        `True`.</span>
+<span class="sd">        Keras model instance.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ImportError: if loading from an hdf5 file and h5py is not available.</span>
@@ -898,7 +903,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Std</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的标准差.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的标准差.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算每个feature各个stride的standard deviation</span>
@@ -967,7 +972,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>每个序列各个stride的标准差.</p>
+            <div class="docstring"><p>计算每个序列各stride的标准差.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -1198,7 +1203,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Return</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的回报率.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的回报率.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算公式为每个stride最后一个数除以第一个数再减去一</span>
@@ -1251,7 +1256,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>每个序列各个stride的回报率.</p>
+            <div class="docstring"><p>计算每个序列各stride的回报率.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -1466,7 +1471,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Correlation</span><span class="p">(</span><span class="n">_OuterProductLayer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个stride各个时间序列的相关系数.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个stride各时间序列的相关系数.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算每个stride每两个feature之间的correlation coefficient，</span>
@@ -1525,7 +1530,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>每个stride各个时间序列的相关系数.</p>
+            <div class="docstring"><p>计算每个stride各时间序列的相关系数.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -1694,7 +1699,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">LinearDecay</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的线性衰减加权平均.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的线性衰减加权平均.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        以线性衰减为权重，计算每个feature各个stride的均值：</span>
@@ -1758,7 +1763,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>每个序列各个stride的线性衰减加权平均.</p>
+            <div class="docstring"><p>计算每个序列各stride的线性衰减加权平均.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -1984,7 +1989,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Covariance</span><span class="p">(</span><span class="n">_OuterProductLayer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个stride各个时间序列的covariance.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个stride各时间序列片段的covariance.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        计算每个stride每两个feature之间的covariance大小，</span>
@@ -2032,7 +2037,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>每个stride各个时间序列的covariance.</p>
+            <div class="docstring"><p>计算每个stride各时间序列片段的covariance.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -2190,7 +2195,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ZScore</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;每个序列各个stride的均值除以其标准差.</span>
+    <span class="sd">&quot;&quot;&quot;计算每个序列各stride的均值除以其标准差.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        并非严格意义上的z-score,</span>
@@ -2257,7 +2262,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>每个序列各个stride的均值除以其标准差.</p>
+            <div class="docstring"><p>计算每个序列各stride的均值除以其标准差.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -2486,7 +2491,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">FeatureExpansion</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;时间序列特征扩张层.</span>
+    <span class="sd">&quot;&quot;&quot;计算时间序列特征扩张层，汇总6个计算层.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，</span>
@@ -2558,7 +2563,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>时间序列特征扩张层.</p>
+            <div class="docstring"><p>计算时间序列特征扩张层，汇总6个计算层.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -2777,7 +2782,9 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">AlphaNetV3</span><span class="p">(</span><span class="n">_Model</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;alpha net v3版本模型.</span>
+    <span class="sd">&quot;&quot;&quot;神经网络模型，继承``keras.Model``类.</span>
+
+<span class="sd">    alpha net v3版本模型.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        复现华泰金工 alpha net V3 版本</span>
@@ -2871,7 +2878,9 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>alpha net v3版本模型.</p>
+            <div class="docstring"><p>神经网络模型，继承<code>keras.Model</code>类.</p>
+
+<p>alpha net v3版本模型.</p>
 
 <h6 id="notes">Notes</h6>
 
@@ -3172,7 +3181,10 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
                <span class="n">custom_objects</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                <span class="nb">compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;包装``tf.kreas``的``load_model``，添加``UpDownAccuracy``.</span>
+    <span class="sd">&quot;&quot;&quot;用于读取已存储的模型，可识别自定义metric: UpDownAccuracy.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        包装``tf.keras``的``load_model``函数，添加``UpDownAccuracy``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        filepath: 文件路径:</span>
@@ -3183,11 +3195,7 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
 <span class="sd">        options: 其他 `tf.saved_model.LoadOptions`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A Keras model instance. If the original model was compiled, and saved with</span>
-<span class="sd">        the optimizer, then the returned model will be compiled. Otherwise, the</span>
-<span class="sd">        model will be left uncompiled. In the case that an uncompiled model is</span>
-<span class="sd">        returned, a warning is displayed if the `compile` argument is set to</span>
-<span class="sd">        `True`.</span>
+<span class="sd">        Keras model instance.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ImportError: if loading from an hdf5 file and h5py is not available.</span>
@@ -3204,7 +3212,13 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
 
         </details>
 
-            <div class="docstring"><p>包装<code>tf.kreas</code>的<code><a href="#load_model">load_model</a></code>，添加<code>UpDownAccuracy</code>.</p>
+            <div class="docstring"><p>用于读取已存储的模型，可识别自定义metric: UpDownAccuracy.</p>
+
+<h6 id="notes">Notes</h6>
+
+<blockquote>
+  <p>包装<code>tf.keras</code>的<code><a href="#load_model">load_model</a></code>函数，添加<code>UpDownAccuracy</code>.</p>
+</blockquote>
 
 <h6 id="args">Args</h6>
 
@@ -3222,11 +3236,7 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
 <h6 id="returns">Returns</h6>
 
 <blockquote>
-  <p>A Keras model instance. If the original model was compiled, and saved with
-  the optimizer, then the returned model will be compiled. Otherwise, the
-  model will be left uncompiled. In the case that an uncompiled model is
-  returned, a warning is displayed if the <code>compile</code> argument is set to
-  <code>True</code>.</p>
+  <p>Keras model instance.</p>
 </blockquote>
 
 <h6 id="raises">Raises</h6>

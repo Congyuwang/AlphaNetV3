@@ -66,7 +66,7 @@
                     <h1 class="modulename">
 <a href="./../alphanet.html">alphanet</a><wbr>.data    </h1>
 
-                        <div class="docstring"><p>多维多时间序列神经网络滚动训练数据工具箱.</p>
+                        <div class="docstring"><p>多维多时间序列神经网络滚动训练的数据工具.</p>
 
 <p>version:0.3</p>
 
@@ -77,7 +77,7 @@
 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;多维多时间序列神经网络滚动训练数据工具箱.</span>
+            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;多维多时间序列神经网络滚动训练的数据工具.</span>
 
 <span class="sd">version:0.3</span>
 
@@ -97,7 +97,8 @@
     <span class="sd">&quot;&quot;&quot;单个时间序列信息.</span>
 
 <span class="sd">    Notes:</span>
-<span class="sd">        储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
+<span class="sd">        用于储存个股的数据信息及预测label，全部使用numpy，日期格式为整数: ``YYYYMMDD``。</span>
+<span class="sd">        数据分三个部分：时间，数据，标签，第一个维度都是时间，数据的第二个维度为特征。</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -108,7 +109,7 @@
         <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dates: 日期列, 1D ``numpy.ndarray``</span>
+<span class="sd">            dates: 日期列, 1D ``numpy.ndarray``, 整数</span>
 <span class="sd">            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)</span>
 <span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同</span>
 
@@ -130,7 +131,7 @@
 
 
 <span class="k">class</span> <span class="nc">TrainValData</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;该类用于生成不同训练阶段的tensorflow dataset.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;根据训练天数、验证天数、样本历史长度、训练起点生成不同训练阶段的数据.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time_series_list</span><span class="p">:</span> <span class="n">_List</span><span class="p">[</span><span class="n">TimeSeriesData</span><span class="p">],</span>
@@ -143,34 +144,41 @@
         <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
-<span class="sd">            储存全部的时间序列信息，通过get(start_date)方法获取从start_date</span>
-<span class="sd">            开始的训练机和验证集。</span>
+<span class="sd">            ``time_series_list``储存全部的时间序列信息，</span>
+<span class="sd">            其中每支股票序列为一个单独``TimeSeriesData``，</span>
+<span class="sd">            完整数据为``List[TimeSeriesData]``类型。</span>
 
-<span class="sd">            train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，</span>
-<span class="sd">            如果是相临，则train_val_gap = 0。</span>
+<span class="sd">            此外需要提供训练集总交易天数(``train_length``)、</span>
+<span class="sd">            验证集总交易天数(``validate_length``)、</span>
+<span class="sd">            单个样本用到的历史长度(``history_length``)、</span>
+<span class="sd">            采样步进大小(``sample_step``)。</span>
 
-<span class="sd">            设置该参数的目的如下：</span>
+<span class="sd">            使用方法为：通过get(start_date)方法获取从start_date</span>
+<span class="sd">            开始的训练机和验证集。通过逐渐增大start_date训练多个模型回测。</span>
+
+<span class="sd">            ``train_val_gap``参数为验证集第一天与训练集最后一天中间间隔的天数，</span>
+<span class="sd">            如果是相临，则train_val_gap = 0。设置该参数的目的如下：</span>
 
 <span class="sd">            如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测</span>
 <span class="sd">            未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益</span>
 <span class="sd">            而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，</span>
-<span class="sd">            用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的</span>
-<span class="sd">            有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上</span>
-<span class="sd">            相差11天，即间隔10天，因此使用train_val_gap=10。</span>
+<span class="sd">            用到的历史数据则必须是t(-history-11)到t(-11)的数据。</span>
+<span class="sd">            而validation时，如果第一个预测点是t(1)(明天收盘价)至t(11)的累计收益，</span>
+<span class="sd">            则与最后一个训练的数据即：t(-10)至t(0)之间间隔了10天，</span>
+<span class="sd">            使用``train_val_gap=10``。</span>
 
-<span class="sd">            时间为t(0)的每个样本数据的历史数据时间范围为t(-30)至t(0)，</span>
-<span class="sd">            即用到了当天的收盘数据。标签数据为 p(11) / p(1) - 1，</span>
-<span class="sd">            即往后11天的收盘价除以明天的收盘价减去1。不用 p(10) / p(0) - 1 的原因是，</span>
-<span class="sd">            当天收盘时未做预测，不能以当天收盘价购入。</span>
+<span class="sd">            可选项为fill_na，缺失数据填充值，默认为np.Na</span>
+<span class="sd">            训练时跳过所有有缺失数据的样本。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            time_series_list: TimeSeriesData 列表</span>
 <span class="sd">            train_length: 训练集天数</span>
 <span class="sd">            validate_length: 验证集天数</span>
-<span class="sd">            history_length: 每个sample的历史天数</span>
+<span class="sd">            history_length: 每个样本的历史天数</span>
 <span class="sd">            train_val_gap: 训练集与验证集的间隔</span>
 <span class="sd">            sample_step: 采样sample时步进的天数</span>
 <span class="sd">            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查参数类型</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
@@ -252,28 +260,33 @@
 <span class="sd">            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的</span>
 <span class="sd">            训练集以及验证集，以及他们各自的日期范围信息(该信息以字典形式返回)。</span>
 
-<span class="sd">            training set 的开始和结束是指其data, label所有的时间范围(inclusive)。</span>
-<span class="sd">            validation set 的开始和结束则只是指其label的时间范围，</span>
-<span class="sd">            因为validation set允许用到training set内的X历史数据。</span>
-<span class="sd">            具体时间信息参考返回的第三个元素dates_info。</span>
+<span class="sd">            需要注意:</span>
+<span class="sd">            训练集的的开始和结束是指其data, label时间范围并集，而</span>
+<span class="sd">            验证集的开始和结束则只是指其label的时间范围。</span>
+<span class="sd">            验证集的输入数据可以与训练集重叠，只要其标签数据的包含的时间范围</span>
+<span class="sd">            与训练集数据包含的时间范围没有交集即可。</span>
 
-<span class="sd">            如果日期范围超出最大日期会报ValueError。</span>
+<span class="sd">            具体时间信息参考函数返回的最后一个元素，是一个包含时间信息的``dict``。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            start_date: 该轮训练开始日期，整数``YYYYMMDD``</span>
 <span class="sd">            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。</span>
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
 <span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
-<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
-<span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
+<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大显存不足时</span>
+<span class="sd">                可以使用generator。</span>
+<span class="sd">                &#39;in_memory&#39;模式股票数量较大、history_length较大、或者step较小时，</span>
 <span class="sd">                可能会要求较大显卡内存。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
-<span class="sd">                和训练集、验证集时间信息</span>
+<span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            如果``validate_only=False``，返回训练集、验证集，以及日期信息：</span>
-<span class="sd">            (train, val, dates_info(dict))。如果为``True``，则返回</span>
-<span class="sd">            验证集以及日期信息。</span>
+<span class="sd">            如果``validate_only=False``，返回训练集、验证集、日期信息：</span>
+<span class="sd">            (train, val, dates_info(dict))。</span>
+<span class="sd">            如果为``True``，则返回验证集、日期信息。</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
@@ -321,17 +334,6 @@
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">_tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span>
-                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
-            <span class="p">),</span>
-            <span class="n">_tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span>
-                <span class="n">shape</span><span class="o">=</span><span class="p">(),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
         <span class="n">shapes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">)),</span>
                   <span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(()))</span>
@@ -550,7 +552,8 @@
     <span class="sd">&quot;&quot;&quot;单个时间序列信息.</span>
 
 <span class="sd">    Notes:</span>
-<span class="sd">        储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
+<span class="sd">        用于储存个股的数据信息及预测label，全部使用numpy，日期格式为整数: ``YYYYMMDD``。</span>
+<span class="sd">        数据分三个部分：时间，数据，标签，第一个维度都是时间，数据的第二个维度为特征。</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -561,7 +564,7 @@
         <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dates: 日期列, 1D ``numpy.ndarray``</span>
+<span class="sd">            dates: 日期列, 1D ``numpy.ndarray``, 整数</span>
 <span class="sd">            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)</span>
 <span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同</span>
 
@@ -589,7 +592,8 @@
 <h6 id="notes">Notes</h6>
 
 <blockquote>
-  <p>储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: <code>YYYYMMDD</code>.</p>
+  <p>用于储存个股的数据信息及预测label，全部使用numpy，日期格式为整数: <code>YYYYMMDD</code>。
+  数据分三个部分：时间，数据，标签，第一个维度都是时间，数据的第二个维度为特征。</p>
 </blockquote>
 </div>
 
@@ -610,7 +614,7 @@
         <span class="sd">&quot;&quot;&quot;储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dates: 日期列, 1D ``numpy.ndarray``</span>
+<span class="sd">            dates: 日期列, 1D ``numpy.ndarray``, 整数</span>
 <span class="sd">            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)</span>
 <span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同</span>
 
@@ -638,7 +642,7 @@
 <h6 id="args">Args</h6>
 
 <ul>
-<li><strong>dates:</strong>  日期列, 1D <code>numpy.ndarray</code></li>
+<li><strong>dates:</strong>  日期列, 1D <code>numpy.ndarray</code>, 整数</li>
 <li><strong>data:</strong>  训练输入的X，2D <code>numpy.ndarray</code>, (日期长度 x 特征数量)</li>
 <li><strong>labels:</strong>  训练标签Y, 1D <code>numpy.ndarray</code>, 长度与dates相同</li>
 </ul>
@@ -659,7 +663,7 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TrainValData</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;该类用于生成不同训练阶段的tensorflow dataset.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;根据训练天数、验证天数、样本历史长度、训练起点生成不同训练阶段的数据.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time_series_list</span><span class="p">:</span> <span class="n">_List</span><span class="p">[</span><span class="n">TimeSeriesData</span><span class="p">],</span>
@@ -672,34 +676,41 @@
         <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
-<span class="sd">            储存全部的时间序列信息，通过get(start_date)方法获取从start_date</span>
-<span class="sd">            开始的训练机和验证集。</span>
+<span class="sd">            ``time_series_list``储存全部的时间序列信息，</span>
+<span class="sd">            其中每支股票序列为一个单独``TimeSeriesData``，</span>
+<span class="sd">            完整数据为``List[TimeSeriesData]``类型。</span>
 
-<span class="sd">            train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，</span>
-<span class="sd">            如果是相临，则train_val_gap = 0。</span>
+<span class="sd">            此外需要提供训练集总交易天数(``train_length``)、</span>
+<span class="sd">            验证集总交易天数(``validate_length``)、</span>
+<span class="sd">            单个样本用到的历史长度(``history_length``)、</span>
+<span class="sd">            采样步进大小(``sample_step``)。</span>
 
-<span class="sd">            设置该参数的目的如下：</span>
+<span class="sd">            使用方法为：通过get(start_date)方法获取从start_date</span>
+<span class="sd">            开始的训练机和验证集。通过逐渐增大start_date训练多个模型回测。</span>
+
+<span class="sd">            ``train_val_gap``参数为验证集第一天与训练集最后一天中间间隔的天数，</span>
+<span class="sd">            如果是相临，则train_val_gap = 0。设置该参数的目的如下：</span>
 
 <span class="sd">            如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测</span>
 <span class="sd">            未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益</span>
 <span class="sd">            而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，</span>
-<span class="sd">            用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的</span>
-<span class="sd">            有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上</span>
-<span class="sd">            相差11天，即间隔10天，因此使用train_val_gap=10。</span>
+<span class="sd">            用到的历史数据则必须是t(-history-11)到t(-11)的数据。</span>
+<span class="sd">            而validation时，如果第一个预测点是t(1)(明天收盘价)至t(11)的累计收益，</span>
+<span class="sd">            则与最后一个训练的数据即：t(-10)至t(0)之间间隔了10天，</span>
+<span class="sd">            使用``train_val_gap=10``。</span>
 
-<span class="sd">            时间为t(0)的每个样本数据的历史数据时间范围为t(-30)至t(0)，</span>
-<span class="sd">            即用到了当天的收盘数据。标签数据为 p(11) / p(1) - 1，</span>
-<span class="sd">            即往后11天的收盘价除以明天的收盘价减去1。不用 p(10) / p(0) - 1 的原因是，</span>
-<span class="sd">            当天收盘时未做预测，不能以当天收盘价购入。</span>
+<span class="sd">            可选项为fill_na，缺失数据填充值，默认为np.Na</span>
+<span class="sd">            训练时跳过所有有缺失数据的样本。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            time_series_list: TimeSeriesData 列表</span>
 <span class="sd">            train_length: 训练集天数</span>
 <span class="sd">            validate_length: 验证集天数</span>
-<span class="sd">            history_length: 每个sample的历史天数</span>
+<span class="sd">            history_length: 每个样本的历史天数</span>
 <span class="sd">            train_val_gap: 训练集与验证集的间隔</span>
 <span class="sd">            sample_step: 采样sample时步进的天数</span>
 <span class="sd">            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查参数类型</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
@@ -781,28 +792,33 @@
 <span class="sd">            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的</span>
 <span class="sd">            训练集以及验证集，以及他们各自的日期范围信息(该信息以字典形式返回)。</span>
 
-<span class="sd">            training set 的开始和结束是指其data, label所有的时间范围(inclusive)。</span>
-<span class="sd">            validation set 的开始和结束则只是指其label的时间范围，</span>
-<span class="sd">            因为validation set允许用到training set内的X历史数据。</span>
-<span class="sd">            具体时间信息参考返回的第三个元素dates_info。</span>
+<span class="sd">            需要注意:</span>
+<span class="sd">            训练集的的开始和结束是指其data, label时间范围并集，而</span>
+<span class="sd">            验证集的开始和结束则只是指其label的时间范围。</span>
+<span class="sd">            验证集的输入数据可以与训练集重叠，只要其标签数据的包含的时间范围</span>
+<span class="sd">            与训练集数据包含的时间范围没有交集即可。</span>
 
-<span class="sd">            如果日期范围超出最大日期会报ValueError。</span>
+<span class="sd">            具体时间信息参考函数返回的最后一个元素，是一个包含时间信息的``dict``。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            start_date: 该轮训练开始日期，整数``YYYYMMDD``</span>
 <span class="sd">            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。</span>
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
 <span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
-<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
-<span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
+<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大显存不足时</span>
+<span class="sd">                可以使用generator。</span>
+<span class="sd">                &#39;in_memory&#39;模式股票数量较大、history_length较大、或者step较小时，</span>
 <span class="sd">                可能会要求较大显卡内存。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
-<span class="sd">                和训练集、验证集时间信息</span>
+<span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            如果``validate_only=False``，返回训练集、验证集，以及日期信息：</span>
-<span class="sd">            (train, val, dates_info(dict))。如果为``True``，则返回</span>
-<span class="sd">            验证集以及日期信息。</span>
+<span class="sd">            如果``validate_only=False``，返回训练集、验证集、日期信息：</span>
+<span class="sd">            (train, val, dates_info(dict))。</span>
+<span class="sd">            如果为``True``，则返回验证集、日期信息。</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
@@ -850,17 +866,6 @@
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">_tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span>
-                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
-            <span class="p">),</span>
-            <span class="n">_tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span>
-                <span class="n">shape</span><span class="o">=</span><span class="p">(),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
         <span class="n">shapes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">)),</span>
                   <span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(()))</span>
@@ -1010,7 +1015,7 @@
 
         </details>
 
-            <div class="docstring"><p>该类用于生成不同训练阶段的tensorflow dataset.</p>
+            <div class="docstring"><p>根据训练天数、验证天数、样本历史长度、训练起点生成不同训练阶段的数据.</p>
 </div>
 
 
@@ -1042,34 +1047,41 @@
         <span class="sd">&quot;&quot;&quot;用于获取不同阶段的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
-<span class="sd">            储存全部的时间序列信息，通过get(start_date)方法获取从start_date</span>
-<span class="sd">            开始的训练机和验证集。</span>
+<span class="sd">            ``time_series_list``储存全部的时间序列信息，</span>
+<span class="sd">            其中每支股票序列为一个单独``TimeSeriesData``，</span>
+<span class="sd">            完整数据为``List[TimeSeriesData]``类型。</span>
 
-<span class="sd">            train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，</span>
-<span class="sd">            如果是相临，则train_val_gap = 0。</span>
+<span class="sd">            此外需要提供训练集总交易天数(``train_length``)、</span>
+<span class="sd">            验证集总交易天数(``validate_length``)、</span>
+<span class="sd">            单个样本用到的历史长度(``history_length``)、</span>
+<span class="sd">            采样步进大小(``sample_step``)。</span>
 
-<span class="sd">            设置该参数的目的如下：</span>
+<span class="sd">            使用方法为：通过get(start_date)方法获取从start_date</span>
+<span class="sd">            开始的训练机和验证集。通过逐渐增大start_date训练多个模型回测。</span>
+
+<span class="sd">            ``train_val_gap``参数为验证集第一天与训练集最后一天中间间隔的天数，</span>
+<span class="sd">            如果是相临，则train_val_gap = 0。设置该参数的目的如下：</span>
 
 <span class="sd">            如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测</span>
 <span class="sd">            未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益</span>
 <span class="sd">            而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，</span>
-<span class="sd">            用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的</span>
-<span class="sd">            有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上</span>
-<span class="sd">            相差11天，即间隔10天，因此使用train_val_gap=10。</span>
+<span class="sd">            用到的历史数据则必须是t(-history-11)到t(-11)的数据。</span>
+<span class="sd">            而validation时，如果第一个预测点是t(1)(明天收盘价)至t(11)的累计收益，</span>
+<span class="sd">            则与最后一个训练的数据即：t(-10)至t(0)之间间隔了10天，</span>
+<span class="sd">            使用``train_val_gap=10``。</span>
 
-<span class="sd">            时间为t(0)的每个样本数据的历史数据时间范围为t(-30)至t(0)，</span>
-<span class="sd">            即用到了当天的收盘数据。标签数据为 p(11) / p(1) - 1，</span>
-<span class="sd">            即往后11天的收盘价除以明天的收盘价减去1。不用 p(10) / p(0) - 1 的原因是，</span>
-<span class="sd">            当天收盘时未做预测，不能以当天收盘价购入。</span>
+<span class="sd">            可选项为fill_na，缺失数据填充值，默认为np.Na</span>
+<span class="sd">            训练时跳过所有有缺失数据的样本。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            time_series_list: TimeSeriesData 列表</span>
 <span class="sd">            train_length: 训练集天数</span>
 <span class="sd">            validate_length: 验证集天数</span>
-<span class="sd">            history_length: 每个sample的历史天数</span>
+<span class="sd">            history_length: 每个样本的历史天数</span>
 <span class="sd">            train_val_gap: 训练集与验证集的间隔</span>
 <span class="sd">            sample_step: 采样sample时步进的天数</span>
 <span class="sd">            fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查参数类型</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
@@ -1148,25 +1160,31 @@
 <h6 id="notes">Notes</h6>
 
 <blockquote>
-  <p>储存全部的时间序列信息，通过get(start_date)方法获取从start_date
-  开始的训练机和验证集。</p>
+  <p><code>time_series_list</code>储存全部的时间序列信息，
+  其中每支股票序列为一个单独<code><a href="#TimeSeriesData">TimeSeriesData</a></code>，
+  完整数据为<code>List[TimeSeriesData]</code>类型。</p>
   
-  <p>train_val_gap参数为验证集第一天与训练集最后一天中间间隔的天数，
-  如果是相临，则train_val_gap = 0。</p>
+  <p>此外需要提供训练集总交易天数(<code>train_length</code>)、
+  验证集总交易天数(<code>validate_length</code>)、
+  单个样本用到的历史长度(<code>history_length</code>)、
+  采样步进大小(<code>sample_step</code>)。</p>
   
-  <p>设置该参数的目的如下：</p>
+  <p>使用方法为：通过get(start_date)方法获取从start_date
+  开始的训练机和验证集。通过逐渐增大start_date训练多个模型回测。</p>
+  
+  <p><code>train_val_gap</code>参数为验证集第一天与训练集最后一天中间间隔的天数，
+  如果是相临，则train_val_gap = 0。设置该参数的目的如下：</p>
   
   <p>如果希望预测未来十天的累计收益，则预测时用到的输入数据为最近的历史数据来预测
   未来十天的累计收益，即用t(-history)到t(0)的数据来预测t(1)到t(11)的累计收益
   而训练时因为要用到十天累计收益做标签，最近的一个十天累计收益是从t(-10)到t(0)，
-  用到的历史数据则必须是t(-history-11)到t(-11)的数据，为了确保validation的
-  有效性，则最好将validation的第一个数据位置与train的最后一个数据位置在时间上
-  相差11天，即间隔10天，因此使用train_val_gap=10。</p>
+  用到的历史数据则必须是t(-history-11)到t(-11)的数据。
+  而validation时，如果第一个预测点是t(1)(明天收盘价)至t(11)的累计收益，
+  则与最后一个训练的数据即：t(-10)至t(0)之间间隔了10天，
+  使用<code>train_val_gap=10</code>。</p>
   
-  <p>时间为t(0)的每个样本数据的历史数据时间范围为t(-30)至t(0)，
-  即用到了当天的收盘数据。标签数据为 p(11) / p(1) - 1，
-  即往后11天的收盘价除以明天的收盘价减去1。不用 p(10) / p(0) - 1 的原因是，
-  当天收盘时未做预测，不能以当天收盘价购入。</p>
+  <p>可选项为fill_na，缺失数据填充值，默认为np.Na
+  训练时跳过所有有缺失数据的样本。</p>
 </blockquote>
 
 <h6 id="args">Args</h6>
@@ -1175,7 +1193,7 @@
 <li><strong>time_series_list:</strong>  TimeSeriesData 列表</li>
 <li><strong>train_length:</strong>  训练集天数</li>
 <li><strong>validate_length:</strong>  验证集天数</li>
-<li><strong>history_length:</strong>  每个sample的历史天数</li>
+<li><strong>history_length:</strong>  每个样本的历史天数</li>
 <li><strong>train_val_gap:</strong>  训练集与验证集的间隔</li>
 <li><strong>sample_step:</strong>  采样sample时步进的天数</li>
 <li><strong>fill_na:</strong>  默认填充为np.NaN，训练时会跳过有确实数据的样本</li>
@@ -1211,28 +1229,33 @@
 <span class="sd">            根据设定的训练集天数以及验证集天数，从start_date开始获取正确的</span>
 <span class="sd">            训练集以及验证集，以及他们各自的日期范围信息(该信息以字典形式返回)。</span>
 
-<span class="sd">            training set 的开始和结束是指其data, label所有的时间范围(inclusive)。</span>
-<span class="sd">            validation set 的开始和结束则只是指其label的时间范围，</span>
-<span class="sd">            因为validation set允许用到training set内的X历史数据。</span>
-<span class="sd">            具体时间信息参考返回的第三个元素dates_info。</span>
+<span class="sd">            需要注意:</span>
+<span class="sd">            训练集的的开始和结束是指其data, label时间范围并集，而</span>
+<span class="sd">            验证集的开始和结束则只是指其label的时间范围。</span>
+<span class="sd">            验证集的输入数据可以与训练集重叠，只要其标签数据的包含的时间范围</span>
+<span class="sd">            与训练集数据包含的时间范围没有交集即可。</span>
 
-<span class="sd">            如果日期范围超出最大日期会报ValueError。</span>
+<span class="sd">            具体时间信息参考函数返回的最后一个元素，是一个包含时间信息的``dict``。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            start_date: 该轮训练开始日期，整数``YYYYMMDD``</span>
 <span class="sd">            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。</span>
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
 <span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
-<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
-<span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
+<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大显存不足时</span>
+<span class="sd">                可以使用generator。</span>
+<span class="sd">                &#39;in_memory&#39;模式股票数量较大、history_length较大、或者step较小时，</span>
 <span class="sd">                可能会要求较大显卡内存。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
-<span class="sd">                和训练集、验证集时间信息</span>
+<span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            如果``validate_only=False``，返回训练集、验证集，以及日期信息：</span>
-<span class="sd">            (train, val, dates_info(dict))。如果为``True``，则返回</span>
-<span class="sd">            验证集以及日期信息。</span>
+<span class="sd">            如果``validate_only=False``，返回训练集、验证集、日期信息：</span>
+<span class="sd">            (train, val, dates_info(dict))。</span>
+<span class="sd">            如果为``True``，则返回验证集、日期信息。</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
@@ -1258,12 +1281,13 @@
   <p>根据设定的训练集天数以及验证集天数，从start_date开始获取正确的
   训练集以及验证集，以及他们各自的日期范围信息(该信息以字典形式返回)。</p>
   
-  <p>training set 的开始和结束是指其data, label所有的时间范围(inclusive)。
-  validation set 的开始和结束则只是指其label的时间范围，
-  因为validation set允许用到training set内的X历史数据。
-  具体时间信息参考返回的第三个元素dates_info。</p>
+  <p>需要注意:
+  训练集的的开始和结束是指其data, label时间范围并集，而
+  验证集的开始和结束则只是指其label的时间范围。
+  验证集的输入数据可以与训练集重叠，只要其标签数据的包含的时间范围
+  与训练集数据包含的时间范围没有交集即可。</p>
   
-  <p>如果日期范围超出最大日期会报ValueError。</p>
+  <p>具体时间信息参考函数返回的最后一个元素，是一个包含时间信息的<code>dict</code>。</p>
 </blockquote>
 
 <h6 id="args">Args</h6>
@@ -1273,20 +1297,27 @@
 <li><strong>order:</strong>  有三种顺序 <code>shuffle</code>, <code>by_date</code>, <code>by_series</code>。
 分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</li>
 <li><strong>mode:</strong>  <code>generator</code> 或 <code>in_memory</code>. generator 速度极慢，
-in_memory速度较快，默认in_memory。feature、series数量大内存不足时
-可以使用generator。'in_memory'模式股票数量较大以及step较小时，
+in_memory速度较快，默认in_memory。feature、series数量大显存不足时
+可以使用generator。
+'in_memory'模式股票数量较大、history_length较大、或者step较小时，
 可能会要求较大显卡内存。</li>
 <li><strong>validate_only:</strong>  如果设置为True，则只返回validate set
-和训练集、验证集时间信息</li>
+和训练集、验证集时间信息。可以用于训练后的分析。</li>
 </ul>
 
 <h6 id="returns">Returns</h6>
 
 <blockquote>
-  <p>如果<code>validate_only=False</code>，返回训练集、验证集，以及日期信息：
-  (train, val, dates_info(dict))。如果为<code>True</code>，则返回
-  验证集以及日期信息。</p>
+  <p>如果<code>validate_only=False</code>，返回训练集、验证集、日期信息：
+  (train, val, dates_info(dict))。
+  如果为<code>True</code>，则返回验证集、日期信息。</p>
 </blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError:</strong>  日期范围超出最大日期会报ValueError。</li>
+</ul>
 </div>
 
 

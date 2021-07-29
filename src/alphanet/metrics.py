@@ -1,6 +1,8 @@
-"""训练的计量信息.
+"""训练中的辅助准确率信息.
 
 该module包含涨跌精度信息的计算类。
+使用到该类的模型在保存后重新读取时需要添加``custom_objects``参数，
+或者使用``alphanet.load_model()``函数。
 
 """
 import tensorflow as _tf
