@@ -3924,7 +3924,7 @@ call(inputs, training=None, mask=None)
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7f9219666c40>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fb1e3e67c40>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
