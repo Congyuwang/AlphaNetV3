@@ -1,5 +1,4 @@
-"""
-复现华泰金工 alpha net V3 版本
+"""复现华泰金工 alpha net V3 版本.
 
 ```
 input: (batch_size, history time steps, features)
@@ -13,13 +12,19 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 (BN: batch normalization)
 
 version: 0.2
+
 author: Congyu Wang
+
 date: 2021-07-22
+
+该module定义了计算不同时间序列特征的层，工程上使用tensorflow
+进行高度向量化的计算，训练时较高效。
 """
 import tensorflow as _tf
 import tensorflow.keras.layers as _tfl
 from tensorflow.keras.layers import Layer as _Layer
 from tensorflow.keras.initializers import Initializer as _Initializer
+from tensorflow.keras import Model as _Model
 from abc import ABC as _ABC
 from abc import abstractmethod as _abstractmethod
 
@@ -34,7 +39,7 @@ __all__ = ["Std",
 
 
 class Std(_Layer):
-    """
+    """每个序列各个stride的标准差.
 
     Notes:
         计算每个feature各个stride的standard deviation
@@ -42,7 +47,7 @@ class Std(_Layer):
     """
 
     def __init__(self, stride: int = 10, **kwargs):
-        """
+        """标准差.
 
         Args:
             stride (int): time steps需要是stride的整数倍
@@ -56,6 +61,7 @@ class Std(_Layer):
         self.intermediate_shape = None
 
     def build(self, input_shape):
+        """构建该层，计算维度信息."""
         (features,
          output_length) = __get_dimensions__(input_shape, self.stride)
         self.intermediate_shape = [-1,
@@ -64,7 +70,7 @@ class Std(_Layer):
                                    features]
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -73,7 +79,6 @@ class Std(_Layer):
             dimension 为(batch_size, time_steps / stride, features)
 
         """
-
         # compute means for each stride
         means = _tf.repeat(
             _tf.nn.avg_pool(inputs,
@@ -95,13 +100,14 @@ class Std(_Layer):
         return std
 
     def get_config(self):
+        """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
         return config
 
 
 class ZScore(_Layer):
-    """
+    """每个序列各个stride的均值除以其标准差.
 
     Notes:
         并非严格意义上的z-score,
@@ -110,7 +116,7 @@ class ZScore(_Layer):
     """
 
     def __init__(self, stride: int = 10, **kwargs):
-        """
+        """均值除以标准差.
 
         Args:
             stride (int): time steps需要是stride的整数倍
@@ -124,6 +130,7 @@ class ZScore(_Layer):
         self.intermediate_shape = None
 
     def build(self, input_shape):
+        """构建该层，计算维度信息."""
         (features,
          output_length) = __get_dimensions__(input_shape, self.stride)
         self.intermediate_shape = [-1,
@@ -132,7 +139,7 @@ class ZScore(_Layer):
                                    features]
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -141,7 +148,6 @@ class ZScore(_Layer):
             dimension 为(batch_size, time_steps / stride, features)
 
         """
-
         # compute means for each stride
         means = _tf.nn.avg_pool(inputs,
                                 ksize=self.stride,
@@ -160,13 +166,14 @@ class ZScore(_Layer):
         return z_score
 
     def get_config(self):
+        """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
         return config
 
 
 class LinearDecay(_Layer):
-    """
+    """每个序列各个stride的线性衰减加权平均.
 
     Notes:
         以线性衰减为权重，计算每个feature各个stride的均值：
@@ -175,7 +182,7 @@ class LinearDecay(_Layer):
     """
 
     def __init__(self, stride=10, **kwargs):
-        """
+        """线性递减加权平均.
 
         Args:
             stride (int): time steps需要是stride的整数倍
@@ -190,13 +197,14 @@ class LinearDecay(_Layer):
         self.intermediate_shape = None
 
     def build(self, input_shape):
+        """构建该层，计算维度信息."""
         (features,
          output_length) = __get_dimensions__(input_shape, self.stride)
         self.out_shape = [-1, output_length, features]
         self.intermediate_shape = [-1, self.stride, features]
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -205,7 +213,6 @@ class LinearDecay(_Layer):
             dimension 为(batch_size, time_steps / stride, features)
 
         """
-
         # get linear decay kernel
         single_kernel = _tf.linspace(1.0, self.stride, num=self.stride)
         kernel = _tf.repeat(single_kernel, self.intermediate_shape[2])
@@ -222,13 +229,14 @@ class LinearDecay(_Layer):
         return linear_decay
 
     def get_config(self):
+        """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
         return config
 
 
 class Return(_Layer):
-    """
+    """每个序列各个stride的回报率.
 
     Notes:
         计算公式为每个stride最后一个数除以第一个数再减去一
@@ -236,13 +244,12 @@ class Return(_Layer):
     """
 
     def __init__(self, stride=10, **kwargs):
-        """
+        """回报率.
 
         Args:
             stride (int): time steps需要是stride的整数倍
 
         """
-
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
                              "greater than 1")
@@ -250,12 +257,13 @@ class Return(_Layer):
         self.stride = stride
 
     def build(self, input_shape):
+        """构建该层，计算维度信息."""
         time_steps = input_shape[1]
         if time_steps % self.stride != 0:
             raise ValueError("Error, time_steps 应该是 stride的整数倍")
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -264,7 +272,6 @@ class Return(_Layer):
             dimension 为(batch_size, time_steps / stride, features)
 
         """
-
         # get the endings of each strides as numerators
         numerators = inputs[:, (self.stride - 1)::self.stride, :]
 
@@ -274,6 +281,7 @@ class Return(_Layer):
         return _tf.math.divide_no_nan(numerators, denominators) - 1.0
 
     def get_config(self):
+        """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
         return config
@@ -282,7 +290,7 @@ class Return(_Layer):
 class _OuterProductLayer(_Layer, _ABC):
 
     def __init__(self, stride=10, **kwargs):
-        """
+        """外乘类的扩张层.
 
         Args:
             stride (int): time steps需要是stride的整数倍
@@ -298,25 +306,28 @@ class _OuterProductLayer(_Layer, _ABC):
         self.lower_mask = None
 
     def build(self, input_shape):
+        """构建该层，计算维度信息."""
         (features,
          output_length) = __get_dimensions__(input_shape, self.stride)
         self.intermediate_shape = (-1, self.stride, features)
         output_features = int(features * (features - 1) / 2)
         self.out_shape = (-1, output_length, output_features)
-        self.lower_mask = LowerNoDiagonalMask()((features, features))
+        self.lower_mask = _LowerNoDiagonalMask()((features, features))
 
     def get_config(self):
+        """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
         return config
 
     @_abstractmethod
     def call(self, inputs, *args, **kwargs):
+        """逻辑实现部分."""
         ...
 
 
 class Covariance(_OuterProductLayer):
-    """
+    """每个stride各个时间序列的covariance.
 
     Notes:
         计算每个stride每两个feature之间的covariance大小，
@@ -325,7 +336,7 @@ class Covariance(_OuterProductLayer):
     """
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -335,7 +346,6 @@ class Covariance(_OuterProductLayer):
             features * (features - 1) / 2)
 
         """
-
         # compute means for each stride
         means = _tf.nn.avg_pool(inputs,
                                 ksize=self.stride,
@@ -364,14 +374,16 @@ class Covariance(_OuterProductLayer):
 
 
 class Correlation(_OuterProductLayer):
-    """
+    """每个stride各个时间序列的相关系数.
+
     Notes:
         计算每个stride每两个feature之间的correlation coefficient，
         输出feature数量为features * (features - 1) / 2
+
     """
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -381,7 +393,6 @@ class Correlation(_OuterProductLayer):
             features * (features - 1) / 2)
 
         """
-
         # compute means for each stride
         means = _tf.nn.avg_pool(inputs,
                                 ksize=self.stride,
@@ -421,7 +432,7 @@ class Correlation(_OuterProductLayer):
 
 
 class FeatureExpansion(_Layer):
-    """
+    """时间序列特征扩张层.
 
     Notes:
         该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，
@@ -442,7 +453,7 @@ class FeatureExpansion(_Layer):
     """
 
     def __init__(self, stride=10, **kwargs):
-        """
+        """时间序列特征扩张.
 
         Args:
             stride (int): time steps需要是stride的整数倍
@@ -461,6 +472,7 @@ class FeatureExpansion(_Layer):
         self.correlation = None
 
     def build(self, input_shape):
+        """构建该层，建立计算函数."""
         self.std = _tf.function(Std(stride=self.stride))
         self.z_score = _tf.function(ZScore(stride=self.stride))
         self.linear_decay = _tf.function(LinearDecay(stride=self.stride))
@@ -469,7 +481,7 @@ class FeatureExpansion(_Layer):
         self.correlation = _tf.function(Correlation(stride=self.stride))
 
     def call(self, inputs, *args, **kwargs):
-        """
+        """函数主逻辑实现部分.
 
         Args:
             inputs (tensor): 输入dimension为(batch_size, time_steps, features)
@@ -493,13 +505,23 @@ class FeatureExpansion(_Layer):
                            correlation_output], axis=2)
 
     def get_config(self):
+        """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
         return config
 
 
-class AlphaNetV3:
-    """
+class TestModel(_tf.keras.models.Model):
+
+    def call(self, inputs, training=None, mask=None):
+        pass
+
+    def get_config(self):
+        pass
+
+
+class AlphaNetV3(_Model):
+    """alpha net v3版本模型.
 
     Notes:
         复现华泰金工 alpha net V3 版本
@@ -517,111 +539,77 @@ class AlphaNetV3:
     """
 
     def __init__(self,
-                 input_shape: (int, int),
-                 optimizer=_tf.keras.optimizers.Adam,
-                 learning_rate=0.0001,
-                 loss="MSE",
                  dropout=0.0,
                  l2=0.001,
-                 metrics=None):
-        """alpha net v3
+                 *args,
+                 **kwargs):
+        """Alpha net v3.
 
         Notes:
             alpha net v3 版本的全tensorflow实现，结构详见代码展开
 
         Args:
-            input_shape: (int, int), 分别代表 (历史长度, 特征数量)
-            optimizer: 优化器
-            learning_rate: 优化参数，学习速度
-            loss: 损失函数
             dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
             l2: 输出层的l2-regularization参数
-            metrics: 训练过程中的metric
 
         """
-        inputs = _tf.keras.Input(shape=input_shape)
-        expanded_10 = FeatureExpansion(stride=10)(inputs)
-        expanded_5 = FeatureExpansion(stride=5)(inputs)
-        normalized_10 = _tfl.BatchNormalization()(expanded_10)
-        normalized_5 = _tfl.BatchNormalization()(expanded_5)
-        dropout_10 = _tfl.Dropout(dropout)(normalized_10)
-        dropout_5 = _tfl.Dropout(dropout)(normalized_5)
-        gru_10 = _tfl.GRU(units=30)(dropout_10)
-        gru_5 = _tfl.GRU(units=30)(dropout_5)
-        normalized_10 = _tfl.BatchNormalization()(gru_10)
-        normalized_5 = _tfl.BatchNormalization()(gru_5)
-        concat = _tfl.Concatenate(axis=-1)([normalized_10, normalized_5])
-        regularize = _tf.keras.regularizers.l2(l2)
-        outputs = _tfl.Dense(1, activation="linear",
-                             kernel_initializer="truncated_normal",
-                             kernel_regularizer=regularize)(concat)
-        self.__model = _tf.keras.Model(inputs=inputs, outputs=outputs)
-        self.__model.compile(optimizer(learning_rate), loss=loss, metrics=metrics)
+        super().__init__(*args, **kwargs)
+        self.l2 = l2
+        self.dropout = dropout
+        self.expanded10 = FeatureExpansion(stride=10)
+        self.expanded5 = FeatureExpansion(stride=5)
+        self.normalized10 = _tfl.BatchNormalization()
+        self.normalized5 = _tfl.BatchNormalization()
+        self.dropout10 = _tfl.Dropout(self.dropout)
+        self.dropout5 = _tfl.Dropout(self.dropout)
+        self.gru10 = _tfl.GRU(units=30)
+        self.gru5 = _tfl.GRU(units=30)
+        self.normalized10_2 = _tfl.BatchNormalization()
+        self.normalized5_2 = _tfl.BatchNormalization()
+        self.concat = _tfl.Concatenate(axis=-1)
+        regularizer = _tf.keras.regularizers.l2(self.l2)
+        self.outputs = _tfl.Dense(1, activation="linear",
+                                  kernel_initializer="truncated_normal",
+                                  kernel_regularizer=regularizer)
 
-    def model(self):
-        """返回tensorflow模型
+    def call(self, inputs, training=None, mask=None):
+        """计算逻辑实现."""
+        expanded10 = self.expanded10(inputs)
+        expanded5 = self.expanded10(inputs)
+        normalized10 = self.normalized10(expanded10, training=training)
+        normalized5 = self.normalized10(expanded5, training=training)
+        dropout10 = self.dropout10(normalized10)
+        dropout5 = self.dropout10(normalized5)
+        gru10 = self.gru10(dropout10)
+        gru5 = self.gru10(dropout5)
+        normalized10_2 = self.normalized10_2(gru10)
+        normalized5_2 = self.normalized10_2(gru5)
+        concat = self.concat([normalized10_2, normalized5_2])
+        output = self.outputs(concat)
+        return output
 
-        Returns:
-            ``tensorflow.keras.models.Model``
-
-        """
-        return self.__model
-
-    def save(self, filepath: str):
-        """保存模型参数以及模型的计算graph
-
-        Args:
-            filepath: 保存模型的文件路径
-
-        """
-        self.__model.save(filepath)
-
-    def save_weights(self, filepath):
-        """保存模型参数
-
-        Args:
-            filepath: 文件路径
-
-        """
-        self.__model.save_weights(filepath)
-
-    def load_weights(self, filepath):
-        """载入模型参数
-
-        Args:
-            filepath: 参数文件位置
-
-        """
-        self.__model.load_weights(filepath)
-
-    def predict(self, x, batch_size=500):
-        """批量预测
-
-        Args:
-            x: numpy array, tensor, 或者tensorflow dataset
-            batch_size: 批处理大小
-
-        Returns:
-            预测值
-
-        """
-        return self.__model.predict(x, batch_size=batch_size)
-
-    def __call__(self, *args, **kwargs):
-        return self.__model(*args, **kwargs)
+    def get_config(self):
+        """获取参数，保存模型需要的函数."""
+        config = super().get_config().copy()
+        config.update({'dropout': self.dropout,
+                       'l2': self.l2})
+        return config
 
 
-class LowerNoDiagonalMask(_Initializer):
-    """
+class _LowerNoDiagonalMask(_Initializer):
+    """获取不含对角元素的矩阵下三角mask.
+
     Notes:
         Provide a mask giving the lower triangular of a matrix
         without diagonal elements.
+
     """
 
     def __init__(self):
-        super(LowerNoDiagonalMask, self).__init__()
+        super(_LowerNoDiagonalMask, self).__init__()
 
     def __call__(self, shape, **kwargs):
+        """计算逻辑."""
         ones = _tf.ones(shape)
         mask_lower = _tf.linalg.band_part(ones, -1, 0)
         mask_diag = _tf.linalg.band_part(ones, 0, 0)
@@ -631,7 +619,7 @@ class LowerNoDiagonalMask(_Initializer):
 
 
 def __get_dimensions__(input_shape, stride):
-    """
+    """计算相关维度长度.
 
     Notes:
         compute output shapes
