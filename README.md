@@ -15,6 +15,12 @@ Requirement: tensorflow 2.
 5. The loss plot pictures and models will be stored by each epoch and training period in `./models/` folder.
 6. Tests of layers and time series data tools are in `./tests/` folder.
    To run the test, execute `python -m unittest tests.tests`.
+
+## Installation
+Either clone this repository or just use pypi:
+``pip install alphanet``.
+
+The pypi project is here: https://pypi.org/project/alphanet/.
 <!-- markdownlint-disable -->
 
 # API Overview
