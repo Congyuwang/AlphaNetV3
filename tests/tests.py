@@ -17,7 +17,7 @@ class TestLayers(unittest.TestCase):
         cls.data = np.maximum(np.abs(np.random.rand(3, 30, 15)), 0.1)
 
     def test_std(self):
-        s = Std()(self.data)
+        s = Std()(tf.constant(self.data, tf.float32))
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(s[j][0],
@@ -30,7 +30,7 @@ class TestLayers(unittest.TestCase):
         self.assertTrue(np.all(test_result), "std incorrect")
 
     def test_zscore(self):
-        z = ZScore()(self.data)
+        z = ZScore()(tf.constant(self.data, tf.float32))
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(z[j][0],
@@ -46,7 +46,7 @@ class TestLayers(unittest.TestCase):
         self.assertTrue(np.all(test_result), "z-score incorrect")
 
     def test_return(self):
-        r = Return()(self.data)
+        r = Return()(tf.constant(self.data, tf.float32))
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(r[j][0],
@@ -62,7 +62,7 @@ class TestLayers(unittest.TestCase):
         self.assertTrue(np.all(test_result), "return incorrect")
 
     def test_linear_decay(self):
-        d = LinearDecay()(self.data)
+        d = LinearDecay()(tf.constant(self.data, tf.float32))
         weights = np.linspace(1, 10, 10)
         test_result = []
         for j in range(len(self.data)):
@@ -79,7 +79,7 @@ class TestLayers(unittest.TestCase):
         self.assertTrue(np.all(test_result), "linear decay incorrect")
 
     def test_covariance(self):
-        c = Covariance()(self.data)
+        c = Covariance()(tf.constant(self.data, tf.float32))
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(c[j][0],
@@ -92,7 +92,7 @@ class TestLayers(unittest.TestCase):
         self.assertTrue(np.all(test_result), "covariance incorrect")
 
     def test_correlation(self):
-        c = Correlation()(self.data)
+        c = Correlation()(tf.constant(self.data, tf.float32))
         test_result = []
         for j in range(len(self.data)):
             test1 = __is_all_close__(c[j][0],
@@ -134,9 +134,12 @@ class TestAlphaNet(unittest.TestCase):
         if os.path.exists(cls.test_dir):
             shutil.rmtree(cls.test_dir)
         os.mkdir(cls.test_dir)
-        cls.wrong_shape = tf.constant(np.random.rand(500, 45, 15))
-        cls.random_test = tf.constant(np.random.rand(500, 30, 15))
-        cls.random_label = tf.constant(np.random.rand(500, ))
+        cls.wrong_shape = tf.constant(np.random.rand(500, 45, 15),
+                                      dtype=tf.float32)
+        cls.random_test = tf.constant(np.random.rand(500, 30, 15),
+                                      dtype=tf.float32)
+        cls.random_label = tf.constant(np.random.rand(500, ),
+                                       dtype=tf.float32)
 
     def test_save_weights(self):
 
