@@ -464,15 +464,6 @@ class FeatureExpansion(_Layer):
                              "greater than 1")
         super(FeatureExpansion, self).__init__(**kwargs)
         self.stride = stride
-        self.std = None
-        self.z_score = None
-        self.linear_decay = None
-        self.return_ = None
-        self.covariance = None
-        self.correlation = None
-
-    def build(self, input_shape):
-        """构建该层，建立计算函数."""
         self.std = _tf.function(Std(stride=self.stride))
         self.z_score = _tf.function(ZScore(stride=self.stride))
         self.linear_decay = _tf.function(LinearDecay(stride=self.stride))
@@ -511,15 +502,6 @@ class FeatureExpansion(_Layer):
         return config
 
 
-class TestModel(_tf.keras.models.Model):
-
-    def call(self, inputs, training=None, mask=None):
-        pass
-
-    def get_config(self):
-        pass
-
-
 class AlphaNetV3(_Model):
     """alpha net v3版本模型.
 
@@ -553,7 +535,7 @@ class AlphaNetV3(_Model):
             l2: 输出层的l2-regularization参数
 
         """
-        super().__init__(*args, **kwargs)
+        super(AlphaNetV3, self).__init__(*args, **kwargs)
         self.l2 = l2
         self.dropout = dropout
         self.expanded10 = FeatureExpansion(stride=10)
@@ -566,24 +548,24 @@ class AlphaNetV3(_Model):
         self.gru5 = _tfl.GRU(units=30)
         self.normalized10_2 = _tfl.BatchNormalization()
         self.normalized5_2 = _tfl.BatchNormalization()
-        self.concat = _tfl.Concatenate(axis=-1)
-        regularizer = _tf.keras.regularizers.l2(self.l2)
+        self.concat = _tf.function(_tfl.Concatenate(axis=-1))
+        self.regularizer = _tf.keras.regularizers.l2(self.l2)
         self.outputs = _tfl.Dense(1, activation="linear",
                                   kernel_initializer="truncated_normal",
-                                  kernel_regularizer=regularizer)
+                                  kernel_regularizer=self.regularizer)
 
     def call(self, inputs, training=None, mask=None):
         """计算逻辑实现."""
         expanded10 = self.expanded10(inputs)
-        expanded5 = self.expanded10(inputs)
+        expanded5 = self.expanded5(inputs)
         normalized10 = self.normalized10(expanded10, training=training)
-        normalized5 = self.normalized10(expanded5, training=training)
+        normalized5 = self.normalized5(expanded5, training=training)
         dropout10 = self.dropout10(normalized10, training=training)
-        dropout5 = self.dropout10(normalized5, training=training)
+        dropout5 = self.dropout5(normalized5, training=training)
         gru10 = self.gru10(dropout10)
-        gru5 = self.gru10(dropout5)
+        gru5 = self.gru5(dropout5)
         normalized10_2 = self.normalized10_2(gru10, training=training)
-        normalized5_2 = self.normalized10_2(gru5, training=training)
+        normalized5_2 = self.normalized5_2(gru5, training=training)
         concat = self.concat([normalized10_2, normalized5_2])
         output = self.outputs(concat)
         return output
