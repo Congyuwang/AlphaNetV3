@@ -16,7 +16,7 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 
 (BN: batch normalization) 
 
-version: 0.0.2 
+version: 0.0.4 
 
 author: Congyu Wang 
 
@@ -3703,7 +3703,7 @@ call(inputs, training=None, mask=None)
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fd095e35e20>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fd464e46e20>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
