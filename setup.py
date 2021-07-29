@@ -1,8 +1,13 @@
 from setuptools import setup
+import os
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description_1 = fh.read()
 
+print("here", os.listdir("."))
+print("here/docs/", os.listdir("./docs"))
+print("here/docs/md", os.listdir("./docs/md"))
+    
 with open("./docs/md/README.md", "r", encoding="utf-8") as fh:
     long_description_2 = fh.read()
 
