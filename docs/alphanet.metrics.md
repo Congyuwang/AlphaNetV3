@@ -3,20 +3,20 @@
 <a href="../src/alphanet/metrics.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 # <kbd>module</kbd> `alphanet.metrics`
-训练的计量信息. 
+训练中的辅助准确率信息. 
 
-该module包含涨跌精度信息的计算类。 
+该module包含涨跌精度信息的计算类。 使用到该类的模型在保存后重新读取时需要添加``custom_objects``参数， 或者使用``alphanet.load_model()``函数。 
 
 
 
 ---
 
-<a href="../src/alphanet/metrics.py#L12"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/metrics.py#L14"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `UpDownAccuracy`
 通过对return的预测来计算涨跌准确率. 
 
-<a href="../src/alphanet/metrics.py#L15"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/metrics.py#L17"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -401,7 +401,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/metrics.py#L43"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/metrics.py#L45"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `reset_state`
 
@@ -413,7 +413,7 @@ reset_state()
 
 ---
 
-<a href="../src/alphanet/metrics.py#L37"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/metrics.py#L39"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `result`
 
@@ -425,7 +425,7 @@ result()
 
 ---
 
-<a href="../src/alphanet/metrics.py#L27"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/metrics.py#L29"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `update_state`
 

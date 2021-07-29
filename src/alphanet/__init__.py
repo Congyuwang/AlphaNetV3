@@ -1,4 +1,6 @@
-"""复现华泰金工 alpha net V3 版本.
+"""时间序列计算层、神经网络模型定义.
+
+复现华泰金工 alpha net V3 版本.
 
 ```
 input: (batch_size, history time steps, features)
@@ -45,7 +47,7 @@ __all__ = ["Std",
 
 
 class Std(_Layer):
-    """每个序列各个stride的标准差.
+    """计算每个序列各stride的标准差.
 
     Notes:
         计算每个feature各个stride的standard deviation
@@ -113,7 +115,7 @@ class Std(_Layer):
 
 
 class ZScore(_Layer):
-    """每个序列各个stride的均值除以其标准差.
+    """计算每个序列各stride的均值除以其标准差.
 
     Notes:
         并非严格意义上的z-score,
@@ -179,7 +181,7 @@ class ZScore(_Layer):
 
 
 class LinearDecay(_Layer):
-    """每个序列各个stride的线性衰减加权平均.
+    """计算每个序列各stride的线性衰减加权平均.
 
     Notes:
         以线性衰减为权重，计算每个feature各个stride的均值：
@@ -242,7 +244,7 @@ class LinearDecay(_Layer):
 
 
 class Return(_Layer):
-    """每个序列各个stride的回报率.
+    """计算每个序列各stride的回报率.
 
     Notes:
         计算公式为每个stride最后一个数除以第一个数再减去一
@@ -333,7 +335,7 @@ class _OuterProductLayer(_Layer, _ABC):
 
 
 class Covariance(_OuterProductLayer):
-    """每个stride各个时间序列的covariance.
+    """计算每个stride各时间序列片段的covariance.
 
     Notes:
         计算每个stride每两个feature之间的covariance大小，
@@ -380,7 +382,7 @@ class Covariance(_OuterProductLayer):
 
 
 class Correlation(_OuterProductLayer):
-    """每个stride各个时间序列的相关系数.
+    """计算每个stride各时间序列的相关系数.
 
     Notes:
         计算每个stride每两个feature之间的correlation coefficient，
@@ -438,7 +440,7 @@ class Correlation(_OuterProductLayer):
 
 
 class FeatureExpansion(_Layer):
-    """时间序列特征扩张层.
+    """计算时间序列特征扩张层，汇总6个计算层.
 
     Notes:
         该层扩张时间序列的feature数量，并通过stride缩短时间序列长度，
@@ -509,7 +511,9 @@ class FeatureExpansion(_Layer):
 
 
 class AlphaNetV3(_Model):
-    """alpha net v3版本模型.
+    """神经网络模型，继承``keras.Model``类.
+
+    alpha net v3版本模型.
 
     Notes:
         复现华泰金工 alpha net V3 版本
@@ -605,7 +609,10 @@ def load_model(filepath,
                custom_objects: dict = None,
                compile: bool = True,
                options=None):
-    """包装``tf.kreas``的``load_model``，添加``UpDownAccuracy``.
+    """用于读取已存储的模型，可识别自定义metric: UpDownAccuracy.
+
+    Notes:
+        包装``tf.keras``的``load_model``函数，添加``UpDownAccuracy``.
 
     Args:
         filepath: 文件路径:
@@ -616,11 +623,7 @@ def load_model(filepath,
         options: 其他 `tf.saved_model.LoadOptions`.
 
     Returns:
-        A Keras model instance. If the original model was compiled, and saved with
-        the optimizer, then the returned model will be compiled. Otherwise, the
-        model will be left uncompiled. In the case that an uncompiled model is
-        returned, a warning is displayed if the `compile` argument is set to
-        `True`.
+        Keras model instance.
 
     Raises:
         ImportError: if loading from an hdf5 file and h5py is not available.
