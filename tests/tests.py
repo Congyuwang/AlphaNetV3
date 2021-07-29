@@ -171,9 +171,7 @@ class TestAlphaNet(unittest.TestCase):
         alpha_net_v3.save("./.test_alpha_net_save/model")
 
         # load models
-        model = tf.keras.models.load_model("./.test_alpha_net_save/model",
-                                           custom_objects={"UpDownAccuracy":
-                                                           UpDownAccuracy})
+        model = load_model("./.test_alpha_net_save/model")
         output_2 = model.predict(self.random_test, batch_size=500)
         self.assertTrue(__is_all_close__(output, output_2, atol=1e-5),
                         "save and load model failed")

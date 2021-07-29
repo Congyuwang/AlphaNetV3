@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='alphanet',
-    version='0.0.3',
+    version='0.0.4',
     packages=['alphanet'],
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,7 +22,5 @@ setup(
     ],
     package_dir={"": "src"},
     python_requires=">=3.6",
-    install_requires=[
-        'tensorflow>=2.2.0'
-    ],
+    install_requires=[]
 )
