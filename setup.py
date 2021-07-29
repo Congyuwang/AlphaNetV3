@@ -23,7 +23,6 @@ setup(
     package_dir={"": "src"},
     python_requires=">=3.6",
     install_requires=[
-        'tensorflow>=2.3',
-        'numpy>=1.18',
+        'tensorflow>=2.2.0'
     ],
 )
