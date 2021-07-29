@@ -1,5 +1,4 @@
 from setuptools import setup
-import os
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -14,7 +13,7 @@ setup(
     license='MIT License',
     author='Congyu Wang',
     author_email='leonwang998@foxmail.com',
-    description='A recurrent neural network for predicting'
+    description='A recurrent neural network for predicting '
                 'stock market performance',
     classifiers=[
         "Programming Language :: Python :: 3",
