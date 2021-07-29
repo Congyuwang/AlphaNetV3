@@ -127,7 +127,6 @@ class TestLayers(unittest.TestCase):
 
 
 class TestAlphaNet(unittest.TestCase):
-
     test_dir = "./.test_alpha_net_save/"
 
     @classmethod
@@ -136,15 +135,26 @@ class TestAlphaNet(unittest.TestCase):
             shutil.rmtree(cls.test_dir)
         os.mkdir(cls.test_dir)
         cls.random_test = tf.constant(np.random.rand(500, 30, 15))
+        cls.random_label = tf.constant(np.random.rand(500, ))
 
     def test_save_weights(self):
+
         # save weights
         alpha_net_v3 = AlphaNetV3()
-        alpha_net_v3.compile()
+        alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
+                             loss="MSE",
+                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
+                                      UpDownAccuracy()])
+        alpha_net_v3.fit(self.random_test, self.random_label, batch_size=20)
         output = alpha_net_v3.predict(self.random_test)
         alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
+
         # load weights
         alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
+                             loss="MSE",
+                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
+                                      UpDownAccuracy()])
         alpha_net_v3.load_weights("./.test_alpha_net_save/weights")
         output_2 = alpha_net_v3.predict(self.random_test)
 
@@ -152,18 +162,20 @@ class TestAlphaNet(unittest.TestCase):
                         "save and load weights failed")
 
     def test_save_model(self):
+
         # save models
         alpha_net_v3 = AlphaNetV3()
         alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
                              loss="MSE",
-                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
-                                      UpDownAccuracy()])
+                             metrics=[tf.keras.metrics.RootMeanSquaredError()])
+        alpha_net_v3.fit(self.random_test, self.random_label, batch_size=20)
         output = alpha_net_v3.predict(self.random_test)
         alpha_net_v3.save("./.test_alpha_net_save/model")
+
         # load models
         model = tf.keras.models.load_model("./.test_alpha_net_save/model")
         output_2 = model.predict(self.random_test, batch_size=500)
-        self.assertTrue(__is_all_close__(output, output_2),
+        self.assertTrue(__is_all_close__(output, output_2, atol=1e-5),
                         "save and load model failed")
 
     @classmethod
@@ -232,7 +244,7 @@ class TestDataModule(unittest.TestCase):
                "(start {}): failure".format(name, self.test_date))
 
     def test_first_batch_of_validation_dataset(self):
-        data_label = self.__get_first_batches__(self.start_basis, 1210-29, 120)
+        data_label = self.__get_first_batches__(self.start_basis, 1210 - 29, 120)
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][:len(self.first_batch_val[k])],
@@ -241,7 +253,7 @@ class TestDataModule(unittest.TestCase):
                "(start {}): failure".format(name, self.test_date))
 
     def test_last_batch_of_validation_dataset(self):
-        data_label = self.__get_last_batches__(self.start_basis, 1510-1, 120)
+        data_label = self.__get_last_batches__(self.start_basis, 1510 - 1, 120)
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][-len(self.last_batch_val[0]):],
@@ -316,10 +328,10 @@ class TestMetrics(unittest.TestCase):
         upd = UpDownAccuracy()
         upd.update_state(tf.constant([2.3, -1.3, 2.0]),
                          tf.constant([2.0, -1.2, -0.3]))
-        self.assertTrue(np.isclose(upd.result(), 2/3), "accuracy incorrect")
+        self.assertTrue(np.isclose(upd.result(), 2 / 3), "accuracy incorrect")
         upd.update_state(tf.constant([2.3, -1.3]),
                          tf.constant([2.0, -1.2]))
-        self.assertTrue(np.isclose(upd.result(), 4/5), "accuracy incorrect")
+        self.assertTrue(np.isclose(upd.result(), 4 / 5), "accuracy incorrect")
         upd.reset_states()
         self.assertTrue(np.isclose(upd.result(), 0.0), "reset failure")
 
