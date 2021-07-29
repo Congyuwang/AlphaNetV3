@@ -167,13 +167,16 @@ class TestAlphaNet(unittest.TestCase):
         alpha_net_v3 = AlphaNetV3()
         alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
                              loss="MSE",
-                             metrics=[tf.keras.metrics.RootMeanSquaredError()])
+                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
+                                      UpDownAccuracy()])
         alpha_net_v3.fit(self.random_test, self.random_label, batch_size=20)
         output = alpha_net_v3.predict(self.random_test)
         alpha_net_v3.save("./.test_alpha_net_save/model")
 
         # load models
-        model = tf.keras.models.load_model("./.test_alpha_net_save/model")
+        model = tf.keras.models.load_model("./.test_alpha_net_save/model",
+                                           custom_objects={"UpDownAccuracy":
+                                                           UpDownAccuracy})
         output_2 = model.predict(self.random_test, batch_size=500)
         self.assertTrue(__is_all_close__(output, output_2, atol=1e-5),
                         "save and load model failed")
