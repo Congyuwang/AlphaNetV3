@@ -1,8 +1,9 @@
-"""
-多维多时间序列神经网络滚动训练数据工具箱
+"""多维多时间序列神经网络滚动训练数据工具箱.
 
-version: 0.3
+version:0.3
+
 author: Congyu Wang
+
 date: 2021-07-26
 """
 import tensorflow as _tf
@@ -14,7 +15,7 @@ __all__ = ["TimeSeriesData", "TrainValData"]
 
 
 class TimeSeriesData:
-    """
+    """单个时间序列信息.
 
     Notes:
         储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.
@@ -25,7 +26,7 @@ class TimeSeriesData:
                  dates: _np.ndarray,
                  data: _np.ndarray,
                  labels: _np.ndarray):
-        """储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``
+        """储存个股的数据信息及预测目标，全部使用numpy，日期格式为整数: ``YYYYMMDD``.
 
         Args:
             dates: 日期列, 1D ``numpy.ndarray``
@@ -50,9 +51,7 @@ class TimeSeriesData:
 
 
 class TrainValData:
-    """
-    该类用于生成不同训练阶段的tensorflow dataset
-    """
+    """该类用于生成不同训练阶段的tensorflow dataset."""
 
     def __init__(self,
                  time_series_list: _List[TimeSeriesData],
@@ -61,8 +60,8 @@ class TrainValData:
                  history_length: int = 30,
                  train_val_gap: int = 10,
                  sample_step: int = 2,
-                 fill_na=_np.NaN):
-        """用于获取不同阶段的训练集和验证集
+                 fill_na: _np.float = _np.NaN):
+        """用于获取不同阶段的训练集和验证集.
 
         Notes:
             储存全部的时间序列信息，通过get(start_date)方法获取从start_date
@@ -94,7 +93,6 @@ class TrainValData:
             sample_step: 采样sample时步进的天数
             fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本
         """
-
         # 检查参数类型
         if type(time_series_list) is not list:
             raise ValueError("time_series_list should be a list")
@@ -168,7 +166,7 @@ class TrainValData:
             start_date: int,
             order="by_date",
             mode="in_memory"):
-        """获取从某天开始的训练集和验证集
+        """获取从某天开始的训练集和验证集.
 
         Notes:
             根据设定的训练集天数以及验证集天数，从start_date开始获取正确的
@@ -188,13 +186,12 @@ class TrainValData:
             mode: `generator` 或 `in_memory`. generator 速度极慢，
                 in_memory速度较快，默认in_memory。feature、series数量大内存不足时
                 可以使用generator。'in_memory'模式股票数量较大以及step较小时，
-                可能会要求较大内存。
+                可能会要求较大显卡内存。
 
         Returns:
             (train, val, dates_info(dict))
 
         """
-
         if mode == "generator":
             return self.__get_from_generator__(start_date, order)
         elif mode == "in_memory":
@@ -204,9 +201,11 @@ class TrainValData:
                              "and `in_memory`")
 
     def __get_in_memory__(self, start_date, order="by_date"):
-        """
+        """使用显存生成历史数据.
+
         使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，
         股票数量大时，需要较大内存
+
         """
         # 获取用于构建训练集、验证集的相关信息
         train_args, val_args, dates_info = self.__get_period_info__(start_date,
@@ -221,9 +220,7 @@ class TrainValData:
         return train, val, dates_info
 
     def __get_from_generator__(self, start_date, order="by_date"):
-        """
-        使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢
-        """
+        """使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢."""
         # 获取用于构建训练集、验证集的相关信息
         train_args, val_args, dates_info = self.__get_period_info__(start_date,
                                                                     order)
@@ -247,9 +244,7 @@ class TrainValData:
         return train_dataset, val_dataset, dates_info
 
     def __get_period_info__(self, start_date, order="by_date"):
-        """
-        根据开始时间计算用于构建训练集、验证集的相关信息
-        """
+        """根据开始时间计算用于构建训练集、验证集的相关信息."""
         if type(start_date) is not int:
             raise ValueError("start date should be an integer YYYYMMDD")
 
@@ -292,7 +287,8 @@ class TrainValData:
         return train_args, val_args, dates_info
 
     def __get_generator_args__(self, start_index, end_index, order="by_date"):
-        """
+        """获取单个generator需要的数据片段.
+
         Notes:
             根据数据集的开始、结束位置以及的顺序选项，获取该训练集的数据、标签片段
             以及用于生成训练数据的(序列, 日期)pair列表的顺序信息(generation_list)。
@@ -337,8 +333,7 @@ class TrainValData:
                        val_start_index,
                        train_args,
                        val_args):
-        """根据生成数据的列表，计算用于显示的日期信息"""
-
+        """根据生成数据的列表，计算用于显示的日期信息."""
         # 获取generation_list(生成数据的顺序信息)的时间列
         # 该时间列为相对数据片段开头的时间位置
         train_generation_list = train_args[2]
@@ -377,7 +372,7 @@ class TrainValData:
 
 
 def __history_expander__(data_tensor, history_length):
-    """错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度"""
+    """错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度."""
     total_time_length = data_tensor.shape[1]
     data_expanded = _tf.stack([data_tensor[:, i: (total_time_length + i
                                                   - history_length + 1), :]
@@ -387,8 +382,7 @@ def __history_expander__(data_tensor, history_length):
 
 
 def __full_tensor_generation__(data, label, generation_list, history):
-    """将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息"""
-
+    """将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息."""
     # 先将该数据片段的历史维度展开
     data_expanded = __history_expander__(data, history)
 
@@ -405,7 +399,7 @@ def __full_tensor_generation__(data, label, generation_list, history):
 
 
 def __training_example_getter__(data, label, series_i, i, history_length):
-    """``DataSet.from_generator``会用到的函数，获取单个训练数据"""
+    """``DataSet.from_generator``会用到的函数，获取单个训练数据."""
     x = data[series_i][i: i + history_length]
     y = label[series_i][i + history_length - 1]
 
@@ -417,7 +411,7 @@ def __training_example_getter__(data, label, series_i, i, history_length):
 
 
 def __generator__(data, label, generation_list, history_length):
-    """``DataSet.from_generator``会用到的generator"""
+    """``DataSet.from_generator``会用到的generator."""
     for series_i, i in generation_list:
         d = __training_example_getter__(data, label, series_i, i, history_length)
         if d:
@@ -426,5 +420,5 @@ def __generator__(data, label, generation_list, history_length):
 
 
 def __first_index__(array, element):
-    """计算第一个出现的元素的位置"""
+    """计算第一个出现的元素的位置."""
     return _np.min(_np.where(array == element))

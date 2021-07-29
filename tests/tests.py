@@ -139,11 +139,12 @@ class TestAlphaNet(unittest.TestCase):
 
     def test_save_weights(self):
         # save weights
-        alpha_net_v3 = AlphaNetV3(input_shape=(30, 15))
-        alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
+        alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3.compile()
         output = alpha_net_v3.predict(self.random_test)
+        alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
         # load weights
-        alpha_net_v3 = AlphaNetV3(input_shape=(30, 15))
+        alpha_net_v3 = AlphaNetV3()
         alpha_net_v3.load_weights("./.test_alpha_net_save/weights")
         output_2 = alpha_net_v3.predict(self.random_test)
 
@@ -152,9 +153,13 @@ class TestAlphaNet(unittest.TestCase):
 
     def test_save_model(self):
         # save models
-        alpha_net_v3 = AlphaNetV3(input_shape=(30, 15))
-        alpha_net_v3.save("./.test_alpha_net_save/model")
+        alpha_net_v3 = AlphaNetV3()
+        alpha_net_v3.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
+                             loss="MSE",
+                             metrics=[tf.keras.metrics.RootMeanSquaredError(),
+                                      UpDownAccuracy()])
         output = alpha_net_v3.predict(self.random_test)
+        alpha_net_v3.save("./.test_alpha_net_save/model")
         # load models
         model = tf.keras.models.load_model("./.test_alpha_net_save/model")
         output_2 = model.predict(self.random_test, batch_size=500)

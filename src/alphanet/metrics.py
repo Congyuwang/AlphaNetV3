@@ -1,3 +1,8 @@
+"""训练的计量信息.
+
+该module包含涨跌精度信息的计算类。
+
+"""
 import tensorflow as _tf
 
 
@@ -5,11 +10,10 @@ __all__ = ["UpDownAccuracy"]
 
 
 class UpDownAccuracy(_tf.keras.metrics.Metric):
-    """
-    通过对return的预测来计算涨跌准确率
-    """
+    """通过对return的预测来计算涨跌准确率."""
 
     def __init__(self, name='up_down_accuracy', **kwargs):
+        """涨跌准确率."""
         super(UpDownAccuracy, self).__init__(name=name, **kwargs)
         self.up_down_correct_count = self.add_weight(name='ud_count',
                                                      initializer='zeros',
@@ -21,6 +25,7 @@ class UpDownAccuracy(_tf.keras.metrics.Metric):
                                       dtype=_tf.float32)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        """加入新的预测更新精度值."""
         y_true = _tf.cast(y_true > 0.0, _tf.float32)
         y_pred = _tf.cast(y_pred > 0.0, _tf.float32)
         length = _tf.cast(len(y_true), _tf.float32)
@@ -30,10 +35,12 @@ class UpDownAccuracy(_tf.keras.metrics.Metric):
         self.up_down_correct_count.assign_add(correct_count)
 
     def result(self):
+        """获取结果."""
         if self.length == 0.0:
             return 0.0
         return self.up_down_correct_count / self.length
 
     def reset_state(self):
+        """在train、val的epoch末尾重置精度."""
         self.up_down_correct_count.assign(0.0)
         self.length.assign(0.0)
