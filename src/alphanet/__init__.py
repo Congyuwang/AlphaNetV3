@@ -25,6 +25,7 @@ import tensorflow.keras.layers as _tfl
 from tensorflow.keras.layers import Layer as _Layer
 from tensorflow.keras.initializers import Initializer as _Initializer
 from tensorflow.keras import Model as _Model
+from .metrics import UpDownAccuracy as _UpDownAccuracy
 from abc import ABC as _ABC
 from abc import abstractmethod as _abstractmethod
 
@@ -35,7 +36,8 @@ __all__ = ["Std",
            "Covariance",
            "ZScore",
            "FeatureExpansion",
-           "AlphaNetV3"]
+           "AlphaNetV3",
+           "load_model"]
 
 
 class Std(_Layer):
@@ -577,7 +579,6 @@ class AlphaNetV3(_Model):
                 loss_weights=None,
                 weighted_metrics=None,
                 run_eagerly=None,
-                steps_per_execution=None,
                 **kwargs):
         """设置优化器、loss、metric等."""
         super().compile(optimizer=optimizer,
@@ -585,8 +586,7 @@ class AlphaNetV3(_Model):
                         metrics=metrics,
                         loss_weights=loss_weights,
                         weighted_metrics=weighted_metrics,
-                        run_eagerly=run_eagerly,
-                        steps_per_execution=steps_per_execution)
+                        run_eagerly=run_eagerly)
 
     def get_config(self):
         """获取参数，保存模型需要的函数."""
@@ -594,6 +594,38 @@ class AlphaNetV3(_Model):
         config.update({'dropout': self.dropout,
                        'l2': self.l2})
         return config
+
+
+def load_model(filepath,
+               custom_objects: dict = None,
+               compile: bool = True,
+               options=None):
+    """包装``tf.kreas``的``load_model``，添加``UpDownAccuracy``.
+
+    Args:
+        filepath: 文件路径:
+            - String or `pathlib.Path` object, path to the saved model
+            - `h5py.File` object from which to load the model
+        custom_objects: 自定义类的识别，从类或函数名到类或函数的映射字典.
+        compile: Boolean, 是否compile model.
+        options: 其他 `tf.saved_model.LoadOptions`.
+
+    Returns:
+        A Keras model instance. If the original model was compiled, and saved with
+        the optimizer, then the returned model will be compiled. Otherwise, the
+        model will be left uncompiled. In the case that an uncompiled model is
+        returned, a warning is displayed if the `compile` argument is set to
+        `True`.
+
+    Raises:
+        ImportError: if loading from an hdf5 file and h5py is not available.
+        IOError: In case of an invalid savefile
+    """
+    custom_objects.update({"UpDownAccuracy": _UpDownAccuracy})
+    return _tf.keras.models.load_model(filepath,
+                                       custom_objects=custom_objects,
+                                       compile=compile,
+                                       options=options)
 
 
 class _LowerNoDiagonalMask(_Initializer):

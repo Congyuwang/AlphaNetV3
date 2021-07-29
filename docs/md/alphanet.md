@@ -24,11 +24,54 @@ date: 2021-07-29
 
 该module定义了计算不同时间序列特征的层，工程上使用tensorflow 进行高度向量化的计算，训练时较高效。 
 
+**Global Variables**
+---------------
+- **metrics**
+
+---
+
+<a href="../../src/alphanet/__init__.py#L599"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+## <kbd>function</kbd> `load_model`
+
+```python
+load_model(
+    filepath,
+    custom_objects: dict = None,
+    compile: bool = True,
+    options=None
+)
+```
+
+包装``tf.kreas``的``load_model``，添加``UpDownAccuracy``. 
+
+
+
+**Args:**
+ 
+ - <b>`filepath`</b>:  文件路径: 
+        - String or `pathlib.Path` object, path to the saved model 
+        - `h5py.File` object from which to load the model 
+ - <b>`custom_objects`</b>:  自定义类的识别，从类或函数名到类或函数的映射字典. 
+ - <b>`compile`</b>:  Boolean, 是否compile model. 
+ - <b>`options`</b>:  其他 `tf.saved_model.LoadOptions`. 
+
+
+
+**Returns:**
+ A Keras model instance. If the original model was compiled, and saved with the optimizer, then the returned model will be compiled. Otherwise, the model will be left uncompiled. In the case that an uncompiled model is returned, a warning is displayed if the `compile` argument is set to `True`. 
+
+
+
+**Raises:**
+ 
+ - <b>`ImportError`</b>:  if loading from an hdf5 file and h5py is not available. 
+ - <b>`IOError`</b>:  In case of an invalid savefile 
 
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L41"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L43"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Std`
 每个序列各个stride的标准差. 
@@ -39,7 +82,7 @@ date: 2021-07-29
 
 > 计算每个feature各个stride的standard deviation 
 
-<a href="../../src/alphanet/__init__.py#L49"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L51"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -64,36 +107,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -221,19 +237,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -254,7 +272,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -421,15 +439,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -438,8 +450,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -461,7 +471,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L63"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L65"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -473,7 +483,7 @@ build(input_shape)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L72"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L74"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -496,7 +506,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L102"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L104"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -509,7 +519,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L109"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L111"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `ZScore`
 每个序列各个stride的均值除以其标准差. 
@@ -520,7 +530,7 @@ get_config()
 
 > 并非严格意义上的z-score, 计算公式为每个feature各个stride的mean除以各自的standard deviation 
 
-<a href="../../src/alphanet/__init__.py#L118"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L120"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -545,36 +555,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -702,19 +685,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -735,7 +720,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -902,15 +887,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -919,8 +898,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -942,7 +919,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L132"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L134"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -954,7 +931,7 @@ build(input_shape)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L141"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L143"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -977,7 +954,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L168"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L170"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -990,7 +967,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L175"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L177"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `LinearDecay`
 每个序列各个stride的线性衰减加权平均. 
@@ -1001,7 +978,7 @@ get_config()
 
 > 以线性衰减为权重，计算每个feature各个stride的均值： 如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) 
 
-<a href="../../src/alphanet/__init__.py#L184"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L186"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1026,36 +1003,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -1183,19 +1133,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -1216,7 +1168,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -1383,15 +1335,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -1400,8 +1346,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -1423,7 +1367,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L199"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L201"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1435,7 +1379,7 @@ build(input_shape)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L206"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L208"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -1458,7 +1402,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L231"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L233"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -1471,7 +1415,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L238"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L240"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Return`
 每个序列各个stride的回报率. 
@@ -1482,7 +1426,7 @@ get_config()
 
 > 计算公式为每个stride最后一个数除以第一个数再减去一 
 
-<a href="../../src/alphanet/__init__.py#L246"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L248"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1507,36 +1451,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -1664,19 +1581,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -1697,7 +1616,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -1864,15 +1783,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -1881,8 +1794,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -1904,7 +1815,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L259"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L261"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1916,7 +1827,7 @@ build(input_shape)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L265"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L267"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -1939,7 +1850,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L283"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L285"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -1952,7 +1863,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L329"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L331"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Covariance`
 每个stride各个时间序列的covariance. 
@@ -1963,7 +1874,7 @@ get_config()
 
 > 计算每个stride每两个feature之间的covariance大小， 输出feature数量为features * (features - 1) / 2 
 
-<a href="../../src/alphanet/__init__.py#L292"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L294"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1988,36 +1899,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -2145,19 +2029,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -2178,7 +2064,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -2345,15 +2231,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -2362,8 +2242,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -2385,7 +2263,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L308"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L310"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -2397,7 +2275,7 @@ build(input_shape)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L338"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L340"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -2420,7 +2298,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L317"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L319"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -2433,7 +2311,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L376"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L378"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Correlation`
 每个stride各个时间序列的相关系数. 
@@ -2444,7 +2322,7 @@ get_config()
 
 > 计算每个stride每两个feature之间的correlation coefficient， 输出feature数量为features * (features - 1) / 2 
 
-<a href="../../src/alphanet/__init__.py#L292"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L294"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -2469,36 +2347,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -2626,19 +2477,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -2659,7 +2512,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -2826,15 +2679,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -2843,8 +2690,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -2866,7 +2711,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L308"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L310"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -2878,7 +2723,7 @@ build(input_shape)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L385"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L387"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -2901,7 +2746,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L317"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L319"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -2914,7 +2759,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L434"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L436"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `FeatureExpansion`
 时间序列特征扩张层. 
@@ -2931,7 +2776,7 @@ get_config()
 >- covariance of each two features for each stride 
 >- correlation coefficient of each two features for each stride 
 
-<a href="../../src/alphanet/__init__.py#L455"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L457"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -2956,36 +2801,9 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -3113,19 +2931,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -3146,7 +2966,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of `Metric` objects. 
+  A list of tensors. 
 
 ---
 
@@ -3313,15 +3133,9 @@ Trainable weights are updated via gradient descent during training.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -3330,8 +3144,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -3353,7 +3165,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L474"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L476"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -3376,7 +3188,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L498"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L500"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -3389,7 +3201,7 @@ get_config()
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L505"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L507"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV3`
 alpha net v3版本模型. 
@@ -3404,7 +3216,7 @@ alpha net v3版本模型.
 >stride = 5 +-> expand -> BN -> GRU -> BN -+ input --|       stride = 10            |- concat -> Dense(linear) +-> expand -> BN -> GRU -> BN -+ 
 >(BN: batch normalization) 
 
-<a href="../../src/alphanet/__init__.py#L523"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L525"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -3435,23 +3247,6 @@ Optional regularizer function for the output of this layer.
 
 ---
 
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
 #### <kbd>property</kbd> distribute_strategy
 
 The `tf.distribute.Strategy` this model was created under. 
@@ -3460,17 +3255,7 @@ The `tf.distribute.Strategy` this model was created under.
 
 #### <kbd>property</kbd> dtype
 
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
+Dtype used by the weights of the layer, set in the constructor. 
 
 ---
 
@@ -3606,19 +3391,21 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
+``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
+[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
 
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
+``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
+``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
+[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
 
 
 
 **Returns:**
-  A list of tensors. 
+
+   A list of tensors.
+
 
 ---
 
@@ -3791,7 +3578,9 @@ By default, we will attempt to compile your model to a static graph to deliver t
 
 #### <kbd>property</kbd> state_updates
 
-Deprecated, do NOT use! 
+Deprecated, do NOT use! (deprecated) 
+
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 Returns the `updates` from all layers that are stateful. 
 
@@ -3864,15 +3653,9 @@ Whether this layer supports computing a mask using `compute_mask`.
 
 #### <kbd>property</kbd> updates
 
+DEPRECATED FUNCTION 
 
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
+Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
 
 ---
 
@@ -3881,8 +3664,6 @@ Alias of `Layer.dtype`, the dtype of the weights.
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 
@@ -3895,8 +3676,6 @@ Note: This will not track the weights of nested `tf.Modules` that are not themse
 
 Returns the list of all layer variables/weights. 
 
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
-
 
 
 **Returns:**
@@ -3906,7 +3685,7 @@ Note: This will not track the weights of nested `tf.Modules` that are not themse
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L557"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L559"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -3918,19 +3697,18 @@ call(inputs, training=None, mask=None)
 
 ---
 
-<a href="../../src/alphanet/__init__.py#L573"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../../src/alphanet/__init__.py#L575"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fb1e3e67c40>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fcdf463f250>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
     weighted_metrics=None,
     run_eagerly=None,
-    steps_per_execution=None,
     **kwargs
 )
 ```

@@ -24,7 +24,7 @@
 
 ## Functions
 
-- No functions
+- [`alphanet.load_model`](./alphanet.md#function-load_model): 包装``tf.kreas``的``load_model``，添加``UpDownAccuracy``.
 
 
 ---
