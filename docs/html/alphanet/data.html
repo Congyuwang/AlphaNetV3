@@ -244,7 +244,8 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">):</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">,</span>
+            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
@@ -266,20 +267,31 @@
 <span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
 <span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
 <span class="sd">                可能会要求较大显卡内存。</span>
+<span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
+<span class="sd">                和训练集、验证集时间信息</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            (train, val, dates_info(dict))</span>
+<span class="sd">            如果``validate_only=False``，返回训练集、验证集，以及日期信息：</span>
+<span class="sd">            (train, val, dates_info(dict))。如果为``True``，则返回</span>
+<span class="sd">            验证集以及日期信息。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                               <span class="n">order</span><span class="p">,</span>
+                                               <span class="n">validate_only</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                          <span class="n">order</span><span class="p">,</span>
+                                          <span class="n">validate_only</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode unimplemented, choose from `generator` &quot;</span>
                              <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">start_date</span><span class="p">,</span>
+                          <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
+                          <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;使用显存生成历史数据.</span>
 
 <span class="sd">        使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，</span>
@@ -290,15 +302,21 @@
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
         <span class="c1"># 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息</span>
-        <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
         <span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
-
         <span class="c1"># 转化为tensorflow DataSet</span>
-        <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
+
+        <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
+        <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
-    <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">start_date</span><span class="p">,</span>
+                               <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
+                               <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢.&quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
@@ -314,12 +332,22 @@
                 <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
             <span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
-                                                        <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">,</span>
-                                                        <span class="n">output_signature</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+
+        <span class="n">shapes</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">),</span> <span class="p">())</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
         <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
                                                       <span class="n">args</span><span class="o">=</span><span class="n">val_args</span><span class="p">,</span>
-                                                      <span class="n">output_signature</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+                                                      <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
+                                                      <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
+
+        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
+                                                        <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">,</span>
+                                                        <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
+                                                        <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
@@ -744,7 +772,8 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">):</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">,</span>
+            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
@@ -766,20 +795,31 @@
 <span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
 <span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
 <span class="sd">                可能会要求较大显卡内存。</span>
+<span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
+<span class="sd">                和训练集、验证集时间信息</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            (train, val, dates_info(dict))</span>
+<span class="sd">            如果``validate_only=False``，返回训练集、验证集，以及日期信息：</span>
+<span class="sd">            (train, val, dates_info(dict))。如果为``True``，则返回</span>
+<span class="sd">            验证集以及日期信息。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                               <span class="n">order</span><span class="p">,</span>
+                                               <span class="n">validate_only</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                          <span class="n">order</span><span class="p">,</span>
+                                          <span class="n">validate_only</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode unimplemented, choose from `generator` &quot;</span>
                              <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">start_date</span><span class="p">,</span>
+                          <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
+                          <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;使用显存生成历史数据.</span>
 
 <span class="sd">        使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，</span>
@@ -790,15 +830,21 @@
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
         <span class="c1"># 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息</span>
-        <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
         <span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
-
         <span class="c1"># 转化为tensorflow DataSet</span>
-        <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
+
+        <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
+        <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
-    <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">start_date</span><span class="p">,</span>
+                               <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
+                               <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢.&quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
@@ -814,12 +860,22 @@
                 <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span>
             <span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
-                                                        <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">,</span>
-                                                        <span class="n">output_signature</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+
+        <span class="n">shapes</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">),</span> <span class="p">())</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
         <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
                                                       <span class="n">args</span><span class="o">=</span><span class="n">val_args</span><span class="p">,</span>
-                                                      <span class="n">output_signature</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+                                                      <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
+                                                      <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
+
+        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
+                                                        <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">,</span>
+                                                        <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
+                                                        <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
@@ -1131,7 +1187,13 @@
 
         
             <span class="def">def</span>
-            <span class="name">get</span><span class="signature">(self, start_date: int, order=&#39;by_date&#39;, mode=&#39;in_memory&#39;)</span>:
+            <span class="name">get</span><span class="signature">(
+    self,
+    start_date: int,
+    order=&#39;by_date&#39;,
+    mode=&#39;in_memory&#39;,
+    validate_only=False
+)</span>:
     </div>
 
                 <details>
@@ -1139,7 +1201,8 @@
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">):</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">,</span>
+            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
@@ -1161,15 +1224,23 @@
 <span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大内存不足时</span>
 <span class="sd">                可以使用generator。&#39;in_memory&#39;模式股票数量较大以及step较小时，</span>
 <span class="sd">                可能会要求较大显卡内存。</span>
+<span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
+<span class="sd">                和训练集、验证集时间信息</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            (train, val, dates_info(dict))</span>
+<span class="sd">            如果``validate_only=False``，返回训练集、验证集，以及日期信息：</span>
+<span class="sd">            (train, val, dates_info(dict))。如果为``True``，则返回</span>
+<span class="sd">            验证集以及日期信息。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                               <span class="n">order</span><span class="p">,</span>
+                                               <span class="n">validate_only</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                          <span class="n">order</span><span class="p">,</span>
+                                          <span class="n">validate_only</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode unimplemented, choose from `generator` &quot;</span>
                              <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
@@ -1203,12 +1274,16 @@
 in_memory速度较快，默认in_memory。feature、series数量大内存不足时
 可以使用generator。'in_memory'模式股票数量较大以及step较小时，
 可能会要求较大显卡内存。</li>
+<li><strong>validate_only:</strong>  如果设置为True，则只返回validate set
+和训练集、验证集时间信息</li>
 </ul>
 
 <h6 id="returns">Returns</h6>
 
 <blockquote>
-  <p>(train, val, dates_info(dict))</p>
+  <p>如果<code>validate_only=False</code>，返回训练集、验证集，以及日期信息：
+  (train, val, dates_info(dict))。如果为<code>True</code>，则返回
+  验证集以及日期信息。</p>
 </blockquote>
 </div>
 

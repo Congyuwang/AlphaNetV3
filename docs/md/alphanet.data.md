@@ -104,7 +104,7 @@ __init__(
 ### <kbd>method</kbd> `get`
 
 ```python
-get(start_date: int, order='by_date', mode='in_memory')
+get(start_date: int, order='by_date', mode='in_memory', validate_only=False)
 ```
 
 获取从某天开始的训练集和验证集. 
@@ -123,11 +123,12 @@ get(start_date: int, order='by_date', mode='in_memory')
  - <b>`start_date`</b>:  该轮训练开始日期，整数``YYYYMMDD`` 
  - <b>`order`</b>:  有三种顺序 ``shuffle``, ``by_date``, ``by_series``。  分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。 
  - <b>`mode`</b>:  `generator` 或 `in_memory`. generator 速度极慢，  in_memory速度较快，默认in_memory。feature、series数量大内存不足时  可以使用generator。'in_memory'模式股票数量较大以及step较小时，  可能会要求较大显卡内存。 
+ - <b>`validate_only`</b>:  如果设置为True，则只返回validate set  和训练集、验证集时间信息 
 
 
 
 **Returns:**
- (train, val, dates_info(dict)) 
+ 如果``validate_only=False``，返回训练集、验证集，以及日期信息： (train, val, dates_info(dict))。如果为``True``，则返回 验证集以及日期信息。 
 
 
 
