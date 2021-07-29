@@ -63,21 +63,29 @@
                     <h1 class="modulename">
 <a href="./../alphanet.html">alphanet</a><wbr>.metrics    </h1>
 
-                
+                        <div class="docstring"><p>训练的计量信息.</p>
+
+<p>该module包含涨跌精度信息的计算类。</p>
+</div>
+
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">_tf</span>
+            <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;训练的计量信息.</span>
+
+<span class="sd">该module包含涨跌精度信息的计算类。</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">_tf</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;UpDownAccuracy&quot;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">UpDownAccuracy</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">Metric</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    通过对return的预测来计算涨跌准确率</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;通过对return的预测来计算涨跌准确率.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;up_down_accuracy&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;涨跌准确率.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">UpDownAccuracy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ud_count&#39;</span><span class="p">,</span>
                                                      <span class="n">initializer</span><span class="o">=</span><span class="s1">&#39;zeros&#39;</span><span class="p">,</span>
@@ -89,6 +97,7 @@
                                       <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;加入新的预测更新精度值.&quot;&quot;&quot;</span>
         <span class="n">y_true</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">y_pred</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">length</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -98,11 +107,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span><span class="o">.</span><span class="n">assign_add</span><span class="p">(</span><span class="n">correct_count</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获取结果.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
 
     <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;在train、val的epoch末尾重置精度.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 </pre></div>
@@ -122,11 +133,10 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">UpDownAccuracy</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">Metric</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    通过对return的预测来计算涨跌准确率</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;通过对return的预测来计算涨跌准确率.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;up_down_accuracy&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;涨跌准确率.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">UpDownAccuracy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ud_count&#39;</span><span class="p">,</span>
                                                      <span class="n">initializer</span><span class="o">=</span><span class="s1">&#39;zeros&#39;</span><span class="p">,</span>
@@ -138,6 +148,7 @@
                                       <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;加入新的预测更新精度值.&quot;&quot;&quot;</span>
         <span class="n">y_true</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">y_pred</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">length</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -147,18 +158,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span><span class="o">.</span><span class="n">assign_add</span><span class="p">(</span><span class="n">correct_count</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获取结果.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
 
     <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;在train、val的epoch末尾重置精度.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>通过对return的预测来计算涨跌准确率</p>
+            <div class="docstring"><p>通过对return的预测来计算涨跌准确率.</p>
 </div>
 
 
@@ -172,6 +185,7 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;up_down_accuracy&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;涨跌准确率.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">UpDownAccuracy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ud_count&#39;</span><span class="p">,</span>
                                                      <span class="n">initializer</span><span class="o">=</span><span class="s1">&#39;zeros&#39;</span><span class="p">,</span>
@@ -185,7 +199,9 @@
 
         </details>
 
-    
+            <div class="docstring"><p>涨跌准确率.</p>
+</div>
+
 
                             </div>
                             <div id="UpDownAccuracy.update_state" class="classattr">
@@ -199,6 +215,7 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;加入新的预测更新精度值.&quot;&quot;&quot;</span>
         <span class="n">y_true</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">y_pred</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">length</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -210,28 +227,7 @@
 
         </details>
 
-            <div class="docstring"><p>Accumulates statistics for the metric.</p>
-
-<p>Note: This function is executed as a graph function in graph mode.</p>
-
-<h6 id="this-means">This means</h6>
-
-<blockquote>
-  <p>a) Operations on the same resource are executed in textual order.
-     This should make it easier to do things like add the updated
-     value of a variable to another, for example.
-  b) You don't need to worry about collecting the update ops to execute.
-     All update ops added to the graph by this function will be executed.
-  As a result, code should generally work the same way with graph or
-  eager execution.</p>
-</blockquote>
-
-<h6 id="args">Args</h6>
-
-<ul>
-<li><strong>*args:</strong> </li>
-<li><strong>**kwargs:</strong>  A mini-batch of inputs to the Metric.</li>
-</ul>
+            <div class="docstring"><p>加入新的预测更新精度值.</p>
 </div>
 
 
@@ -247,6 +243,7 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获取结果.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
@@ -254,10 +251,7 @@
 
         </details>
 
-            <div class="docstring"><p>Computes and returns the metric value tensor.</p>
-
-<p>Result computation is an idempotent operation that simply calculates the
-metric value using the state variables.</p>
+            <div class="docstring"><p>获取结果.</p>
 </div>
 
 
@@ -273,16 +267,14 @@ metric value using the state variables.</p>
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;在train、val的epoch末尾重置精度.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">up_down_correct_count</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Resets all of the metric state variables.</p>
-
-<p>This function is called between epochs/steps,
-when a metric is evaluated during training.</p>
+            <div class="docstring"><p>在train、val的epoch末尾重置精度.</p>
 </div>
 
 
