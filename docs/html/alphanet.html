@@ -820,9 +820,11 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 <span class="sd">        ImportError: if loading from an hdf5 file and h5py is not available.</span>
 <span class="sd">        IOError: In case of an invalid savefile</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">custom_objects</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;UpDownAccuracy&quot;</span><span class="p">:</span> <span class="n">_UpDownAccuracy</span><span class="p">})</span>
+    <span class="n">object_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;UpDownAccuracy&quot;</span><span class="p">:</span> <span class="n">_UpDownAccuracy</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">custom_objects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">object_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">custom_objects</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span>
-                                       <span class="n">custom_objects</span><span class="o">=</span><span class="n">custom_objects</span><span class="p">,</span>
+                                       <span class="n">custom_objects</span><span class="o">=</span><span class="n">object_dict</span><span class="p">,</span>
                                        <span class="nb">compile</span><span class="o">=</span><span class="nb">compile</span><span class="p">,</span>
                                        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
 
@@ -3184,9 +3186,11 @@ input --|       stride = 10            |- concat -&gt; Dense(linear)
 <span class="sd">        ImportError: if loading from an hdf5 file and h5py is not available.</span>
 <span class="sd">        IOError: In case of an invalid savefile</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">custom_objects</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;UpDownAccuracy&quot;</span><span class="p">:</span> <span class="n">_UpDownAccuracy</span><span class="p">})</span>
+    <span class="n">object_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;UpDownAccuracy&quot;</span><span class="p">:</span> <span class="n">_UpDownAccuracy</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">custom_objects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">object_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">custom_objects</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span>
-                                       <span class="n">custom_objects</span><span class="o">=</span><span class="n">custom_objects</span><span class="p">,</span>
+                                       <span class="n">custom_objects</span><span class="o">=</span><span class="n">object_dict</span><span class="p">,</span>
                                        <span class="nb">compile</span><span class="o">=</span><span class="nb">compile</span><span class="p">,</span>
                                        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
 </pre></div>
