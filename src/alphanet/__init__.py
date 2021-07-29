@@ -42,6 +42,7 @@ __all__ = ["Std",
            "Covariance",
            "ZScore",
            "FeatureExpansion",
+           "AlphaNetV2",
            "AlphaNetV3",
            "load_model"]
 
@@ -507,6 +508,84 @@ class FeatureExpansion(_Layer):
         """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'stride': self.stride})
+        return config
+
+
+class AlphaNetV2(_Model):
+    """神经网络模型，继承``keras.Model``类.
+
+    alpha net v2版本模型.
+
+    Notes:
+        复现华泰金工 alpha net V2 版本
+
+        ``input: (batch_size, history time steps, features)``
+
+    """
+
+    def __init__(self,
+                 dropout=0.0,
+                 l2=0.001,
+                 stride=10,
+                 *args,
+                 **kwargs):
+        """Alpha net v3.
+
+        Notes:
+            alpha net v2 版本的全tensorflow实现，结构详见代码展开
+
+        Args:
+            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
+            l2: 输出层的l2-regularization参数
+
+        """
+        super(AlphaNetV2, self).__init__(*args, **kwargs)
+        self.l2 = l2
+        self.dropout = dropout
+        self.stride = stride
+        self.expanded = FeatureExpansion(stride=self.stride)
+        self.normalized = _tfl.BatchNormalization()
+        self.dropout = _tfl.Dropout(self.dropout)
+        self.lstm = _tfl.LSTM(units=30)
+        self.normalized_2 = _tfl.BatchNormalization()
+        self.regularizer = _tf.keras.regularizers.l2(self.l2)
+        self.outputs = _tfl.Dense(1, activation="linear",
+                                  kernel_initializer="truncated_normal",
+                                  kernel_regularizer=self.regularizer)
+
+    @_tf.function
+    def call(self, inputs, training=None, mask=None):
+        """计算逻辑实现."""
+        expanded = self.expanded(inputs)
+        normalized = self.normalized(expanded, training=training)
+        dropout = self.dropout(normalized, training=training)
+        lstm = self.lstm(dropout)
+        normalized2 = self.normalized_2(lstm, training=training)
+        output = self.outputs(normalized2)
+        return output
+
+    def compile(self,
+                optimizer=_tf.keras.optimizers.Adam(0.0001),
+                loss="MSE",
+                metrics=None,
+                loss_weights=None,
+                weighted_metrics=None,
+                run_eagerly=None,
+                **kwargs):
+        """设置优化器、loss、metric等."""
+        super().compile(optimizer=optimizer,
+                        loss=loss,
+                        metrics=metrics,
+                        loss_weights=loss_weights,
+                        weighted_metrics=weighted_metrics,
+                        run_eagerly=run_eagerly)
+
+    def get_config(self):
+        """获取参数，保存模型需要的函数."""
+        config = super().get_config().copy()
+        config.update({'dropout': self.dropout,
+                       'l2': self.l2,
+                       'stride': self.stride})
         return config
 
 
