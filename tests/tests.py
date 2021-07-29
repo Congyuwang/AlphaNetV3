@@ -134,6 +134,7 @@ class TestAlphaNet(unittest.TestCase):
         if os.path.exists(cls.test_dir):
             shutil.rmtree(cls.test_dir)
         os.mkdir(cls.test_dir)
+        cls.wrong_shape = tf.constant(np.random.rand(500, 45, 15))
         cls.random_test = tf.constant(np.random.rand(500, 30, 15))
         cls.random_label = tf.constant(np.random.rand(500, ))
 
@@ -176,6 +177,15 @@ class TestAlphaNet(unittest.TestCase):
         output_2 = model.predict(self.random_test, batch_size=500)
         self.assertTrue(__is_all_close__(output, output_2, atol=1e-5),
                         "save and load model failed")
+
+    def test_wrong_shape(self):
+        with self.assertRaises(ValueError) as context:
+            alpha_net_v3 = AlphaNetV3()
+            alpha_net_v3.compile()
+            alpha_net_v3.fit(self.wrong_shape,
+                             self.random_label,
+                             batch_size=20)
+        self.assertTrue("stride的整数倍" in str(context.exception))
 
     @classmethod
     def tearDownClass(cls):
