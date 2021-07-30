@@ -232,8 +232,9 @@ class TrainValData:
          val_dates_series) = __full_tensor_generation__(*val_args)
         # 转化为tensorflow DataSet
         val = _tf.data.Dataset.from_tensor_slices((val_x, val_y))
-        val_dates_list = val_dates_series[:, 0].numpy().tolist()
-        val_series_list = val_dates_series[:, 1].numpy().tolist()
+        val_dates_series = val_dates_series.numpy().astype(int)
+        val_dates_list = val_dates_series[:, 0].tolist()
+        val_series_list = val_dates_series[:, 1].tolist()
         dates_info["validation"]["dates_list"] = val_dates_list
         dates_info["validation"]["series_list"] = val_series_list
 
@@ -244,8 +245,9 @@ class TrainValData:
          train_y,
          train_dates_series) = __full_tensor_generation__(*train_args)
         train = _tf.data.Dataset.from_tensor_slices((train_x, train_y))
-        train_dates_list = train_dates_series[:, 0].numpy().tolist()
-        train_series_list = train_dates_series[:, 1].numpy().tolist()
+        train_dates_series = train_dates_series.numpy().astype(int)
+        train_dates_list = train_dates_series[:, 0].tolist()
+        train_series_list = train_dates_series[:, 1].tolist()
         dates_info["training"]["dates_list"] = train_dates_list
         dates_info["training"]["series_list"] = train_series_list
         return train, val, dates_info
@@ -401,7 +403,8 @@ def __full_tensor_generation__(data,
     # 根据generation_list指定的series，日期，获取标签及数据片段
     label_all = _tf.gather_nd(label[:, history - 1:], generation_list)
     data_all = _tf.gather_nd(data_expanded, generation_list)
-    dates_series_all = _tf.gather_nd(dates_series, generation_list)
+    dates_series_all = _tf.gather_nd(dates_series[:, history - 1:],
+                                     generation_list)
 
     # 去掉所有包含缺失数据的某股票某时间历史片段
     label_nan = _tf.cast(_tf.math.is_nan(label_all), _tf.int64)
