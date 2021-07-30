@@ -746,7 +746,7 @@ def __get_dimensions__(input_shape, stride):
     """计算相关维度长度.
 
     Notes:
-        compute output shapes
+        output_length = 原来的时间长度 / stride的长度
 
     Args:
         input_shape: pass the inputs of layer to the function
@@ -754,6 +754,9 @@ def __get_dimensions__(input_shape, stride):
 
     Returns:
         (features, output_length)
+
+    Raises:
+        ValueError: 如果历史长度不是stride的整数倍
 
     """
     if type(stride) is not int or stride <= 1:
