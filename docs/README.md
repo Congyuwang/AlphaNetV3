@@ -12,7 +12,6 @@
 
 - [`alphanet.AlphaNetV2`](./alphanet.md#class-alphanetv2): 神经网络模型，继承``keras.Model``类.
 - [`alphanet.AlphaNetV3`](./alphanet.md#class-alphanetv3): 神经网络模型，继承``keras.Model``类.
-- [`alphanet.AlphaNetV4`](./alphanet.md#class-alphanetv4): 神经网络模型，继承``keras.Model``类.
 - [`alphanet.Correlation`](./alphanet.md#class-correlation): 计算每个stride各时间序列的相关系数.
 - [`alphanet.Covariance`](./alphanet.md#class-covariance): 计算每个stride各时间序列片段的covariance.
 - [`alphanet.FeatureExpansion`](./alphanet.md#class-featureexpansion): 计算时间序列特征扩张层，汇总6个计算层.
