@@ -79,7 +79,7 @@ train_val_data = TrainValData(time_series_list=stock_data_list,
 ### Step 2: get datasets from desired period
 ```python
 # get one training period that start from 20110131
-train, val, dates_info = data_producer.get(20110131, order="shuffle")
+train, val, dates_info = data_producer.get(20110131, order="by_date")
 print(dates_info)
 ```
 
