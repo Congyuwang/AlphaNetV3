@@ -1,6 +1,6 @@
 """时间序列计算层、神经网络模型定义.
 
-复现华泰金工 alpha net V2、V3 版本.
+复现华泰金工 alpha net V2、V3、V4 版本.
 
 V2:
 
@@ -24,11 +24,11 @@ input --|       stride = 10                     |- concat -> Dense(linear)
 
 (BN: batch normalization)
 
-version: 0.0.7
+version: 0.0.10
 
 author: Congyu Wang
 
-date: 2021-07-29
+date: 2021-07-31
 
 该module定义了计算不同时间序列特征的层，工程上使用tensorflow
 进行高度向量化的计算，训练时较高效。
@@ -55,7 +55,8 @@ __all__ = ["Std",
            "FeatureExpansion",
            "AlphaNetV2",
            "AlphaNetV3",
-           "load_model"]
+           "AlphaNetV4",
+           "load_model",]
 
 
 class Std(_Layer):
@@ -660,6 +661,103 @@ class AlphaNetV3(_Model):
         normalized10_2 = self.normalized10_2(gru10, training=training)
         normalized5_2 = self.normalized5_2(gru5, training=training)
         concat = self.concat([normalized10_2, normalized5_2])
+        output = self.outputs(concat)
+        return output
+
+    def compile(self,
+                optimizer=_tf.keras.optimizers.Adam(0.0001),
+                loss="MSE",
+                metrics=None,
+                loss_weights=None,
+                weighted_metrics=None,
+                run_eagerly=None,
+                **kwargs):
+        """设置优化器、loss、metric等."""
+        super().compile(optimizer=optimizer,
+                        loss=loss,
+                        metrics=metrics,
+                        loss_weights=loss_weights,
+                        weighted_metrics=weighted_metrics,
+                        run_eagerly=run_eagerly)
+
+    def get_config(self):
+        """获取参数，保存模型需要的函数."""
+        config = super().get_config().copy()
+        config.update({'dropout': self.dropout,
+                       'l2': self.l2})
+        return config
+
+
+class AlphaNetV4(_Model):
+    """神经网络模型，继承``keras.Model``类.
+
+    alpha net v4版本模型.
+
+    Notes:
+        ``input: (batch_size, history time steps, features)``
+
+    """
+
+    def __init__(self,
+                 dropout=0.0,
+                 l2=0.001,
+                 *args,
+                 **kwargs):
+        """Alpha net v4.
+
+        Notes:
+            alpha net v4
+
+        Args:
+            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
+            l2: 输出层的l2-regularization参数
+
+        """
+        super(AlphaNetV4, self).__init__(*args, **kwargs)
+        self.l2 = l2
+        self.dropout = dropout
+        self.expanded20 = FeatureExpansion(stride=20)
+        self.expanded10 = FeatureExpansion(stride=10)
+        self.expanded5 = FeatureExpansion(stride=5)
+        self.normalized20 = _tfl.BatchNormalization()
+        self.normalized10 = _tfl.BatchNormalization()
+        self.normalized5 = _tfl.BatchNormalization()
+        self.dropout20 = _tfl.Dropout(self.dropout)
+        self.dropout10 = _tfl.Dropout(self.dropout)
+        self.dropout5 = _tfl.Dropout(self.dropout)
+        self.gru20 = _tfl.GRU(units=30)
+        self.gru10 = _tfl.GRU(units=30)
+        self.gru5 = _tfl.GRU(units=30)
+        self.normalized20_2 = _tfl.BatchNormalization()
+        self.normalized10_2 = _tfl.BatchNormalization()
+        self.normalized5_2 = _tfl.BatchNormalization()
+        self.concat = _tfl.Concatenate(axis=-1)
+        self.regularizer = _tf.keras.regularizers.l2(self.l2)
+        self.outputs = _tfl.Dense(1, activation="linear",
+                                  kernel_initializer="truncated_normal",
+                                  kernel_regularizer=self.regularizer)
+
+    @_tf.function
+    def call(self, inputs, training=None, mask=None):
+        """计算逻辑实现."""
+        expanded20 = self.expanded20(inputs)
+        expanded10 = self.expanded10(inputs)
+        expanded5 = self.expanded5(inputs)
+        normalized20 = self.normalized20(expanded20, training=training)
+        normalized10 = self.normalized10(expanded10, training=training)
+        normalized5 = self.normalized5(expanded5, training=training)
+        dropout20 = self.dropout20(normalized20, training=training)
+        dropout10 = self.dropout10(normalized10, training=training)
+        dropout5 = self.dropout5(normalized5, training=training)
+        gru20 = self.gru20(dropout20)
+        gru10 = self.gru10(dropout10)
+        gru5 = self.gru5(dropout5)
+        normalized20_2 = self.normalized20_2(gru20, training=training)
+        normalized10_2 = self.normalized10_2(gru10, training=training)
+        normalized5_2 = self.normalized5_2(gru5, training=training)
+        concat = self.concat([normalized20_2,
+                              normalized10_2,
+                              normalized5_2])
         output = self.outputs(concat)
         return output
 

@@ -174,6 +174,24 @@
 
             </li>
             <li>
+                    <a class="class" href="#AlphaNetV4">AlphaNetV4</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#AlphaNetV4.__init__">AlphaNetV4</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#AlphaNetV4.call">call</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#AlphaNetV4.compile">compile</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#AlphaNetV4.get_config">get_config</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="function" href="#load_model">load_model</a>
             </li>
     </ul>
@@ -193,7 +211,7 @@ alphanet    </h1>
 
                         <div class="docstring"><p>时间序列计算层、神经网络模型定义.</p>
 
-<p>复现华泰金工 alpha net V2、V3 版本.</p>
+<p>复现华泰金工 alpha net V2、V3、V4 版本.</p>
 
 <p>V2:</p>
 
@@ -215,11 +233,11 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <p>(BN: batch normalization)</p>
 
-<p>version: 0.0.7</p>
+<p>version: 0.0.10</p>
 
 <p>author: Congyu Wang</p>
 
-<p>date: 2021-07-29</p>
+<p>date: 2021-07-31</p>
 
 <p>该module定义了计算不同时间序列特征的层，工程上使用tensorflow
 进行高度向量化的计算，训练时较高效。</p>
@@ -229,7 +247,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;时间序列计算层、神经网络模型定义.</span>
 
-<span class="sd">复现华泰金工 alpha net V2、V3 版本.</span>
+<span class="sd">复现华泰金工 alpha net V2、V3、V4 版本.</span>
 
 <span class="sd">V2:</span>
 
@@ -253,11 +271,11 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <span class="sd">(BN: batch normalization)</span>
 
-<span class="sd">version: 0.0.7</span>
+<span class="sd">version: 0.0.10</span>
 
 <span class="sd">author: Congyu Wang</span>
 
-<span class="sd">date: 2021-07-29</span>
+<span class="sd">date: 2021-07-31</span>
 
 <span class="sd">该module定义了计算不同时间序列特征的层，工程上使用tensorflow</span>
 <span class="sd">进行高度向量化的计算，训练时较高效。</span>
@@ -284,7 +302,8 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
            <span class="s2">&quot;FeatureExpansion&quot;</span><span class="p">,</span>
            <span class="s2">&quot;AlphaNetV2&quot;</span><span class="p">,</span>
            <span class="s2">&quot;AlphaNetV3&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;load_model&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;AlphaNetV4&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;load_model&quot;</span><span class="p">,]</span>
 
 
 <span class="k">class</span> <span class="nc">Std</span><span class="p">(</span><span class="n">_Layer</span><span class="p">):</span>
@@ -889,6 +908,103 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
         <span class="n">normalized10_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span><span class="p">(</span><span class="n">gru10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
         <span class="n">normalized5_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span><span class="p">(</span><span class="n">gru5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
         <span class="n">concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">normalized10_2</span><span class="p">,</span> <span class="n">normalized5_2</span><span class="p">])</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">),</span>
+                <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;MSE&quot;</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">loss_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">weighted_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;设置优化器、loss、metric等.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                        <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+                        <span class="n">loss_weights</span><span class="o">=</span><span class="n">loss_weights</span><span class="p">,</span>
+                        <span class="n">weighted_metrics</span><span class="o">=</span><span class="n">weighted_metrics</span><span class="p">,</span>
+                        <span class="n">run_eagerly</span><span class="o">=</span><span class="n">run_eagerly</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获取参数，保存模型需要的函数.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;dropout&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span>
+                       <span class="s1">&#39;l2&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">config</span>
+
+
+<span class="k">class</span> <span class="nc">AlphaNetV4</span><span class="p">(</span><span class="n">_Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;神经网络模型，继承``keras.Model``类.</span>
+
+<span class="sd">    alpha net v4版本模型.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        ``input: (batch_size, history time steps, features)``</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">l2</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Alpha net v4.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            alpha net v4</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout</span>
+<span class="sd">            l2: 输出层的l2-regularization参数</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlphaNetV4</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l2</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded20</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized20_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+                                  <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
+                                  <span class="n">kernel_regularizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span><span class="p">)</span>
+
+    <span class="nd">@_tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;计算逻辑实现.&quot;&quot;&quot;</span>
+        <span class="n">expanded20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded20</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">expanded10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">expanded5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">normalized20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized20</span><span class="p">(</span><span class="n">expanded20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10</span><span class="p">(</span><span class="n">expanded10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5</span><span class="p">(</span><span class="n">expanded5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout20</span><span class="p">(</span><span class="n">normalized20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout10</span><span class="p">(</span><span class="n">normalized10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout5</span><span class="p">(</span><span class="n">normalized5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">gru20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru20</span><span class="p">(</span><span class="n">dropout20</span><span class="p">)</span>
+        <span class="n">gru10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru10</span><span class="p">(</span><span class="n">dropout10</span><span class="p">)</span>
+        <span class="n">gru5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span><span class="p">(</span><span class="n">dropout5</span><span class="p">)</span>
+        <span class="n">normalized20_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized20_2</span><span class="p">(</span><span class="n">gru20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized10_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span><span class="p">(</span><span class="n">gru10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized5_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span><span class="p">(</span><span class="n">gru5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">normalized20_2</span><span class="p">,</span>
+                              <span class="n">normalized10_2</span><span class="p">,</span>
+                              <span class="n">normalized5_2</span><span class="p">])</span>
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
 
@@ -3610,6 +3726,401 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
                                 <dd id="AlphaNetV3.name_scope" class="variable">name_scope</dd>
                 <dd id="AlphaNetV3.submodules" class="variable">submodules</dd>
                 <dd id="AlphaNetV3.with_name_scope" class="function">with_name_scope</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="AlphaNetV4">
+                                <div class="attr class">
+        <a class="headerlink" href="#AlphaNetV4">#&nbsp;&nbsp</a>
+
+        
+        <span class="def">class</span>
+        <span class="name">AlphaNetV4</span><wbr>(<span class="base">tensorflow.python.keras.engine.training.Model</span>):
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">AlphaNetV4</span><span class="p">(</span><span class="n">_Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;神经网络模型，继承``keras.Model``类.</span>
+
+<span class="sd">    alpha net v4版本模型.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        ``input: (batch_size, history time steps, features)``</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">l2</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Alpha net v4.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            alpha net v4</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout</span>
+<span class="sd">            l2: 输出层的l2-regularization参数</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlphaNetV4</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l2</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded20</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized20_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+                                  <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
+                                  <span class="n">kernel_regularizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span><span class="p">)</span>
+
+    <span class="nd">@_tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;计算逻辑实现.&quot;&quot;&quot;</span>
+        <span class="n">expanded20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded20</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">expanded10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">expanded5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">normalized20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized20</span><span class="p">(</span><span class="n">expanded20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10</span><span class="p">(</span><span class="n">expanded10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5</span><span class="p">(</span><span class="n">expanded5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout20</span><span class="p">(</span><span class="n">normalized20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout10</span><span class="p">(</span><span class="n">normalized10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout5</span><span class="p">(</span><span class="n">normalized5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">gru20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru20</span><span class="p">(</span><span class="n">dropout20</span><span class="p">)</span>
+        <span class="n">gru10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru10</span><span class="p">(</span><span class="n">dropout10</span><span class="p">)</span>
+        <span class="n">gru5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span><span class="p">(</span><span class="n">dropout5</span><span class="p">)</span>
+        <span class="n">normalized20_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized20_2</span><span class="p">(</span><span class="n">gru20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized10_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span><span class="p">(</span><span class="n">gru10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized5_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span><span class="p">(</span><span class="n">gru5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">normalized20_2</span><span class="p">,</span>
+                              <span class="n">normalized10_2</span><span class="p">,</span>
+                              <span class="n">normalized5_2</span><span class="p">])</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">),</span>
+                <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;MSE&quot;</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">loss_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">weighted_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;设置优化器、loss、metric等.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                        <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+                        <span class="n">loss_weights</span><span class="o">=</span><span class="n">loss_weights</span><span class="p">,</span>
+                        <span class="n">weighted_metrics</span><span class="o">=</span><span class="n">weighted_metrics</span><span class="p">,</span>
+                        <span class="n">run_eagerly</span><span class="o">=</span><span class="n">run_eagerly</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获取参数，保存模型需要的函数.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;dropout&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span>
+                       <span class="s1">&#39;l2&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">config</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>神经网络模型，继承<code>keras.Model</code>类.</p>
+
+<p>alpha net v4版本模型.</p>
+
+<h6 id="notes">Notes</h6>
+
+<blockquote>
+  <p><code>input: (batch_size, history time steps, features)</code></p>
+</blockquote>
+</div>
+
+
+                            <div id="AlphaNetV4.__init__" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#AlphaNetV4.__init__">#&nbsp;&nbsp</a>
+
+        
+            <span class="name">AlphaNetV4</span><span class="signature">(dropout=0.0, l2=0.001, *args, **kwargs)</span>
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">l2</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Alpha net v4.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            alpha net v4</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout</span>
+<span class="sd">            l2: 输出层的l2-regularization参数</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlphaNetV4</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l2</span> <span class="o">=</span> <span class="n">l2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded20</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span> <span class="o">=</span> <span class="n">FeatureExpansion</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru20</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru10</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized20_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">_tfl</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+                                  <span class="n">kernel_initializer</span><span class="o">=</span><span class="s2">&quot;truncated_normal&quot;</span><span class="p">,</span>
+                                  <span class="n">kernel_regularizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regularizer</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Alpha net v4.</p>
+
+<h6 id="notes">Notes</h6>
+
+<blockquote>
+  <p>alpha net v4</p>
+</blockquote>
+
+<h6 id="args">Args</h6>
+
+<ul>
+<li><strong>dropout:</strong>  跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout</li>
+<li><strong>l2:</strong>  输出层的l2-regularization参数</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="AlphaNetV4.call" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#AlphaNetV4.call">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">call</span><span class="signature">(self, inputs, training=None, mask=None)</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="nd">@_tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;计算逻辑实现.&quot;&quot;&quot;</span>
+        <span class="n">expanded20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded20</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">expanded10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded10</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">expanded5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expanded5</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">normalized20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized20</span><span class="p">(</span><span class="n">expanded20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10</span><span class="p">(</span><span class="n">expanded10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5</span><span class="p">(</span><span class="n">expanded5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout20</span><span class="p">(</span><span class="n">normalized20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout10</span><span class="p">(</span><span class="n">normalized10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">dropout5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout5</span><span class="p">(</span><span class="n">normalized5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">gru20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru20</span><span class="p">(</span><span class="n">dropout20</span><span class="p">)</span>
+        <span class="n">gru10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru10</span><span class="p">(</span><span class="n">dropout10</span><span class="p">)</span>
+        <span class="n">gru5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru5</span><span class="p">(</span><span class="n">dropout5</span><span class="p">)</span>
+        <span class="n">normalized20_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized20_2</span><span class="p">(</span><span class="n">gru20</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized10_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized10_2</span><span class="p">(</span><span class="n">gru10</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">normalized5_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalized5_2</span><span class="p">(</span><span class="n">gru5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">normalized20_2</span><span class="p">,</span>
+                              <span class="n">normalized10_2</span><span class="p">,</span>
+                              <span class="n">normalized5_2</span><span class="p">])</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>计算逻辑实现.</p>
+</div>
+
+
+                            </div>
+                            <div id="AlphaNetV4.compile" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#AlphaNetV4.compile">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">compile</span><span class="signature">(
+    self,
+    optimizer=&lt;tensorflow.python.keras.optimizer_v2.adam.Adam object&gt;,
+    loss=&#39;MSE&#39;,
+    metrics=None,
+    loss_weights=None,
+    weighted_metrics=None,
+    run_eagerly=None,
+    **kwargs
+)</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">),</span>
+                <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;MSE&quot;</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">loss_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">weighted_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;设置优化器、loss、metric等.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                        <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+                        <span class="n">loss_weights</span><span class="o">=</span><span class="n">loss_weights</span><span class="p">,</span>
+                        <span class="n">weighted_metrics</span><span class="o">=</span><span class="n">weighted_metrics</span><span class="p">,</span>
+                        <span class="n">run_eagerly</span><span class="o">=</span><span class="n">run_eagerly</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>设置优化器、loss、metric等.</p>
+</div>
+
+
+                            </div>
+                            <div id="AlphaNetV4.get_config" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#AlphaNetV4.get_config">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">get_config</span><span class="signature">(self)</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获取参数，保存模型需要的函数.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;dropout&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span>
+                       <span class="s1">&#39;l2&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">l2</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">config</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>获取参数，保存模型需要的函数.</p>
+</div>
+
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>tensorflow.python.keras.engine.training.Model</dt>
+                                <dd id="AlphaNetV4.build" class="function">build</dd>
+                <dd id="AlphaNetV4.metrics" class="variable">metrics</dd>
+                <dd id="AlphaNetV4.metrics_names" class="variable">metrics_names</dd>
+                <dd id="AlphaNetV4.distribute_strategy" class="variable">distribute_strategy</dd>
+                <dd id="AlphaNetV4.run_eagerly" class="variable">run_eagerly</dd>
+                <dd id="AlphaNetV4.train_step" class="function">train_step</dd>
+                <dd id="AlphaNetV4.make_train_function" class="function">make_train_function</dd>
+                <dd id="AlphaNetV4.fit" class="function">fit</dd>
+                <dd id="AlphaNetV4.test_step" class="function">test_step</dd>
+                <dd id="AlphaNetV4.make_test_function" class="function">make_test_function</dd>
+                <dd id="AlphaNetV4.evaluate" class="function">evaluate</dd>
+                <dd id="AlphaNetV4.predict_step" class="function">predict_step</dd>
+                <dd id="AlphaNetV4.make_predict_function" class="function">make_predict_function</dd>
+                <dd id="AlphaNetV4.predict" class="function">predict</dd>
+                <dd id="AlphaNetV4.reset_metrics" class="function">reset_metrics</dd>
+                <dd id="AlphaNetV4.train_on_batch" class="function">train_on_batch</dd>
+                <dd id="AlphaNetV4.test_on_batch" class="function">test_on_batch</dd>
+                <dd id="AlphaNetV4.predict_on_batch" class="function">predict_on_batch</dd>
+                <dd id="AlphaNetV4.fit_generator" class="function">fit_generator</dd>
+                <dd id="AlphaNetV4.evaluate_generator" class="function">evaluate_generator</dd>
+                <dd id="AlphaNetV4.predict_generator" class="function">predict_generator</dd>
+                <dd id="AlphaNetV4.trainable_weights" class="variable">trainable_weights</dd>
+                <dd id="AlphaNetV4.non_trainable_weights" class="variable">non_trainable_weights</dd>
+                <dd id="AlphaNetV4.get_weights" class="function">get_weights</dd>
+                <dd id="AlphaNetV4.save" class="function">save</dd>
+                <dd id="AlphaNetV4.save_weights" class="function">save_weights</dd>
+                <dd id="AlphaNetV4.load_weights" class="function">load_weights</dd>
+                <dd id="AlphaNetV4.from_config" class="function">from_config</dd>
+                <dd id="AlphaNetV4.to_json" class="function">to_json</dd>
+                <dd id="AlphaNetV4.to_yaml" class="function">to_yaml</dd>
+                <dd id="AlphaNetV4.reset_states" class="function">reset_states</dd>
+                <dd id="AlphaNetV4.state_updates" class="variable">state_updates</dd>
+                <dd id="AlphaNetV4.weights" class="variable">weights</dd>
+                <dd id="AlphaNetV4.summary" class="function">summary</dd>
+                <dd id="AlphaNetV4.layers" class="variable">layers</dd>
+                <dd id="AlphaNetV4.get_layer" class="function">get_layer</dd>
+
+            </div>
+            <div><dt>tensorflow.python.keras.engine.base_layer.Layer</dt>
+                                <dd id="AlphaNetV4.add_weight" class="function">add_weight</dd>
+                <dd id="AlphaNetV4.compute_output_shape" class="function">compute_output_shape</dd>
+                <dd id="AlphaNetV4.compute_output_signature" class="function">compute_output_signature</dd>
+                <dd id="AlphaNetV4.compute_mask" class="function">compute_mask</dd>
+                <dd id="AlphaNetV4.dtype" class="variable">dtype</dd>
+                <dd id="AlphaNetV4.name" class="variable">name</dd>
+                <dd id="AlphaNetV4.supports_masking" class="variable">supports_masking</dd>
+                <dd id="AlphaNetV4.dynamic" class="variable">dynamic</dd>
+                <dd id="AlphaNetV4.stateful" class="variable">stateful</dd>
+                <dd id="AlphaNetV4.trainable" class="variable">trainable</dd>
+                <dd id="AlphaNetV4.activity_regularizer" class="variable">activity_regularizer</dd>
+                <dd id="AlphaNetV4.input_spec" class="variable">input_spec</dd>
+                <dd id="AlphaNetV4.updates" class="variable">updates</dd>
+                <dd id="AlphaNetV4.losses" class="variable">losses</dd>
+                <dd id="AlphaNetV4.add_loss" class="function">add_loss</dd>
+                <dd id="AlphaNetV4.add_metric" class="function">add_metric</dd>
+                <dd id="AlphaNetV4.add_update" class="function">add_update</dd>
+                <dd id="AlphaNetV4.set_weights" class="function">set_weights</dd>
+                <dd id="AlphaNetV4.get_updates_for" class="function">get_updates_for</dd>
+                <dd id="AlphaNetV4.get_losses_for" class="function">get_losses_for</dd>
+                <dd id="AlphaNetV4.get_input_mask_at" class="function">get_input_mask_at</dd>
+                <dd id="AlphaNetV4.get_output_mask_at" class="function">get_output_mask_at</dd>
+                <dd id="AlphaNetV4.input_mask" class="variable">input_mask</dd>
+                <dd id="AlphaNetV4.output_mask" class="variable">output_mask</dd>
+                <dd id="AlphaNetV4.get_input_shape_at" class="function">get_input_shape_at</dd>
+                <dd id="AlphaNetV4.get_output_shape_at" class="function">get_output_shape_at</dd>
+                <dd id="AlphaNetV4.get_input_at" class="function">get_input_at</dd>
+                <dd id="AlphaNetV4.get_output_at" class="function">get_output_at</dd>
+                <dd id="AlphaNetV4.input" class="variable">input</dd>
+                <dd id="AlphaNetV4.output" class="variable">output</dd>
+                <dd id="AlphaNetV4.input_shape" class="variable">input_shape</dd>
+                <dd id="AlphaNetV4.count_params" class="function">count_params</dd>
+                <dd id="AlphaNetV4.output_shape" class="variable">output_shape</dd>
+                <dd id="AlphaNetV4.inbound_nodes" class="variable">inbound_nodes</dd>
+                <dd id="AlphaNetV4.outbound_nodes" class="variable">outbound_nodes</dd>
+                <dd id="AlphaNetV4.apply" class="function">apply</dd>
+                <dd id="AlphaNetV4.add_variable" class="function">add_variable</dd>
+                <dd id="AlphaNetV4.variables" class="variable">variables</dd>
+                <dd id="AlphaNetV4.trainable_variables" class="variable">trainable_variables</dd>
+                <dd id="AlphaNetV4.non_trainable_variables" class="variable">non_trainable_variables</dd>
+
+            </div>
+            <div><dt>tensorflow.python.module.module.Module</dt>
+                                <dd id="AlphaNetV4.name_scope" class="variable">name_scope</dd>
+                <dd id="AlphaNetV4.submodules" class="variable">submodules</dd>
+                <dd id="AlphaNetV4.with_name_scope" class="function">with_name_scope</dd>
 
             </div>
                                 </dl>
