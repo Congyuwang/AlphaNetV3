@@ -226,19 +226,24 @@
                                  <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                               <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
 
         <span class="c1"># 根据日期序列的位置向张量填充数据</span>
         <span class="n">dates_positions</span> <span class="o">=</span> <span class="p">{</span><span class="n">date</span><span class="p">:</span> <span class="n">index</span>
                            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)}</span>
         <span class="n">dates_position_mapper</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">dates_positions</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">series</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">):</span>
-            <span class="c1"># 找到该序列series.dates日期在日期列表中的位置，</span>
+            <span class="c1"># 找到该序列series.dates日期在日期列表中的位置</span>
             <span class="c1"># 将第i个序列填充至tensor的第i行</span>
             <span class="n">position_index</span> <span class="o">=</span> <span class="n">dates_position_mapper</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">dates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
         <span class="c1"># numpy -&gt; tensor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -252,7 +257,6 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">,</span>
             <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
@@ -272,11 +276,6 @@
 <span class="sd">            start_date: 该轮训练开始日期，整数``YYYYMMDD``</span>
 <span class="sd">            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。</span>
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
-<span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
-<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大显存不足时</span>
-<span class="sd">                可以使用generator。</span>
-<span class="sd">                &#39;in_memory&#39;模式股票数量较大、history_length较大、或者step较小时，</span>
-<span class="sd">                可能会要求较大显卡内存。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
 <span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
 
@@ -289,17 +288,9 @@
 <span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                               <span class="n">order</span><span class="p">,</span>
-                                               <span class="n">validate_only</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                          <span class="n">order</span><span class="p">,</span>
-                                          <span class="n">validate_only</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode unimplemented, choose from `generator` &quot;</span>
-                             <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                      <span class="n">order</span><span class="p">,</span>
+                                      <span class="n">validate_only</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                           <span class="n">start_date</span><span class="p">,</span>
@@ -315,43 +306,28 @@
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
         <span class="c1"># 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息</span>
-        <span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">val_x</span><span class="p">,</span>
+         <span class="n">val_y</span><span class="p">,</span>
+         <span class="n">val_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
         <span class="c1"># 转化为tensorflow DataSet</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">))</span>
+        <span class="n">val_dates_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">val_series_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_dates_list</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_series_list</span>
 
         <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
-        <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">train_x</span><span class="p">,</span>
+         <span class="n">train_y</span><span class="p">,</span>
+         <span class="n">train_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
         <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
+        <span class="n">train_dates_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">train_series_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_dates_list</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_series_list</span>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
-
-    <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                               <span class="n">start_date</span><span class="p">,</span>
-                               <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-                               <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢.&quot;&quot;&quot;</span>
-        <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
-        <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                                                    <span class="n">order</span><span class="p">)</span>
-        <span class="n">shapes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">)),</span>
-                  <span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(()))</span>
-        <span class="n">types</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
-                                                      <span class="n">args</span><span class="o">=</span><span class="n">val_args</span><span class="p">,</span>
-                                                      <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
-                                                      <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
-
-        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
-                                                        <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">,</span>
-                                                        <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
-                                                        <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;根据开始时间计算用于构建训练集、验证集的相关信息.&quot;&quot;&quot;</span>
@@ -369,11 +345,11 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;date range exceeded end of dates&quot;</span><span class="p">)</span>
 
         <span class="c1"># 计算各个时间节点在时间列表中的位置</span>
-        <span class="c1"># 训练集开始位置</span>
+        <span class="c1"># 训练集开始位置(data的开始位置)</span>
         <span class="n">train_start_index</span> <span class="o">=</span> <span class="n">__first_index__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">,</span> <span class="n">first_date</span><span class="p">)</span>
         <span class="c1"># 训练集结束位置(不包含)</span>
         <span class="n">train_end_index</span> <span class="o">=</span> <span class="n">train_start_index</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_length</span>
-        <span class="c1"># 验证集开始位置</span>
+        <span class="c1"># 验证集开始位置(data的开始位置)</span>
         <span class="n">val_start_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_end_index</span> <span class="o">-</span>
                            <span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span> <span class="o">+</span>
                            <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -417,6 +393,7 @@
         <span class="n">length</span> <span class="o">=</span> <span class="n">end_index</span> <span class="o">-</span> <span class="n">start_index</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:,</span> <span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[:,</span> <span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">]</span>
+        <span class="n">dates_series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[:,</span> <span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">generation_list</span> <span class="o">=</span> <span class="p">[[</span><span class="n">series_i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span>
                            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>
                                           <span class="n">length</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
@@ -436,7 +413,7 @@
         <span class="n">generation_list</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">generation_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
         <span class="n">history_length</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history_length</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history_length</span><span class="p">,</span> <span class="n">dates_series</span>
 
     <span class="k">def</span> <span class="nf">__dates_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                        <span class="n">train_start_index</span><span class="p">,</span>
@@ -475,7 +452,7 @@
             <span class="p">},</span>
             <span class="s2">&quot;validation&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">[</span><span class="n">validation_beginning</span><span class="p">]),</span>
-                <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">[</span><span class="n">validation_ending</span><span class="p">])</span>
+                <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">[</span><span class="n">validation_ending</span><span class="p">]),</span>
             <span class="p">}</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">dates_info</span>
@@ -491,7 +468,11 @@
     <span class="k">return</span> <span class="n">_tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">data_expanded</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 
 
-<span class="k">def</span> <span class="nf">__full_tensor_generation__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">__full_tensor_generation__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                               <span class="n">label</span><span class="p">,</span>
+                               <span class="n">generation_list</span><span class="p">,</span>
+                               <span class="n">history</span><span class="p">,</span>
+                               <span class="n">dates_series</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息.&quot;&quot;&quot;</span>
     <span class="c1"># 先将该数据片段的历史维度展开</span>
     <span class="n">data_expanded</span> <span class="o">=</span> <span class="n">__history_expander__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">history</span><span class="p">)</span>
@@ -499,34 +480,17 @@
     <span class="c1"># 根据generation_list指定的series，日期，获取标签及数据片段</span>
     <span class="n">label_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">label</span><span class="p">[:,</span> <span class="n">history</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">generation_list</span><span class="p">)</span>
     <span class="n">data_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">data_expanded</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">)</span>
+    <span class="n">dates_series_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">dates_series</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">)</span>
 
     <span class="c1"># 去掉所有包含缺失数据的某股票某时间历史片段</span>
     <span class="n">label_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">label_all</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">data_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">data_all</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-    <span class="n">nan_series_time_index</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">data_nan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">nan_series_time_index</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
+        <span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">data_nan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
     <span class="n">not_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nan_series_time_index</span><span class="p">,</span> <span class="n">label_nan</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
-    <span class="k">return</span> <span class="n">data_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">],</span> <span class="n">label_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">]</span>
-
-
-<span class="k">def</span> <span class="nf">__training_example_getter__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">series_i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">history_length</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;``DataSet.from_generator``会用到的函数，获取单个训练数据.&quot;&quot;&quot;</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">series_i</span><span class="p">][</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">history_length</span><span class="p">]</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">series_i</span><span class="p">][</span><span class="n">i</span> <span class="o">+</span> <span class="n">history_length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span>
-            <span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-
-<span class="k">def</span> <span class="nf">__generator__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history_length</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;``DataSet.from_generator``会用到的generator.&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">series_i</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">generation_list</span><span class="p">:</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">__training_example_getter__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">series_i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">history_length</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">d</span>
-            <span class="k">yield</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+    <span class="k">return</span> <span class="n">data_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">],</span> <span class="n">label_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">],</span> <span class="n">dates_series_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">__first_index__</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
@@ -758,19 +722,24 @@
                                  <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                               <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
 
         <span class="c1"># 根据日期序列的位置向张量填充数据</span>
         <span class="n">dates_positions</span> <span class="o">=</span> <span class="p">{</span><span class="n">date</span><span class="p">:</span> <span class="n">index</span>
                            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)}</span>
         <span class="n">dates_position_mapper</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">dates_positions</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">series</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">):</span>
-            <span class="c1"># 找到该序列series.dates日期在日期列表中的位置，</span>
+            <span class="c1"># 找到该序列series.dates日期在日期列表中的位置</span>
             <span class="c1"># 将第i个序列填充至tensor的第i行</span>
             <span class="n">position_index</span> <span class="o">=</span> <span class="n">dates_position_mapper</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">dates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
         <span class="c1"># numpy -&gt; tensor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -784,7 +753,6 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">,</span>
             <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
@@ -804,11 +772,6 @@
 <span class="sd">            start_date: 该轮训练开始日期，整数``YYYYMMDD``</span>
 <span class="sd">            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。</span>
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
-<span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
-<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大显存不足时</span>
-<span class="sd">                可以使用generator。</span>
-<span class="sd">                &#39;in_memory&#39;模式股票数量较大、history_length较大、或者step较小时，</span>
-<span class="sd">                可能会要求较大显卡内存。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
 <span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
 
@@ -821,17 +784,9 @@
 <span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                               <span class="n">order</span><span class="p">,</span>
-                                               <span class="n">validate_only</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                          <span class="n">order</span><span class="p">,</span>
-                                          <span class="n">validate_only</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode unimplemented, choose from `generator` &quot;</span>
-                             <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                      <span class="n">order</span><span class="p">,</span>
+                                      <span class="n">validate_only</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                           <span class="n">start_date</span><span class="p">,</span>
@@ -847,43 +802,28 @@
         <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                                                     <span class="n">order</span><span class="p">)</span>
         <span class="c1"># 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息</span>
-        <span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">val_x</span><span class="p">,</span>
+         <span class="n">val_y</span><span class="p">,</span>
+         <span class="n">val_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
         <span class="c1"># 转化为tensorflow DataSet</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">))</span>
+        <span class="n">val_dates_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">val_series_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_dates_list</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_series_list</span>
 
         <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
-        <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">train_x</span><span class="p">,</span>
+         <span class="n">train_y</span><span class="p">,</span>
+         <span class="n">train_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
         <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
+        <span class="n">train_dates_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">train_series_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_dates_list</span>
+        <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_series_list</span>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
-
-    <span class="k">def</span> <span class="nf">__get_from_generator__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                               <span class="n">start_date</span><span class="p">,</span>
-                               <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-                               <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢.&quot;&quot;&quot;</span>
-        <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
-        <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                                                    <span class="n">order</span><span class="p">)</span>
-        <span class="n">shapes</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">)),</span>
-                  <span class="n">_tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(()))</span>
-        <span class="n">types</span> <span class="o">=</span> <span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
-                                                      <span class="n">args</span><span class="o">=</span><span class="n">val_args</span><span class="p">,</span>
-                                                      <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
-                                                      <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">validate_only</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
-
-        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">__generator__</span><span class="p">,</span>
-                                                        <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">,</span>
-                                                        <span class="n">output_shapes</span><span class="o">=</span><span class="n">shapes</span><span class="p">,</span>
-                                                        <span class="n">output_types</span><span class="o">=</span><span class="n">types</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">dates_info</span>
 
     <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;根据开始时间计算用于构建训练集、验证集的相关信息.&quot;&quot;&quot;</span>
@@ -901,11 +841,11 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;date range exceeded end of dates&quot;</span><span class="p">)</span>
 
         <span class="c1"># 计算各个时间节点在时间列表中的位置</span>
-        <span class="c1"># 训练集开始位置</span>
+        <span class="c1"># 训练集开始位置(data的开始位置)</span>
         <span class="n">train_start_index</span> <span class="o">=</span> <span class="n">__first_index__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">,</span> <span class="n">first_date</span><span class="p">)</span>
         <span class="c1"># 训练集结束位置(不包含)</span>
         <span class="n">train_end_index</span> <span class="o">=</span> <span class="n">train_start_index</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_length</span>
-        <span class="c1"># 验证集开始位置</span>
+        <span class="c1"># 验证集开始位置(data的开始位置)</span>
         <span class="n">val_start_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_end_index</span> <span class="o">-</span>
                            <span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span> <span class="o">+</span>
                            <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -949,6 +889,7 @@
         <span class="n">length</span> <span class="o">=</span> <span class="n">end_index</span> <span class="o">-</span> <span class="n">start_index</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:,</span> <span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[:,</span> <span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">]</span>
+        <span class="n">dates_series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[:,</span> <span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">generation_list</span> <span class="o">=</span> <span class="p">[[</span><span class="n">series_i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span>
                            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>
                                           <span class="n">length</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
@@ -968,7 +909,7 @@
         <span class="n">generation_list</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">generation_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
         <span class="n">history_length</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__history_length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history_length</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">,</span> <span class="n">history_length</span><span class="p">,</span> <span class="n">dates_series</span>
 
     <span class="k">def</span> <span class="nf">__dates_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                        <span class="n">train_start_index</span><span class="p">,</span>
@@ -1007,7 +948,7 @@
             <span class="p">},</span>
             <span class="s2">&quot;validation&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">[</span><span class="n">validation_beginning</span><span class="p">]),</span>
-                <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">[</span><span class="n">validation_ending</span><span class="p">])</span>
+                <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">[</span><span class="n">validation_ending</span><span class="p">]),</span>
             <span class="p">}</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">dates_info</span>
@@ -1129,19 +1070,24 @@
                                  <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                               <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
 
         <span class="c1"># 根据日期序列的位置向张量填充数据</span>
         <span class="n">dates_positions</span> <span class="o">=</span> <span class="p">{</span><span class="n">date</span><span class="p">:</span> <span class="n">index</span>
                            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)}</span>
         <span class="n">dates_position_mapper</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">dates_positions</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">series</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">):</span>
-            <span class="c1"># 找到该序列series.dates日期在日期列表中的位置，</span>
+            <span class="c1"># 找到该序列series.dates日期在日期列表中的位置</span>
             <span class="c1"># 将第i个序列填充至tensor的第i行</span>
             <span class="n">position_index</span> <span class="o">=</span> <span class="n">dates_position_mapper</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">dates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
         <span class="c1"># numpy -&gt; tensor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -1207,13 +1153,7 @@
 
         
             <span class="def">def</span>
-            <span class="name">get</span><span class="signature">(
-    self,
-    start_date: int,
-    order=&#39;by_date&#39;,
-    mode=&#39;in_memory&#39;,
-    validate_only=False
-)</span>:
+            <span class="name">get</span><span class="signature">(self, start_date: int, order=&#39;by_date&#39;, validate_only=False)</span>:
     </div>
 
                 <details>
@@ -1221,7 +1161,6 @@
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;in_memory&quot;</span><span class="p">,</span>
             <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
@@ -1241,11 +1180,6 @@
 <span class="sd">            start_date: 该轮训练开始日期，整数``YYYYMMDD``</span>
 <span class="sd">            order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。</span>
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
-<span class="sd">            mode: `generator` 或 `in_memory`. generator 速度极慢，</span>
-<span class="sd">                in_memory速度较快，默认in_memory。feature、series数量大显存不足时</span>
-<span class="sd">                可以使用generator。</span>
-<span class="sd">                &#39;in_memory&#39;模式股票数量较大、history_length较大、或者step较小时，</span>
-<span class="sd">                可能会要求较大显卡内存。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
 <span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
 
@@ -1258,17 +1192,9 @@
 <span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_from_generator__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                               <span class="n">order</span><span class="p">,</span>
-                                               <span class="n">validate_only</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;in_memory&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                          <span class="n">order</span><span class="p">,</span>
-                                          <span class="n">validate_only</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode unimplemented, choose from `generator` &quot;</span>
-                             <span class="s2">&quot;and `in_memory`&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
+                                      <span class="n">order</span><span class="p">,</span>
+                                      <span class="n">validate_only</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -1296,11 +1222,6 @@
 <li><strong>start_date:</strong>  该轮训练开始日期，整数<code>YYYYMMDD</code></li>
 <li><strong>order:</strong>  有三种顺序 <code>shuffle</code>, <code>by_date</code>, <code>by_series</code>。
 分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</li>
-<li><strong>mode:</strong>  <code>generator</code> 或 <code>in_memory</code>. generator 速度极慢，
-in_memory速度较快，默认in_memory。feature、series数量大显存不足时
-可以使用generator。
-'in_memory'模式股票数量较大、history_length较大、或者step较小时，
-可能会要求较大显卡内存。</li>
 <li><strong>validate_only:</strong>  如果设置为True，则只返回validate set
 和训练集、验证集时间信息。可以用于训练后的分析。</li>
 </ul>

@@ -975,7 +975,7 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
     <span class="sd">&quot;&quot;&quot;计算相关维度长度.</span>
 
 <span class="sd">    Notes:</span>
-<span class="sd">        compute output shapes</span>
+<span class="sd">        output_length = 原来的时间长度 / stride的长度</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        input_shape: pass the inputs of layer to the function</span>
@@ -983,6 +983,9 @@ input --|       stride = 10                     |- concat -&gt; Dense(linear)
 
 <span class="sd">    Returns:</span>
 <span class="sd">        (features, output_length)</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: 如果历史长度不是stride的整数倍</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span> <span class="ow">or</span> <span class="n">stride</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>

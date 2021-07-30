@@ -100,12 +100,12 @@ __init__(
 
 ---
 
-<a href="../src/alphanet/data.py#L173"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L178"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get`
 
 ```python
-get(start_date: int, order='by_date', mode='in_memory', validate_only=False)
+get(start_date: int, order='by_date', validate_only=False)
 ```
 
 获取从某天开始的训练集和验证集. 
@@ -123,7 +123,6 @@ get(start_date: int, order='by_date', mode='in_memory', validate_only=False)
  
  - <b>`start_date`</b>:  该轮训练开始日期，整数``YYYYMMDD`` 
  - <b>`order`</b>:  有三种顺序 ``shuffle``, ``by_date``, ``by_series``。  分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。 
- - <b>`mode`</b>:  `generator` 或 `in_memory`. generator 速度极慢，  in_memory速度较快，默认in_memory。feature、series数量大显存不足时  可以使用generator。  'in_memory'模式股票数量较大、history_length较大、或者step较小时，  可能会要求较大显卡内存。 
  - <b>`validate_only`</b>:  如果设置为True，则只返回validate set  和训练集、验证集时间信息。可以用于训练后的分析。 
 
 

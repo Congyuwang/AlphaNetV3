@@ -3712,7 +3712,7 @@ Returns the list of all layer variables/weights.
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7febbcd46e80>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7ff363646eb0>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -4232,7 +4232,7 @@ Returns the list of all layer variables/weights.
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7febbcd82520>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7ff36367e580>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
