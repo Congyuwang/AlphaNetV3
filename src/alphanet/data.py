@@ -147,19 +147,24 @@ class TrainValData:
                                  self.__feature_counts))
         self.__labels = _np.empty((len(time_series_list),
                                    len(self.__distinct_dates)))
+        self.__series_date_matrix = _np.empty((len(time_series_list),
+                                               len(self.__distinct_dates), 2))
         self.__data[:] = fill_na
         self.__labels[:] = fill_na
+        self.__series_date_matrix[:] = fill_na
 
         # 根据日期序列的位置向张量填充数据
         dates_positions = {date: index
                            for index, date in enumerate(self.__distinct_dates)}
         dates_position_mapper = _np.vectorize(lambda d: dates_positions[d])
         for i, series in enumerate(time_series_list):
-            # 找到该序列series.dates日期在日期列表中的位置，
+            # 找到该序列series.dates日期在日期列表中的位置
             # 将第i个序列填充至tensor的第i行
             position_index = dates_position_mapper(series.dates)
             self.__data[i, position_index, :] = series.data
             self.__labels[i, position_index] = series.labels
+            self.__series_date_matrix[i, position_index, 0] = series.dates
+            self.__series_date_matrix[i, position_index, 1] = i
 
         # numpy -> tensor
         self.__data = _tf.constant(self.__data, dtype=_tf.float32)
@@ -173,7 +178,6 @@ class TrainValData:
     def get(self,
             start_date: int,
             order="by_date",
-            mode="in_memory",
             validate_only=False):
         """获取从某天开始的训练集和验证集.
 
@@ -193,11 +197,6 @@ class TrainValData:
             start_date: 该轮训练开始日期，整数``YYYYMMDD``
             order: 有三种顺序 ``shuffle``, ``by_date``, ``by_series``。
                 分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。
-            mode: `generator` 或 `in_memory`. generator 速度极慢，
-                in_memory速度较快，默认in_memory。feature、series数量大显存不足时
-                可以使用generator。
-                'in_memory'模式股票数量较大、history_length较大、或者step较小时，
-                可能会要求较大显卡内存。
             validate_only: 如果设置为True，则只返回validate set
                 和训练集、验证集时间信息。可以用于训练后的分析。
 
@@ -210,17 +209,9 @@ class TrainValData:
             ValueError: 日期范围超出最大日期会报ValueError。
 
         """
-        if mode == "generator":
-            return self.__get_from_generator__(start_date,
-                                               order,
-                                               validate_only)
-        elif mode == "in_memory":
-            return self.__get_in_memory__(start_date,
-                                          order,
-                                          validate_only)
-        else:
-            raise ValueError("mode unimplemented, choose from `generator` "
-                             "and `in_memory`")
+        return self.__get_in_memory__(start_date,
+                                      order,
+                                      validate_only)
 
     def __get_in_memory__(self,
                           start_date,
@@ -236,43 +227,28 @@ class TrainValData:
         train_args, val_args, dates_info = self.__get_period_info__(start_date,
                                                                     order)
         # 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息
-        val_x, val_y = __full_tensor_generation__(*val_args)
+        (val_x,
+         val_y,
+         val_dates_series) = __full_tensor_generation__(*val_args)
         # 转化为tensorflow DataSet
         val = _tf.data.Dataset.from_tensor_slices((val_x, val_y))
+        val_dates_list = val_dates_series[:, 0].numpy().tolist()
+        val_series_list = val_dates_series[:, 1].numpy().tolist()
+        dates_info["validation"]["dates_list"] = val_dates_list
+        dates_info["validation"]["series_list"] = val_series_list
 
         if validate_only:
             return val, dates_info
 
-        train_x, train_y = __full_tensor_generation__(*train_args)
+        (train_x,
+         train_y,
+         train_dates_series) = __full_tensor_generation__(*train_args)
         train = _tf.data.Dataset.from_tensor_slices((train_x, train_y))
+        train_dates_list = train_dates_series[:, 0].numpy().tolist()
+        train_series_list = train_dates_series[:, 1].numpy().tolist()
+        dates_info["training"]["dates_list"] = train_dates_list
+        dates_info["training"]["series_list"] = train_series_list
         return train, val, dates_info
-
-    def __get_from_generator__(self,
-                               start_date,
-                               order="by_date",
-                               validate_only=False):
-        """使用tensorflow.data.DataSet.from_generator，占用内存少，生成数据慢."""
-        # 获取用于构建训练集、验证集的相关信息
-        train_args, val_args, dates_info = self.__get_period_info__(start_date,
-                                                                    order)
-        shapes = (_tf.TensorShape((self.__history_length,
-                                   self.__feature_counts)),
-                  _tf.TensorShape(()))
-        types = (_tf.float32, _tf.float32)
-        val_dataset = _tf.data.Dataset.from_generator(__generator__,
-                                                      args=val_args,
-                                                      output_shapes=shapes,
-                                                      output_types=types)
-
-        if validate_only:
-            return val_dataset, dates_info
-
-        train_dataset = _tf.data.Dataset.from_generator(__generator__,
-                                                        args=train_args,
-                                                        output_shapes=shapes,
-                                                        output_types=types)
-
-        return train_dataset, val_dataset, dates_info
 
     def __get_period_info__(self, start_date, order="by_date"):
         """根据开始时间计算用于构建训练集、验证集的相关信息."""
@@ -290,11 +266,11 @@ class TrainValData:
             raise ValueError("date range exceeded end of dates")
 
         # 计算各个时间节点在时间列表中的位置
-        # 训练集开始位置
+        # 训练集开始位置(data的开始位置)
         train_start_index = __first_index__(self.__distinct_dates, first_date)
         # 训练集结束位置(不包含)
         train_end_index = train_start_index + self.__train_length
-        # 验证集开始位置
+        # 验证集开始位置(data的开始位置)
         val_start_index = (train_end_index -
                            self.__history_length +
                            self.__train_val_gap + 1)
@@ -338,6 +314,7 @@ class TrainValData:
         length = end_index - start_index
         data = self.__data[:, start_index:end_index, :]
         label = self.__labels[:, start_index:end_index]
+        dates_series = self.__series_date_matrix[:, start_index:end_index, :]
         generation_list = [[series_i, t]
                            for t in range(0,
                                           length - self.__history_length + 1,
@@ -357,7 +334,7 @@ class TrainValData:
         generation_list = _tf.constant(generation_list, dtype=_tf.int32)
         history_length = _tf.constant(self.__history_length, dtype=_tf.int32)
 
-        return data, label, generation_list, history_length
+        return data, label, generation_list, history_length, dates_series
 
     def __dates_info__(self,
                        train_start_index,
@@ -396,7 +373,7 @@ class TrainValData:
             },
             "validation": {
                 "start_date": int(self.__distinct_dates[validation_beginning]),
-                "end_date": int(self.__distinct_dates[validation_ending])
+                "end_date": int(self.__distinct_dates[validation_ending]),
             }
         }
         return dates_info
@@ -412,7 +389,11 @@ def __history_expander__(data_tensor, history_length):
     return _tf.transpose(data_expanded, perm=[1, 2, 0, 3])
 
 
-def __full_tensor_generation__(data, label, generation_list, history):
+def __full_tensor_generation__(data,
+                               label,
+                               generation_list,
+                               history,
+                               dates_series):
     """将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息."""
     # 先将该数据片段的历史维度展开
     data_expanded = __history_expander__(data, history)
@@ -420,34 +401,17 @@ def __full_tensor_generation__(data, label, generation_list, history):
     # 根据generation_list指定的series，日期，获取标签及数据片段
     label_all = _tf.gather_nd(label[:, history - 1:], generation_list)
     data_all = _tf.gather_nd(data_expanded, generation_list)
+    dates_series_all = _tf.gather_nd(dates_series, generation_list)
 
     # 去掉所有包含缺失数据的某股票某时间历史片段
     label_nan = _tf.cast(_tf.math.is_nan(label_all), _tf.int64)
     data_nan = _tf.cast(_tf.math.is_nan(data_all), _tf.int64)
-    nan_series_time_index = _tf.reduce_sum(_tf.reduce_sum(data_nan, axis=2), axis=1)
+    nan_series_time_index = _tf.reduce_sum(
+        _tf.reduce_sum(data_nan, axis=2),
+        axis=1
+    )
     not_nan = _tf.add(nan_series_time_index, label_nan) == 0
-    return data_all[not_nan], label_all[not_nan]
-
-
-def __training_example_getter__(data, label, series_i, i, history_length):
-    """``DataSet.from_generator``会用到的函数，获取单个训练数据."""
-    x = data[series_i][i: i + history_length]
-    y = label[series_i][i + history_length - 1]
-
-    if (_tf.reduce_sum(_tf.cast(_tf.math.is_nan(x), _tf.int64)) == 0 and
-            _tf.reduce_sum(_tf.cast(_tf.math.is_nan(y), _tf.int64)) == 0):
-        return x, y
-    else:
-        return None
-
-
-def __generator__(data, label, generation_list, history_length):
-    """``DataSet.from_generator``会用到的generator."""
-    for series_i, i in generation_list:
-        d = __training_example_getter__(data, label, series_i, i, history_length)
-        if d:
-            x, y = d
-            yield x, y
+    return data_all[not_nan], label_all[not_nan], dates_series_all[not_nan]
 
 
 def __first_index__(array, element):

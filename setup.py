@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='alphanet',
-    version='0.0.7',
+    version='0.0.8',
     packages=['alphanet'],
     long_description=long_description,
     long_description_content_type="text/markdown",
