@@ -538,6 +538,8 @@ class AlphaNetV2(_Model):
                  dropout=0.0,
                  l2=0.001,
                  stride=10,
+                 classification=False,
+                 categories=0,
                  *args,
                  **kwargs):
         """Alpha net v3.
@@ -560,9 +562,21 @@ class AlphaNetV2(_Model):
         self.lstm = _tfl.LSTM(units=30)
         self.normalized_2 = _tfl.BatchNormalization()
         self.regularizer = _tf.keras.regularizers.l2(self.l2)
-        self.outputs = _tfl.Dense(1, activation="linear",
-                                  kernel_initializer="truncated_normal",
-                                  kernel_regularizer=self.regularizer)
+        if classification:
+            if categories < 1:
+                raise ValueError("categories should be at least 1")
+            elif categories == 1:
+                self.outputs = _tfl.Dense(1, activation="sigmoid",
+                                          kernel_initializer="truncated_normal",
+                                          kernel_regularizer=self.regularizer)
+            else:
+                self.outputs = _tfl.Dense(categories, activation="softmax",
+                                          kernel_initializer="truncated_normal",
+                                          kernel_regularizer=self.regularizer)
+        else:
+            self.outputs = _tfl.Dense(1, activation="linear",
+                                      kernel_initializer="truncated_normal",
+                                      kernel_regularizer=self.regularizer)
 
     @_tf.function
     def call(self, inputs, training=None, mask=None):
@@ -615,6 +629,8 @@ class AlphaNetV3(_Model):
     def __init__(self,
                  dropout=0.0,
                  l2=0.001,
+                 classification=False,
+                 categories=0,
                  *args,
                  **kwargs):
         """Alpha net v3.
@@ -642,9 +658,21 @@ class AlphaNetV3(_Model):
         self.normalized5_2 = _tfl.BatchNormalization()
         self.concat = _tfl.Concatenate(axis=-1)
         self.regularizer = _tf.keras.regularizers.l2(self.l2)
-        self.outputs = _tfl.Dense(1, activation="linear",
-                                  kernel_initializer="truncated_normal",
-                                  kernel_regularizer=self.regularizer)
+        if classification:
+            if categories < 1:
+                raise ValueError("categories should be at least 1")
+            elif categories == 1:
+                self.outputs = _tfl.Dense(1, activation="sigmoid",
+                                          kernel_initializer="truncated_normal",
+                                          kernel_regularizer=self.regularizer)
+            else:
+                self.outputs = _tfl.Dense(categories, activation="softmax",
+                                          kernel_initializer="truncated_normal",
+                                          kernel_regularizer=self.regularizer)
+        else:
+            self.outputs = _tfl.Dense(1, activation="linear",
+                                      kernel_initializer="truncated_normal",
+                                      kernel_regularizer=self.regularizer)
 
     @_tf.function
     def call(self, inputs, training=None, mask=None):
