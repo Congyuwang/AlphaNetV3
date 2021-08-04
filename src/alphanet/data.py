@@ -1,6 +1,6 @@
 """多维多时间序列神经网络滚动训练的数据工具.
 
-version: 0.0.7
+version: 0.0.11
 
 author: Congyu Wang
 
@@ -387,7 +387,7 @@ def __history_expander__(data_tensor, history_length):
     data_expanded = _tf.stack([data_tensor[:, i: (total_time_length + i
                                                   - history_length + 1), :]
                                for i in _tf.range(history_length)])
-    # 调整维度顺序 (series, time, history, features)
+    # 调整维度顺序 (history, sample)
     return _tf.transpose(data_expanded, perm=[1, 2, 0, 3])
 
 
@@ -398,11 +398,14 @@ def __full_tensor_generation__(data,
                                dates_series):
     """将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息."""
     # 先将该数据片段的历史维度展开
-    data_expanded = __history_expander__(data, history)
 
     # 根据generation_list指定的series，日期，获取标签及数据片段
+    total_time_length = data.shape[1]
+    expanded = [_tf.gather_nd(data[:, i: (total_time_length + i
+                                          - history + 1), :], generation_list)
+                for i in _tf.range(history)]
+    data_all = _tf.stack(expanded, axis=1)
     label_all = _tf.gather_nd(label[:, history - 1:], generation_list)
-    data_all = _tf.gather_nd(data_expanded, generation_list)
     dates_series_all = _tf.gather_nd(dates_series[:, history - 1:],
                                      generation_list)
 
