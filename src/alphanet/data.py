@@ -32,7 +32,8 @@ class TimeSeriesData:
         Args:
             dates: 日期列, 1D ``numpy.ndarray``, 整数
             data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)
-            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同
+            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同。
+                如果为分类问题则是2D, (日期长度 x 类别数量)
 
         """
         # 检查参数类型
@@ -44,7 +45,7 @@ class TimeSeriesData:
         if len(dates) != len(data) or len(dates) != len(labels):
             raise ValueError("Bad data shape")
         # 检查维度是否正确
-        if dates.ndim != 1 or data.ndim != 2 or labels.ndim != 1:
+        if dates.ndim != 1 or data.ndim != 2 or not 1 <= labels.ndim <= 2:
             raise ValueError("Wrong dimensions")
         self.dates = dates.astype(_np.int32)
         self.data = data
@@ -135,6 +136,24 @@ class TrainValData:
                 raise ValueError("time series do not have "
                                  "the same number of features")
 
+        # 确保标签维度一致
+        label_dims = time_series_list[0].labels.ndim
+        for series in time_series_list:
+            if series.labels.ndim != label_dims:
+                raise ValueError("time labels do not have "
+                                 "the same number of dimensions")
+
+        # 标签类别数量
+        class_num = 0
+        if label_dims == 2:
+            class_num = time_series_list[0].labels.shape[1]
+            for series in time_series_list:
+                if series.labels.shape[1] != class_num:
+                    raise ValueError("time series labels do not have "
+                                     "the same number of classes")
+
+        self.__class_num = class_num
+
         # 获取日期列表（所有时间序列日期的并集）
         self.__distinct_dates = _np.unique([date for stock in time_series_list
                                             for date in stock.dates])
@@ -145,8 +164,14 @@ class TrainValData:
         self.__data = _np.empty((len(time_series_list),
                                  len(self.__distinct_dates),
                                  self.__feature_counts))
-        self.__labels = _np.empty((len(time_series_list),
-                                   len(self.__distinct_dates)))
+        if self.__class_num == 0:
+            self.__labels = _np.empty((len(time_series_list),
+                                       len(self.__distinct_dates)))
+        else:
+            self.__labels = _np.empty((len(time_series_list),
+                                       len(self.__distinct_dates),
+                                       self.__class_num))
+
         self.__series_date_matrix = _np.empty((len(time_series_list),
                                                len(self.__distinct_dates), 2))
         self.__data[:] = fill_na
@@ -162,7 +187,10 @@ class TrainValData:
             # 将第i个序列填充至tensor的第i行
             position_index = dates_position_mapper(series.dates)
             self.__data[i, position_index, :] = series.data
-            self.__labels[i, position_index] = series.labels
+            if self.__class_num == 0:
+                self.__labels[i, position_index] = series.labels
+            else:
+                self.__labels[i, position_index, :] = series.labels
             self.__series_date_matrix[i, position_index, 0] = series.dates
             self.__series_date_matrix[i, position_index, 1] = i
 
@@ -410,13 +438,13 @@ def __full_tensor_generation__(data,
                                      generation_list)
 
     # 去掉所有包含缺失数据的某股票某时间历史片段
-    label_nan = _tf.cast(_tf.math.is_nan(label_all), _tf.int64)
-    data_nan = _tf.cast(_tf.math.is_nan(data_all), _tf.int64)
-    nan_series_time_index = _tf.reduce_sum(
-        _tf.reduce_sum(data_nan, axis=2),
+    label_nan = _tf.math.is_nan(label_all)
+    data_nan = _tf.math.is_nan(data_all)
+    nan_series_time_index = _tf.math.reduce_any(
+        _tf.math.reduce_any(data_nan, axis=2),
         axis=1
     )
-    not_nan = _tf.add(nan_series_time_index, label_nan) == 0
+    not_nan = _tf.math.logical_not(_tf.math.logical_or(nan_series_time_index, label_nan))
     return data_all[not_nan], label_all[not_nan], dates_series_all[not_nan]
 
 
