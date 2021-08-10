@@ -439,6 +439,8 @@ def __full_tensor_generation__(data,
 
     # 去掉所有包含缺失数据的某股票某时间历史片段
     label_nan = _tf.math.is_nan(label_all)
+    if _tf.rank(label_all) == 2:
+        label_nan = _tf.math.reduce_any(label_nan, axis=1)
     data_nan = _tf.math.is_nan(data_all)
     nan_series_time_index = _tf.math.reduce_any(
         _tf.math.reduce_any(data_nan, axis=2),
