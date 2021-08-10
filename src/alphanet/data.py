@@ -423,16 +423,6 @@ class TrainValData:
         return dates_info
 
 
-def __history_expander__(data_tensor, history_length):
-    """错位叠加历史数据，获取(序列，时间，历史，特征)的四个维度."""
-    total_time_length = data_tensor.shape[1]
-    data_expanded = _tf.stack([data_tensor[:, i: (total_time_length + i
-                                                  - history_length + 1), :]
-                               for i in _tf.range(history_length)])
-    # 调整维度顺序 (history, sample)
-    return _tf.transpose(data_expanded, perm=[1, 2, 0, 3])
-
-
 def __full_tensor_generation__(data,
                                label,
                                generation_list,
