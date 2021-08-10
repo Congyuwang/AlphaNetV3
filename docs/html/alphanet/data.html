@@ -68,7 +68,7 @@
 
                         <div class="docstring"><p>多维多时间序列神经网络滚动训练的数据工具.</p>
 
-<p>version: 0.0.7</p>
+<p>version: 0.0.11</p>
 
 <p>author: Congyu Wang</p>
 
@@ -79,7 +79,7 @@
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;多维多时间序列神经网络滚动训练的数据工具.</span>
 
-<span class="sd">version: 0.0.7</span>
+<span class="sd">version: 0.0.11</span>
 
 <span class="sd">author: Congyu Wang</span>
 
@@ -111,7 +111,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            dates: 日期列, 1D ``numpy.ndarray``, 整数</span>
 <span class="sd">            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)</span>
-<span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同</span>
+<span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同。</span>
+<span class="sd">                如果为分类问题则是2D, (日期长度 x 类别数量)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查参数类型</span>
@@ -123,7 +124,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad data shape&quot;</span><span class="p">)</span>
         <span class="c1"># 检查维度是否正确</span>
-        <span class="k">if</span> <span class="n">dates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong dimensions&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="n">dates</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">_np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -214,6 +215,24 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time series do not have &quot;</span>
                                  <span class="s2">&quot;the same number of features&quot;</span><span class="p">)</span>
 
+        <span class="c1"># 确保标签维度一致</span>
+        <span class="n">label_dims</span> <span class="o">=</span> <span class="n">time_series_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">time_series_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="n">label_dims</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time labels do not have &quot;</span>
+                                 <span class="s2">&quot;the same number of dimensions&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 标签类别数量</span>
+        <span class="n">class_num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">label_dims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">class_num</span> <span class="o">=</span> <span class="n">time_series_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">time_series_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">class_num</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time series labels do not have &quot;</span>
+                                     <span class="s2">&quot;the same number of classes&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">=</span> <span class="n">class_num</span>
+
         <span class="c1"># 获取日期列表（所有时间序列日期的并集）</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="n">date</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">time_series_list</span>
                                             <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">stock</span><span class="o">.</span><span class="n">dates</span><span class="p">])</span>
@@ -224,8 +243,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                  <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
-                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span><span class="p">))</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
@@ -241,7 +266,10 @@
             <span class="c1"># 将第i个序列填充至tensor的第i行</span>
             <span class="n">position_index</span> <span class="o">=</span> <span class="n">dates_position_mapper</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">dates</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
@@ -257,7 +285,8 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
@@ -278,6 +307,7 @@
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
 <span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
+<span class="sd">            validate_length (int): override class validate_length</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            如果``validate_only=False``，返回训练集、验证集、日期信息：</span>
@@ -288,14 +318,23 @@
 <span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">validate_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">validate_length</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`validate_length` must be an integer&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validate_length</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`validate_length` should be at least 1&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">validate_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                       <span class="n">order</span><span class="p">,</span>
-                                      <span class="n">validate_only</span><span class="p">)</span>
+                                      <span class="n">validate_only</span><span class="p">,</span>
+                                      <span class="n">validate_length</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                           <span class="n">start_date</span><span class="p">,</span>
                           <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-                          <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                          <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;使用显存生成历史数据.</span>
 
 <span class="sd">        使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，</span>
@@ -303,16 +342,19 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
-        <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                                                    <span class="n">order</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="n">order</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">validate_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;validate_length&quot;</span><span class="p">:</span> <span class="n">validate_length</span><span class="p">})</span>
+        <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息</span>
         <span class="p">(</span><span class="n">val_x</span><span class="p">,</span>
          <span class="n">val_y</span><span class="p">,</span>
          <span class="n">val_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
         <span class="c1"># 转化为tensorflow DataSet</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">))</span>
-        <span class="n">val_dates_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">val_series_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">val_dates_series</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">val_dates_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">val_series_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_dates_list</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_series_list</span>
 
@@ -323,13 +365,15 @@
          <span class="n">train_y</span><span class="p">,</span>
          <span class="n">train_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
         <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
-        <span class="n">train_dates_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">train_series_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">train_dates_series</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">train_dates_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">train_series_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_dates_list</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_series_list</span>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
-    <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
+                            <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;根据开始时间计算用于构建训练集、验证集的相关信息.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start date should be an integer YYYYMMDD&quot;</span><span class="p">)</span>
@@ -340,7 +384,7 @@
 
         <span class="c1"># 查看剩余日期数量是否大于等于训练集验证集总长度</span>
         <span class="k">if</span> <span class="n">_np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">after_start_date</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_length</span> <span class="o">+</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span> <span class="o">+</span>
+                                        <span class="n">validate_length</span> <span class="o">+</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;date range exceeded end of dates&quot;</span><span class="p">)</span>
 
@@ -355,7 +399,7 @@
                            <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="c1"># 验证集结束位置(不包含)</span>
         <span class="n">val_end_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_end_index</span> <span class="o">+</span>
-                         <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span> <span class="o">+</span>
+                         <span class="n">validate_length</span> <span class="o">+</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span><span class="p">)</span>
 
         <span class="c1"># 根据各个数据集的开始结束位置以及训练数据的顺序选项，获取构建数据的参数</span>
@@ -464,7 +508,7 @@
     <span class="n">data_expanded</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">data_tensor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">:</span> <span class="p">(</span><span class="n">total_time_length</span> <span class="o">+</span> <span class="n">i</span>
                                                   <span class="o">-</span> <span class="n">history_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">:]</span>
                                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">history_length</span><span class="p">)])</span>
-    <span class="c1"># 调整维度顺序 (series, time, history, features)</span>
+    <span class="c1"># 调整维度顺序 (history, sample)</span>
     <span class="k">return</span> <span class="n">_tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">data_expanded</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 
 
@@ -475,21 +519,28 @@
                                <span class="n">dates_series</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息.&quot;&quot;&quot;</span>
     <span class="c1"># 先将该数据片段的历史维度展开</span>
-    <span class="n">data_expanded</span> <span class="o">=</span> <span class="n">__history_expander__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">history</span><span class="p">)</span>
 
     <span class="c1"># 根据generation_list指定的series，日期，获取标签及数据片段</span>
+    <span class="n">total_time_length</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">expanded</span> <span class="o">=</span> <span class="p">[</span><span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="n">i</span><span class="p">:</span> <span class="p">(</span><span class="n">total_time_length</span> <span class="o">+</span> <span class="n">i</span>
+                                          <span class="o">-</span> <span class="n">history</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">:],</span> <span class="n">generation_list</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">history</span><span class="p">)]</span>
+    <span class="n">data_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">label_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">label</span><span class="p">[:,</span> <span class="n">history</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">generation_list</span><span class="p">)</span>
-    <span class="n">data_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">data_expanded</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">)</span>
-    <span class="n">dates_series_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">dates_series</span><span class="p">,</span> <span class="n">generation_list</span><span class="p">)</span>
+    <span class="n">dates_series_all</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">dates_series</span><span class="p">[:,</span> <span class="n">history</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:],</span>
+                                     <span class="n">generation_list</span><span class="p">)</span>
 
     <span class="c1"># 去掉所有包含缺失数据的某股票某时间历史片段</span>
-    <span class="n">label_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">label_all</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-    <span class="n">data_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">data_all</span><span class="p">),</span> <span class="n">_tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-    <span class="n">nan_series_time_index</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
-        <span class="n">_tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">data_nan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">label_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">label_all</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_tf</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">label_all</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># 如果是分类问题, 需要特殊处理</span>
+        <span class="n">label_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_any</span><span class="p">(</span><span class="n">label_nan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">data_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">is_nan</span><span class="p">(</span><span class="n">data_all</span><span class="p">)</span>
+    <span class="n">nan_series_time_index</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_any</span><span class="p">(</span>
+        <span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_any</span><span class="p">(</span><span class="n">data_nan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
         <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
     <span class="p">)</span>
-    <span class="n">not_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nan_series_time_index</span><span class="p">,</span> <span class="n">label_nan</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">not_nan</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">_tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">nan_series_time_index</span><span class="p">,</span> <span class="n">label_nan</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">data_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">],</span> <span class="n">label_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">],</span> <span class="n">dates_series_all</span><span class="p">[</span><span class="n">not_nan</span><span class="p">]</span>
 
 
@@ -530,7 +581,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            dates: 日期列, 1D ``numpy.ndarray``, 整数</span>
 <span class="sd">            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)</span>
-<span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同</span>
+<span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同。</span>
+<span class="sd">                如果为分类问题则是2D, (日期长度 x 类别数量)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查参数类型</span>
@@ -542,7 +594,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad data shape&quot;</span><span class="p">)</span>
         <span class="c1"># 检查维度是否正确</span>
-        <span class="k">if</span> <span class="n">dates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong dimensions&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="n">dates</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">_np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -580,7 +632,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            dates: 日期列, 1D ``numpy.ndarray``, 整数</span>
 <span class="sd">            data: 训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量)</span>
-<span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同</span>
+<span class="sd">            labels: 训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同。</span>
+<span class="sd">                如果为分类问题则是2D, (日期长度 x 类别数量)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查参数类型</span>
@@ -592,7 +645,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad data shape&quot;</span><span class="p">)</span>
         <span class="c1"># 检查维度是否正确</span>
-        <span class="k">if</span> <span class="n">dates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong dimensions&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="n">dates</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">_np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -608,7 +661,8 @@
 <ul>
 <li><strong>dates:</strong>  日期列, 1D <code>numpy.ndarray</code>, 整数</li>
 <li><strong>data:</strong>  训练输入的X，2D <code>numpy.ndarray</code>, (日期长度 x 特征数量)</li>
-<li><strong>labels:</strong>  训练标签Y, 1D <code>numpy.ndarray</code>, 长度与dates相同</li>
+<li><strong>labels:</strong>  训练标签Y, 1D <code>numpy.ndarray</code>, 长度与dates相同。
+如果为分类问题则是2D, (日期长度 x 类别数量)</li>
 </ul>
 </div>
 
@@ -710,6 +764,24 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time series do not have &quot;</span>
                                  <span class="s2">&quot;the same number of features&quot;</span><span class="p">)</span>
 
+        <span class="c1"># 确保标签维度一致</span>
+        <span class="n">label_dims</span> <span class="o">=</span> <span class="n">time_series_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">time_series_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="n">label_dims</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time labels do not have &quot;</span>
+                                 <span class="s2">&quot;the same number of dimensions&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 标签类别数量</span>
+        <span class="n">class_num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">label_dims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">class_num</span> <span class="o">=</span> <span class="n">time_series_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">time_series_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">class_num</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time series labels do not have &quot;</span>
+                                     <span class="s2">&quot;the same number of classes&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">=</span> <span class="n">class_num</span>
+
         <span class="c1"># 获取日期列表（所有时间序列日期的并集）</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="n">date</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">time_series_list</span>
                                             <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">stock</span><span class="o">.</span><span class="n">dates</span><span class="p">])</span>
@@ -720,8 +792,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                  <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
-                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span><span class="p">))</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
@@ -737,7 +815,10 @@
             <span class="c1"># 将第i个序列填充至tensor的第i行</span>
             <span class="n">position_index</span> <span class="o">=</span> <span class="n">dates_position_mapper</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">dates</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
@@ -753,7 +834,8 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
@@ -774,6 +856,7 @@
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
 <span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
+<span class="sd">            validate_length (int): override class validate_length</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            如果``validate_only=False``，返回训练集、验证集、日期信息：</span>
@@ -784,14 +867,23 @@
 <span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">validate_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">validate_length</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`validate_length` must be an integer&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validate_length</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`validate_length` should be at least 1&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">validate_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                       <span class="n">order</span><span class="p">,</span>
-                                      <span class="n">validate_only</span><span class="p">)</span>
+                                      <span class="n">validate_only</span><span class="p">,</span>
+                                      <span class="n">validate_length</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_in_memory__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                           <span class="n">start_date</span><span class="p">,</span>
                           <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-                          <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                          <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;使用显存生成历史数据.</span>
 
 <span class="sd">        使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，</span>
@@ -799,16 +891,19 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 获取用于构建训练集、验证集的相关信息</span>
-        <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
-                                                                    <span class="n">order</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="n">order</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">validate_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;validate_length&quot;</span><span class="p">:</span> <span class="n">validate_length</span><span class="p">})</span>
+        <span class="n">train_args</span><span class="p">,</span> <span class="n">val_args</span><span class="p">,</span> <span class="n">dates_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_period_info__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息</span>
         <span class="p">(</span><span class="n">val_x</span><span class="p">,</span>
          <span class="n">val_y</span><span class="p">,</span>
          <span class="n">val_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">val_args</span><span class="p">)</span>
         <span class="c1"># 转化为tensorflow DataSet</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">))</span>
-        <span class="n">val_dates_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">val_series_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">val_dates_series</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">val_dates_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">val_series_list</span> <span class="o">=</span> <span class="n">val_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_dates_list</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_series_list</span>
 
@@ -819,13 +914,15 @@
          <span class="n">train_y</span><span class="p">,</span>
          <span class="n">train_dates_series</span><span class="p">)</span> <span class="o">=</span> <span class="n">__full_tensor_generation__</span><span class="p">(</span><span class="o">*</span><span class="n">train_args</span><span class="p">)</span>
         <span class="n">train</span> <span class="o">=</span> <span class="n">_tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">))</span>
-        <span class="n">train_dates_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">train_series_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">train_dates_series</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">train_dates_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">train_series_list</span> <span class="o">=</span> <span class="n">train_dates_series</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;dates_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_dates_list</span>
         <span class="n">dates_info</span><span class="p">[</span><span class="s2">&quot;training&quot;</span><span class="p">][</span><span class="s2">&quot;series_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_series_list</span>
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dates_info</span>
 
-    <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_period_info__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
+                            <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;根据开始时间计算用于构建训练集、验证集的相关信息.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start date should be an integer YYYYMMDD&quot;</span><span class="p">)</span>
@@ -836,7 +933,7 @@
 
         <span class="c1"># 查看剩余日期数量是否大于等于训练集验证集总长度</span>
         <span class="k">if</span> <span class="n">_np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">after_start_date</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_length</span> <span class="o">+</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span> <span class="o">+</span>
+                                        <span class="n">validate_length</span> <span class="o">+</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;date range exceeded end of dates&quot;</span><span class="p">)</span>
 
@@ -851,7 +948,7 @@
                            <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="c1"># 验证集结束位置(不包含)</span>
         <span class="n">val_end_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_end_index</span> <span class="o">+</span>
-                         <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span> <span class="o">+</span>
+                         <span class="n">validate_length</span> <span class="o">+</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">__train_val_gap</span><span class="p">)</span>
 
         <span class="c1"># 根据各个数据集的开始结束位置以及训练数据的顺序选项，获取构建数据的参数</span>
@@ -1058,6 +1155,24 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time series do not have &quot;</span>
                                  <span class="s2">&quot;the same number of features&quot;</span><span class="p">)</span>
 
+        <span class="c1"># 确保标签维度一致</span>
+        <span class="n">label_dims</span> <span class="o">=</span> <span class="n">time_series_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">time_series_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="n">label_dims</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time labels do not have &quot;</span>
+                                 <span class="s2">&quot;the same number of dimensions&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 标签类别数量</span>
+        <span class="n">class_num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">label_dims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">class_num</span> <span class="o">=</span> <span class="n">time_series_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">time_series_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">class_num</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time series labels do not have &quot;</span>
+                                     <span class="s2">&quot;the same number of classes&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">=</span> <span class="n">class_num</span>
+
         <span class="c1"># 获取日期列表（所有时间序列日期的并集）</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="n">date</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">time_series_list</span>
                                             <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">stock</span><span class="o">.</span><span class="n">dates</span><span class="p">])</span>
@@ -1068,8 +1183,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                  <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">__feature_counts</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
-                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span><span class="p">))</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_series_list</span><span class="p">),</span>
                                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__distinct_dates</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fill_na</span>
@@ -1085,7 +1206,10 @@
             <span class="c1"># 将第i个序列填充至tensor的第i行</span>
             <span class="n">position_index</span> <span class="o">=</span> <span class="n">dates_position_mapper</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">labels</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">dates</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__series_date_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">position_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
@@ -1153,7 +1277,13 @@
 
         
             <span class="def">def</span>
-            <span class="name">get</span><span class="signature">(self, start_date: int, order=&#39;by_date&#39;, validate_only=False)</span>:
+            <span class="name">get</span><span class="signature">(
+    self,
+    start_date: int,
+    order=&#39;by_date&#39;,
+    validate_only=False,
+    validate_length=None
+)</span>:
     </div>
 
                 <details>
@@ -1161,7 +1291,8 @@
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">start_date</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="s2">&quot;by_date&quot;</span><span class="p">,</span>
-            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">validate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">validate_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;获取从某天开始的训练集和验证集.</span>
 
 <span class="sd">        Notes:</span>
@@ -1182,6 +1313,7 @@
 <span class="sd">                分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</span>
 <span class="sd">            validate_only: 如果设置为True，则只返回validate set</span>
 <span class="sd">                和训练集、验证集时间信息。可以用于训练后的分析。</span>
+<span class="sd">            validate_length (int): override class validate_length</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            如果``validate_only=False``，返回训练集、验证集、日期信息：</span>
@@ -1192,9 +1324,17 @@
 <span class="sd">            ValueError: 日期范围超出最大日期会报ValueError。</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">validate_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">validate_length</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`validate_length` must be an integer&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validate_length</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`validate_length` should be at least 1&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">validate_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__validate_length</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_in_memory__</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span>
                                       <span class="n">order</span><span class="p">,</span>
-                                      <span class="n">validate_only</span><span class="p">)</span>
+                                      <span class="n">validate_only</span><span class="p">,</span>
+                                      <span class="n">validate_length</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -1224,6 +1364,7 @@
 分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。</li>
 <li><strong>validate_only:</strong>  如果设置为True，则只返回validate set
 和训练集、验证集时间信息。可以用于训练后的分析。</li>
+<li><strong>validate_length (int):</strong>  override class validate_length</li>
 </ul>
 
 <h6 id="returns">Returns</h6>

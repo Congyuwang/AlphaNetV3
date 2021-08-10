@@ -5,7 +5,7 @@
 # <kbd>module</kbd> `alphanet.data`
 多维多时间序列神经网络滚动训练的数据工具. 
 
-version: 0.0.7 
+version: 0.0.11 
 
 author: Congyu Wang 
 
@@ -42,7 +42,7 @@ __init__(dates: ndarray, data: ndarray, labels: ndarray)
  
  - <b>`dates`</b>:  日期列, 1D ``numpy.ndarray``, 整数 
  - <b>`data`</b>:  训练输入的X，2D ``numpy.ndarray``, (日期长度 x 特征数量) 
- - <b>`labels`</b>:  训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同 
+ - <b>`labels`</b>:  训练标签Y, 1D ``numpy.ndarray``, 长度与dates相同。  如果为分类问题则是2D, (日期长度 x 类别数量) 
 
 
 
@@ -50,12 +50,12 @@ __init__(dates: ndarray, data: ndarray, labels: ndarray)
 
 ---
 
-<a href="../src/alphanet/data.py#L54"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L55"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TrainValData`
 根据训练天数、验证天数、样本历史长度、训练起点生成不同训练阶段的数据. 
 
-<a href="../src/alphanet/data.py#L57"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L58"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -100,12 +100,12 @@ __init__(
 
 ---
 
-<a href="../src/alphanet/data.py#L178"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L206"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get`
 
 ```python
-get(start_date: int, order='by_date', validate_only=False)
+get(start_date: int, order='by_date', validate_only=False, validate_length=None)
 ```
 
 获取从某天开始的训练集和验证集. 
@@ -124,6 +124,7 @@ get(start_date: int, order='by_date', validate_only=False)
  - <b>`start_date`</b>:  该轮训练开始日期，整数``YYYYMMDD`` 
  - <b>`order`</b>:  有三种顺序 ``shuffle``, ``by_date``, ``by_series``。  分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。 
  - <b>`validate_only`</b>:  如果设置为True，则只返回validate set  和训练集、验证集时间信息。可以用于训练后的分析。 
+ - <b>`validate_length`</b> (int):  override class validate_length 
 
 
 

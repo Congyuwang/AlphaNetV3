@@ -43,7 +43,7 @@ date: 2021-07-29
 
 ---
 
-<a href="../src/alphanet/__init__.py#L690"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L718"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `load_model`
 
@@ -3238,7 +3238,15 @@ alpha net v2版本模型.
 ### <kbd>method</kbd> `__init__`
 
 ```python
-__init__(dropout=0.0, l2=0.001, stride=10, *args, **kwargs)
+__init__(
+    dropout=0.0,
+    l2=0.001,
+    stride=10,
+    classification=False,
+    categories=0,
+    *args,
+    **kwargs
+)
 ```
 
 Alpha net v3. 
@@ -3706,13 +3714,13 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L578"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L592"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7ff363646eb0>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fa6e2e35eb0>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -3726,7 +3734,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L594"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L608"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -3739,7 +3747,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L603"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L617"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV3`
 神经网络模型，继承``keras.Model``类. 
@@ -3753,12 +3761,19 @@ alpha net v3版本模型.
 > 复现华泰金工 alpha net V3 版本 
 >``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L615"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L629"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
 ```python
-__init__(dropout=0.0, l2=0.001, *args, **kwargs)
+__init__(
+    dropout=0.0,
+    l2=0.001,
+    classification=False,
+    categories=0,
+    *args,
+    **kwargs
+)
 ```
 
 Alpha net v3. 
@@ -4226,13 +4241,13 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L666"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L694"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7ff36367e580>,
+    optimizer=<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x7fa6e2e6f580>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -4246,7 +4261,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L682"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L710"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
