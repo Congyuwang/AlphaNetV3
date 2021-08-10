@@ -206,7 +206,8 @@ class TrainValData:
     def get(self,
             start_date: int,
             order="by_date",
-            validate_only=False):
+            validate_only=False,
+            validate_length=None):
         """获取从某天开始的训练集和验证集.
 
         Notes:
@@ -227,6 +228,7 @@ class TrainValData:
                 分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。
             validate_only: 如果设置为True，则只返回validate set
                 和训练集、验证集时间信息。可以用于训练后的分析。
+            validate_length (int): override class validate_length
 
         Returns:
             如果``validate_only=False``，返回训练集、验证集、日期信息：
@@ -237,14 +239,23 @@ class TrainValData:
             ValueError: 日期范围超出最大日期会报ValueError。
 
         """
+        if validate_length is not None:
+            if type(validate_length) is not int:
+                raise ValueError("`validate_length` must be an integer")
+            if validate_length < 1:
+                raise ValueError("`validate_length` should be at least 1")
+        else:
+            validate_length = self.__validate_length
         return self.__get_in_memory__(start_date,
                                       order,
-                                      validate_only)
+                                      validate_only,
+                                      validate_length)
 
     def __get_in_memory__(self,
                           start_date,
                           order="by_date",
-                          validate_only=False):
+                          validate_only=False,
+                          validate_length=None):
         """使用显存生成历史数据.
 
         使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，
@@ -252,8 +263,10 @@ class TrainValData:
 
         """
         # 获取用于构建训练集、验证集的相关信息
-        train_args, val_args, dates_info = self.__get_period_info__(start_date,
-                                                                    order)
+        kwargs = {"start_date": start_date, "order": order}
+        if validate_length is not None:
+            kwargs.update({"validate_length": validate_length})
+        train_args, val_args, dates_info = self.__get_period_info__(**kwargs)
         # 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息
         (val_x,
          val_y,
@@ -280,7 +293,8 @@ class TrainValData:
         dates_info["training"]["series_list"] = train_series_list
         return train, val, dates_info
 
-    def __get_period_info__(self, start_date, order="by_date"):
+    def __get_period_info__(self, start_date, order="by_date",
+                            validate_length=None):
         """根据开始时间计算用于构建训练集、验证集的相关信息."""
         if type(start_date) is not int:
             raise ValueError("start date should be an integer YYYYMMDD")
@@ -291,7 +305,7 @@ class TrainValData:
 
         # 查看剩余日期数量是否大于等于训练集验证集总长度
         if _np.sum(after_start_date) < (self.__train_length +
-                                        self.__validate_length +
+                                        validate_length +
                                         self.__train_val_gap):
             raise ValueError("date range exceeded end of dates")
 
@@ -306,7 +320,7 @@ class TrainValData:
                            self.__train_val_gap + 1)
         # 验证集结束位置(不包含)
         val_end_index = (train_end_index +
-                         self.__validate_length +
+                         validate_length +
                          self.__train_val_gap)
 
         # 根据各个数据集的开始结束位置以及训练数据的顺序选项，获取构建数据的参数
@@ -440,6 +454,7 @@ def __full_tensor_generation__(data,
     # 去掉所有包含缺失数据的某股票某时间历史片段
     label_nan = _tf.math.is_nan(label_all)
     if _tf.rank(label_all) == 2:
+        # 如果是分类问题, 需要特殊处理
         label_nan = _tf.math.reduce_any(label_nan, axis=1)
     data_nan = _tf.math.is_nan(data_all)
     nan_series_time_index = _tf.math.reduce_any(
