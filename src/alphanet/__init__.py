@@ -43,7 +43,8 @@ from abc import ABC as _ABC
 from abc import abstractmethod as _abstractmethod
 
 if not "2.3.0" <= _tf.__version__ <= "2.5.0":
-    print("requires tensorflow version >= 2.2.0, <=2.5.0")
+    print(f"requires tensorflow version >= 2.3.0, <=2.5.0, "
+          f"current version {_tf.__version__}")
     exit(1)
 
 __all__ = ["Std",
