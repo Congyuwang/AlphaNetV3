@@ -750,6 +750,7 @@ class AlphaNetV4(_Model):
             classification: 是否为分类问题
             categories: 分类问题的类别数量
             recurrent_unit (str): 该参数可以为"GRU"或"LSTM"
+            batch_normalization (bool): 是否使用批标准化
 
         """
         super(AlphaNetV4, self).__init__(*args, **kwargs)
@@ -796,6 +797,7 @@ class AlphaNetV4(_Model):
 
     @_tf.function
     def __call_bn__(self, inputs, training):
+        """有BN的逻辑."""
         expanded10 = self.expanded10(inputs)
         expanded5 = self.expanded5(inputs)
         normalized10 = self.normalized10(expanded10, training=training)
@@ -812,6 +814,7 @@ class AlphaNetV4(_Model):
 
     @_tf.function
     def __call_wo_bn__(self, inputs, training):
+        """无BN的逻辑."""
         expanded10 = self.expanded10(inputs)
         expanded5 = self.expanded5(inputs)
         recurrent10 = self.recurrent10(expanded10)
