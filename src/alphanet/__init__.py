@@ -739,7 +739,6 @@ class AlphaNetV4(_Model):
                  classification=False,
                  categories=0,
                  recurrent_unit="GRU",
-                 batch_normalization=False,
                  *args,
                  **kwargs):
         """Alpha net v4.
@@ -750,7 +749,6 @@ class AlphaNetV4(_Model):
             classification: 是否为分类问题
             categories: 分类问题的类别数量
             recurrent_unit (str): 该参数可以为"GRU"或"LSTM"
-            batch_normalization (bool): 是否使用批标准化
 
         """
         super(AlphaNetV4, self).__init__(*args, **kwargs)
@@ -759,8 +757,10 @@ class AlphaNetV4(_Model):
         self.expanded10 = FeatureExpansion(stride=10)
         self.expanded5 = FeatureExpansion(stride=5)
         self.dropout_layer = _tfl.Dropout(self.dropout)
-        self.batch_normalization = _tf.constant(batch_normalization,
-                                                dtype=_tf.bool)
+        self.normalized10 = _tfl.BatchNormalization()
+        self.normalized5 = _tfl.BatchNormalization()
+        self.normalized10_2 = _tfl.BatchNormalization()
+        self.normalized5_2 = _tfl.BatchNormalization()
         if recurrent_unit == "GRU":
             self.recurrent10 = _tfl.GRU(units=30)
             self.recurrent5 = _tfl.GRU(units=30)
@@ -769,10 +769,6 @@ class AlphaNetV4(_Model):
             self.recurrent5 = _tfl.LSTM(units=30)
         else:
             raise ValueError("Unknown recurrent_unit")
-        self.normalized10 = _tfl.BatchNormalization()
-        self.normalized5 = _tfl.BatchNormalization()
-        self.normalized10_2 = _tfl.BatchNormalization()
-        self.normalized5_2 = _tfl.BatchNormalization()
         self.concat = _tfl.Concatenate(axis=-1)
         self.regularizer = _tf.keras.regularizers.l2(self.l2)
         self.dense = _tfl.Dense(units=30,
@@ -813,24 +809,9 @@ class AlphaNetV4(_Model):
         return output
 
     @_tf.function
-    def __call_wo_bn__(self, inputs, training):
-        """无BN的逻辑."""
-        expanded10 = self.expanded10(inputs)
-        expanded5 = self.expanded5(inputs)
-        recurrent10 = self.recurrent10(expanded10)
-        recurrent5 = self.recurrent5(expanded5)
-        concat = self.concat([recurrent10, recurrent5])
-        dropout = self.dropout_layer(concat, training=training)
-        dense = self.dense(dropout)
-        output = self.outputs(dense)
-        return output
-
-    @_tf.function
     def call(self, inputs, training=None, mask=None):
         """计算逻辑实现."""
-        return _tf.cond(self.batch_normalization,
-                        lambda: self.__call_bn__(inputs, training),
-                        lambda: self.__call_wo_bn__(inputs, training))
+        return self.__call_bn__(inputs, training)
 
     def compile(self,
                 optimizer=_tf.keras.optimizers.Adam(0.0001),
@@ -852,8 +833,7 @@ class AlphaNetV4(_Model):
         """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'dropout': self.dropout,
-                       'l2': self.l2,
-                       'batch_normalization': self.batch_normalization})
+                       'l2': self.l2})
         return config
 
 
