@@ -56,6 +56,7 @@ __all__ = ["Std",
            "FeatureExpansion",
            "AlphaNetV2",
            "AlphaNetV3",
+           "AlphaNetV4",
            "load_model"]
 
 
@@ -698,6 +699,113 @@ class AlphaNetV3(_Model):
         concat = self.concat([normalized10_2, normalized5_2])
         dropout = self.dropout(concat, training=training)
         output = self.outputs(dropout)
+        return output
+
+    def compile(self,
+                optimizer=_tf.keras.optimizers.Adam(0.0001),
+                loss="MSE",
+                metrics=None,
+                loss_weights=None,
+                weighted_metrics=None,
+                run_eagerly=None,
+                **kwargs):
+        """设置优化器、loss、metric等."""
+        super().compile(optimizer=optimizer,
+                        loss=loss,
+                        metrics=metrics,
+                        loss_weights=loss_weights,
+                        weighted_metrics=weighted_metrics,
+                        run_eagerly=run_eagerly)
+
+    def get_config(self):
+        """获取参数，保存模型需要的函数."""
+        config = super().get_config().copy()
+        config.update({'dropout': self.dropout,
+                       'l2': self.l2})
+        return config
+
+
+class AlphaNetV4(_Model):
+    """神经网络模型，继承``keras.Model``类.
+
+    Notes:
+        ``input: (batch_size, history time steps, features)``
+
+    """
+
+    def __init__(self,
+                 dropout=0.0,
+                 l2=0.001,
+                 classification=False,
+                 categories=0,
+                 recurrent_unit="GRU",
+                 *args,
+                 **kwargs):
+        """Alpha net v4.
+
+        Args:
+            dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
+            l2: 输出层的l2-regularization参数
+            classification: 是否为分类问题
+            categories: 分类问题的类别数量
+            recurrent_unit (str): 该参数可以为"GRU"或"LSTM"
+
+        """
+        super(AlphaNetV4, self).__init__(*args, **kwargs)
+        self.l2 = l2
+        self.dropout = dropout
+        self.expanded10 = FeatureExpansion(stride=10)
+        self.expanded5 = FeatureExpansion(stride=5)
+        self.normalized10 = _tfl.BatchNormalization()
+        self.normalized5 = _tfl.BatchNormalization()
+        self.dropout = _tfl.Dropout(self.dropout)
+        if recurrent_unit == "GRU":
+            self.recurrent10 = _tfl.GRU(units=30)
+            self.recurrent5 = _tfl.GRU(units=30)
+        elif recurrent_unit == "LSTM":
+            self.recurrent10 = _tfl.LSTM(units=30)
+            self.recurrent5 = _tfl.LSTM(units=30)
+        else:
+            raise ValueError("Unknown recurrent_unit")
+        self.normalized10_2 = _tfl.BatchNormalization()
+        self.normalized5_2 = _tfl.BatchNormalization()
+        self.concat = _tfl.Concatenate(axis=-1)
+        self.regularizer = _tf.keras.regularizers.l2(self.l2)
+        self.dense = _tfl.Dense(units=30,
+                                activation="relu",
+                                kernel_initializer="he_normal",
+                                kernel_regularizer=self.regularizer)
+        if classification:
+            if categories < 1:
+                raise ValueError("categories should be at least 1")
+            elif categories == 1:
+                self.outputs = _tfl.Dense(1, activation="sigmoid",
+                                          kernel_initializer="truncated_normal",
+                                          kernel_regularizer=self.regularizer)
+            else:
+                self.outputs = _tfl.Dense(categories, activation="softmax",
+                                          kernel_initializer="truncated_normal",
+                                          kernel_regularizer=self.regularizer)
+        else:
+            self.outputs = _tfl.Dense(1, activation="linear",
+                                      kernel_initializer="truncated_normal",
+                                      kernel_regularizer=self.regularizer)
+
+    @_tf.function
+    def call(self, inputs, training=None, mask=None):
+        """计算逻辑实现."""
+        expanded10 = self.expanded10(inputs)
+        expanded5 = self.expanded5(inputs)
+        normalized10 = self.normalized10(expanded10, training=training)
+        normalized5 = self.normalized5(expanded5, training=training)
+        recurrent10 = self.recurrent10(normalized10)
+        recurrent5 = self.recurrent5(normalized5)
+        normalized10_2 = self.normalized10_2(recurrent10, training=training)
+        normalized5_2 = self.normalized5_2(recurrent5, training=training)
+        concat = self.concat([normalized10_2, normalized5_2])
+        dropout = self.dropout(concat, training=training)
+        dense = self.dense(dropout)
+        output = self.outputs(dense)
         return output
 
     def compile(self,
