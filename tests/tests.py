@@ -150,6 +150,7 @@ class TestAlphaNetV2(unittest.TestCase):
                           metrics=[tf.keras.metrics.RootMeanSquaredError(),
                                    UpDownAccuracy()])
         alpha_net.fit(self.random_test, self.random_label, batch_size=20)
+        alpha_net.summary()
         output = alpha_net.predict(self.random_test)
         alpha_net.save_weights("./.test_alpha_net_save/weights")
 
@@ -217,6 +218,7 @@ class TestAlphaNetV3(unittest.TestCase):
                              metrics=[tf.keras.metrics.RootMeanSquaredError(),
                                       UpDownAccuracy()])
         alpha_net_v3.fit(self.random_test, self.random_label, batch_size=20)
+        alpha_net_v3.summary()
         output = alpha_net_v3.predict(self.random_test)
         alpha_net_v3.save_weights("./.test_alpha_net_save/weights")
 
@@ -278,17 +280,18 @@ class TestAlphaNetV4(unittest.TestCase):
     def test_save_weights(self):
 
         # save weights
-        alpha_net_v4 = AlphaNetV4()
+        alpha_net_v4 = AlphaNetV4(recurrent_unit="LSTM")
         alpha_net_v4.compile(optimizer=tf.keras.optimizers.Adam(0.0001),
                              loss="MSE",
                              metrics=[tf.keras.metrics.RootMeanSquaredError(),
                                       UpDownAccuracy()])
         alpha_net_v4.fit(self.random_test, self.random_label, batch_size=20)
+        alpha_net_v4.summary()
         output = alpha_net_v4.predict(self.random_test)
         alpha_net_v4.save_weights("./.test_alpha_net_save/weights")
 
         # load weights
-        alpha_net_v4 = AlphaNetV4()
+        alpha_net_v4 = AlphaNetV4(recurrent_unit="LSTM")
         alpha_net_v4.compile(metrics=[tf.keras.metrics.RootMeanSquaredError(),
                                       UpDownAccuracy()])
         alpha_net_v4.load_weights("./.test_alpha_net_save/weights")
@@ -545,8 +548,7 @@ class TestDataModuleClassification(unittest.TestCase):
                           start_date_index,
                           end_date_index,
                           n=2,
-                          step=2,
-                          class_count=3):
+                          step=2):
         data_list = []
         label_list = []
         running_index = [(start_date_index + day, end_date_index + day, co)
