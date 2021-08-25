@@ -584,10 +584,10 @@ class AlphaNetV2(_Model):
         """计算逻辑实现."""
         expanded = self.expanded(inputs)
         normalized = self.normalized(expanded, training=training)
-        dropout = self.dropout(normalized, training=training)
-        lstm = self.lstm(dropout)
+        lstm = self.lstm(normalized)
         normalized2 = self.normalized_2(lstm, training=training)
-        output = self.outputs(normalized2)
+        dropout = self.dropout(normalized2, training=training)
+        output = self.outputs(dropout)
         return output
 
     def compile(self,
@@ -655,8 +655,7 @@ class AlphaNetV3(_Model):
         self.expanded5 = FeatureExpansion(stride=5)
         self.normalized10 = _tfl.BatchNormalization()
         self.normalized5 = _tfl.BatchNormalization()
-        self.dropout10 = _tfl.Dropout(self.dropout)
-        self.dropout5 = _tfl.Dropout(self.dropout)
+        self.dropout = _tfl.Dropout(self.dropout)
         if recurrent_unit == "GRU":
             self.recurrent10 = _tfl.GRU(units=30)
             self.recurrent5 = _tfl.GRU(units=30)
@@ -692,14 +691,13 @@ class AlphaNetV3(_Model):
         expanded5 = self.expanded5(inputs)
         normalized10 = self.normalized10(expanded10, training=training)
         normalized5 = self.normalized5(expanded5, training=training)
-        dropout10 = self.dropout10(normalized10, training=training)
-        dropout5 = self.dropout5(normalized5, training=training)
-        recurrent10 = self.recurrent10(dropout10)
-        recurrent5 = self.recurrent5(dropout5)
+        recurrent10 = self.recurrent10(normalized10)
+        recurrent5 = self.recurrent5(normalized5)
         normalized10_2 = self.normalized10_2(recurrent10, training=training)
         normalized5_2 = self.normalized5_2(recurrent5, training=training)
         concat = self.concat([normalized10_2, normalized5_2])
-        output = self.outputs(concat)
+        dropout = self.dropout(concat, training=training)
+        output = self.outputs(dropout)
         return output
 
     def compile(self,
