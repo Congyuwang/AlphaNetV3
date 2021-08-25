@@ -656,7 +656,7 @@ class AlphaNetV3(_Model):
         self.expanded5 = FeatureExpansion(stride=5)
         self.normalized10 = _tfl.BatchNormalization()
         self.normalized5 = _tfl.BatchNormalization()
-        self.dropout = _tfl.Dropout(self.dropout)
+        self.dropout_layer = _tfl.Dropout(self.dropout)
         if recurrent_unit == "GRU":
             self.recurrent10 = _tfl.GRU(units=30)
             self.recurrent5 = _tfl.GRU(units=30)
@@ -697,7 +697,7 @@ class AlphaNetV3(_Model):
         normalized10_2 = self.normalized10_2(recurrent10, training=training)
         normalized5_2 = self.normalized5_2(recurrent5, training=training)
         concat = self.concat([normalized10_2, normalized5_2])
-        dropout = self.dropout(concat, training=training)
+        dropout = self.dropout_layer(concat, training=training)
         output = self.outputs(dropout)
         return output
 
@@ -739,6 +739,7 @@ class AlphaNetV4(_Model):
                  classification=False,
                  categories=0,
                  recurrent_unit="GRU",
+                 batch_normalization=False,
                  *args,
                  **kwargs):
         """Alpha net v4.
@@ -756,9 +757,9 @@ class AlphaNetV4(_Model):
         self.dropout = dropout
         self.expanded10 = FeatureExpansion(stride=10)
         self.expanded5 = FeatureExpansion(stride=5)
-        self.normalized10 = _tfl.BatchNormalization()
-        self.normalized5 = _tfl.BatchNormalization()
-        self.dropout = _tfl.Dropout(self.dropout)
+        self.dropout_layer = _tfl.Dropout(self.dropout)
+        self.batch_normalization = _tf.constant(batch_normalization,
+                                                dtype=_tf.bool)
         if recurrent_unit == "GRU":
             self.recurrent10 = _tfl.GRU(units=30)
             self.recurrent5 = _tfl.GRU(units=30)
@@ -767,6 +768,8 @@ class AlphaNetV4(_Model):
             self.recurrent5 = _tfl.LSTM(units=30)
         else:
             raise ValueError("Unknown recurrent_unit")
+        self.normalized10 = _tfl.BatchNormalization()
+        self.normalized5 = _tfl.BatchNormalization()
         self.normalized10_2 = _tfl.BatchNormalization()
         self.normalized5_2 = _tfl.BatchNormalization()
         self.concat = _tfl.Concatenate(axis=-1)
@@ -792,8 +795,7 @@ class AlphaNetV4(_Model):
                                       kernel_regularizer=self.regularizer)
 
     @_tf.function
-    def call(self, inputs, training=None, mask=None):
-        """计算逻辑实现."""
+    def __call_bn__(self, inputs, training):
         expanded10 = self.expanded10(inputs)
         expanded5 = self.expanded5(inputs)
         normalized10 = self.normalized10(expanded10, training=training)
@@ -803,10 +805,29 @@ class AlphaNetV4(_Model):
         normalized10_2 = self.normalized10_2(recurrent10, training=training)
         normalized5_2 = self.normalized5_2(recurrent5, training=training)
         concat = self.concat([normalized10_2, normalized5_2])
-        dropout = self.dropout(concat, training=training)
+        dropout = self.dropout_layer(concat, training=training)
         dense = self.dense(dropout)
         output = self.outputs(dense)
         return output
+
+    @_tf.function
+    def __call_wo_bn__(self, inputs, training):
+        expanded10 = self.expanded10(inputs)
+        expanded5 = self.expanded5(inputs)
+        recurrent10 = self.recurrent10(expanded10)
+        recurrent5 = self.recurrent5(expanded5)
+        concat = self.concat([recurrent10, recurrent5])
+        dropout = self.dropout_layer(concat, training=training)
+        dense = self.dense(dropout)
+        output = self.outputs(dense)
+        return output
+
+    @_tf.function
+    def call(self, inputs, training=None, mask=None):
+        """计算逻辑实现."""
+        return _tf.cond(self.batch_normalization,
+                        lambda: self.__call_bn__(inputs, training),
+                        lambda: self.__call_wo_bn__(inputs, training))
 
     def compile(self,
                 optimizer=_tf.keras.optimizers.Adam(0.0001),
@@ -828,7 +849,8 @@ class AlphaNetV4(_Model):
         """获取参数，保存模型需要的函数."""
         config = super().get_config().copy()
         config.update({'dropout': self.dropout,
-                       'l2': self.l2})
+                       'l2': self.l2,
+                       'batch_normalization': self.batch_normalization})
         return config
 
 
