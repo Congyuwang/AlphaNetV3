@@ -35,11 +35,36 @@ Optional regularizer function for the output of this layer.
 
 ---
 
+#### <kbd>property</kbd> compute_dtype
+
+The dtype of the layer's computations. 
+
+This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
+
+Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
+
+Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
+
+
+
+**Returns:**
+  The layer's compute dtype. 
+
+---
+
 #### <kbd>property</kbd> dtype
 
 
 
 
+
+---
+
+#### <kbd>property</kbd> dtype_policy
+
+The dtype policy associated with this layer. 
+
+This is an instance of a `tf.keras.mixed_precision.Policy`. 
 
 ---
 
@@ -167,21 +192,19 @@ Variable regularization tensors are created when this property is accessed, so i
 ``` inputs = tf.keras.Input(shape=(10,))```
 ``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
 ``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` model.add_loss(tf.abs(tf.reduce_mean(x)))``` ``` model.losses```
-[<tf.Tensor 'Abs:0' shape=() dtype=float32>]
+``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
+``` len(model.losses)``` 1 
 
-``` inputs = tf.keras.Input(shape=(10,))``` ``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')```
-``` x = d(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
-``` model = tf.keras.Model(inputs, outputs)``` ``` # Weight regularization.```
-``` model.add_loss(lambda: tf.reduce_mean(d.kernel))``` ``` model.losses```
-[<tf.Tensor: shape=(), dtype=float32, numpy=1.0>]
+``` inputs = tf.keras.Input(shape=(10,))```
+``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
+``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
+``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
+``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
 
 
 
 **Returns:**
-
-   A list of tensors.
-
+  A list of tensors. 
 
 ---
 
@@ -202,7 +225,7 @@ List of metrics added using the `add_metric()` API.
 
 
 **Returns:**
-  A list of tensors. 
+  A list of `Metric` objects. 
 
 ---
 
@@ -228,14 +251,9 @@ Returns a `tf.name_scope` instance for this class.
 
 #### <kbd>property</kbd> non_trainable_weights
 
-List of all non-trainable weights tracked by this layer. 
-
-Non-trainable weights are *not* updated during training. They are expected to be updated manually in `call()`. 
 
 
 
-**Returns:**
-  A list of non-trainable variables. 
 
 ---
 
@@ -356,22 +374,23 @@ Whether this layer supports computing a mask using `compute_mask`.
 
 #### <kbd>property</kbd> trainable_weights
 
-List of all trainable weights tracked by this layer. 
-
-Trainable weights are updated via gradient descent during training. 
 
 
 
-**Returns:**
-  A list of trainable variables. 
 
 ---
 
 #### <kbd>property</kbd> updates
 
-DEPRECATED FUNCTION 
 
-Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. Instructions for updating: This property should not be used in TensorFlow 2.0, as updates are applied automatically. 
+
+
+
+---
+
+#### <kbd>property</kbd> variable_dtype
+
+Alias of `Layer.dtype`, the dtype of the weights. 
 
 ---
 
@@ -380,6 +399,8 @@ Warning: THIS FUNCTION IS DEPRECATED. It will be removed in a future version. In
 Returns the list of all layer variables/weights. 
 
 Alias of `self.weights`. 
+
+Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
 
 
 

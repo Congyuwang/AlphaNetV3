@@ -632,6 +632,7 @@ class AlphaNetV3(_Model):
                  l2=0.001,
                  classification=False,
                  categories=0,
+                 recurrent_unit="GRU",
                  *args,
                  **kwargs):
         """Alpha net v3.
@@ -642,6 +643,9 @@ class AlphaNetV3(_Model):
         Args:
             dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
             l2: 输出层的l2-regularization参数
+            classification: 是否为分类问题
+            categories: 分类问题的类别数量
+            recurrent_unit (str): 该参数可以为"GRU"或"LSTM"
 
         """
         super(AlphaNetV3, self).__init__(*args, **kwargs)
@@ -653,8 +657,14 @@ class AlphaNetV3(_Model):
         self.normalized5 = _tfl.BatchNormalization()
         self.dropout10 = _tfl.Dropout(self.dropout)
         self.dropout5 = _tfl.Dropout(self.dropout)
-        self.gru10 = _tfl.GRU(units=30)
-        self.gru5 = _tfl.GRU(units=30)
+        if recurrent_unit == "GRU":
+            self.recurrent10 = _tfl.GRU(units=30)
+            self.recurrent5 = _tfl.GRU(units=30)
+        elif recurrent_unit == "LSTM":
+            self.recurrent10 = _tfl.LSTM(units=30)
+            self.recurrent5 = _tfl.LSTM(units=30)
+        else:
+            raise ValueError("Unknown recurrent_unit")
         self.normalized10_2 = _tfl.BatchNormalization()
         self.normalized5_2 = _tfl.BatchNormalization()
         self.concat = _tfl.Concatenate(axis=-1)
@@ -684,10 +694,10 @@ class AlphaNetV3(_Model):
         normalized5 = self.normalized5(expanded5, training=training)
         dropout10 = self.dropout10(normalized10, training=training)
         dropout5 = self.dropout5(normalized5, training=training)
-        gru10 = self.gru10(dropout10)
-        gru5 = self.gru5(dropout5)
-        normalized10_2 = self.normalized10_2(gru10, training=training)
-        normalized5_2 = self.normalized5_2(gru5, training=training)
+        recurrent10 = self.recurrent10(dropout10)
+        recurrent5 = self.recurrent5(dropout5)
+        normalized10_2 = self.normalized10_2(recurrent10, training=training)
+        normalized5_2 = self.normalized5_2(recurrent5, training=training)
         concat = self.concat([normalized10_2, normalized5_2])
         output = self.outputs(concat)
         return output
