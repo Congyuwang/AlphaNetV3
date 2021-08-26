@@ -5,17 +5,17 @@
 # <kbd>module</kbd> `alphanet.data`
 多维多时间序列神经网络滚动训练的数据工具. 
 
-version: 0.0.11 
+version: 0.0.19 
 
 author: Congyu Wang 
 
-date: 2021-07-26 
+date: 2021-08-26 
 
 
 
 ---
 
-<a href="../src/alphanet/data.py#L17"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L18"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TimeSeriesData`
 单个时间序列信息. 
@@ -26,7 +26,7 @@ date: 2021-07-26
 
 > 用于储存个股的数据信息及预测label，全部使用numpy，日期格式为整数: ``YYYYMMDD``。 数据分三个部分：时间，数据，标签，第一个维度都是时间，数据的第二个维度为特征。 
 
-<a href="../src/alphanet/data.py#L26"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L27"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -50,12 +50,12 @@ __init__(dates: ndarray, data: ndarray, labels: ndarray)
 
 ---
 
-<a href="../src/alphanet/data.py#L55"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L56"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TrainValData`
 根据训练天数、验证天数、样本历史长度、训练起点生成不同训练阶段的数据. 
 
-<a href="../src/alphanet/data.py#L58"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L59"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -67,7 +67,8 @@ __init__(
     history_length: int = 30,
     train_val_gap: int = 10,
     sample_step: int = 2,
-    fill_na: float = nan
+    fill_na: float = nan,
+    normalize: bool = False
 )
 ```
 
@@ -94,18 +95,25 @@ __init__(
  - <b>`train_val_gap`</b>:  训练集与验证集的间隔 
  - <b>`sample_step`</b>:  采样sample时步进的天数 
  - <b>`fill_na`</b>:  默认填充为np.NaN，训练时会跳过有确实数据的样本 
+ - <b>`normalize`</b>:  是否对非率值做每个历史片段的max/min标准化 
 
 
 
 
 ---
 
-<a href="../src/alphanet/data.py#L206"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/data.py#L207"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get`
 
 ```python
-get(start_date: int, order='by_date', validate_only=False, validate_length=None)
+get(
+    start_date: int,
+    order='by_date',
+    validate_only=False,
+    validate_length=None,
+    normalize=False
+)
 ```
 
 获取从某天开始的训练集和验证集. 
@@ -125,6 +133,7 @@ get(start_date: int, order='by_date', validate_only=False, validate_length=None)
  - <b>`order`</b>:  有三种顺序 ``shuffle``, ``by_date``, ``by_series``。  分别为随机打乱股票和时间，按时间顺序优先，按股票顺序优先，默认by_date。 
  - <b>`validate_only`</b>:  如果设置为True，则只返回validate set  和训练集、验证集时间信息。可以用于训练后的分析。 
  - <b>`validate_length`</b> (int):  override class validate_length 
+ - <b>`normalize`</b> (bool):  override class normalize 
 
 
 

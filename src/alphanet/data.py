@@ -1,15 +1,16 @@
 """多维多时间序列神经网络滚动训练的数据工具.
 
-version: 0.0.11
+version: 0.0.19
 
 author: Congyu Wang
 
-date: 2021-07-26
+date: 2021-08-26
 """
+import numpy as np
 import tensorflow as _tf
 import numpy as _np
+from numba import njit
 from typing import List as _List
-
 
 __all__ = ["TimeSeriesData", "TrainValData"]
 
@@ -62,7 +63,8 @@ class TrainValData:
                  history_length: int = 30,
                  train_val_gap: int = 10,
                  sample_step: int = 2,
-                 fill_na: _np.float = _np.NaN):
+                 fill_na: _np.float = _np.NaN,
+                 normalize: bool = False):
         """用于获取不同阶段的训练集和验证集.
 
         Notes:
@@ -100,6 +102,7 @@ class TrainValData:
             train_val_gap: 训练集与验证集的间隔
             sample_step: 采样sample时步进的天数
             fill_na: 默认填充为np.NaN，训练时会跳过有确实数据的样本
+            normalize: 是否对非率值做每个历史片段的max/min标准化
 
         """
         # 检查参数类型
@@ -173,10 +176,10 @@ class TrainValData:
                                        self.__class_num))
 
         self.__series_date_matrix = _np.empty((len(time_series_list),
-                                               len(self.__distinct_dates), 2))
+                                               len(self.__distinct_dates), 2),
+                                              dtype=_np.int)
         self.__data[:] = fill_na
         self.__labels[:] = fill_na
-        self.__series_date_matrix[:] = fill_na
 
         # 根据日期序列的位置向张量填充数据
         dates_positions = {date: index
@@ -194,20 +197,19 @@ class TrainValData:
             self.__series_date_matrix[i, position_index, 0] = series.dates
             self.__series_date_matrix[i, position_index, 1] = i
 
-        # numpy -> tensor
-        self.__data = _tf.constant(self.__data, dtype=_tf.float32)
-        self.__labels = _tf.constant(self.__labels, dtype=_tf.float32)
         self.__train_length = train_length
         self.__validate_length = validate_length
         self.__history_length = history_length
         self.__sample_step = sample_step
         self.__train_val_gap = train_val_gap
+        self.__normalize = normalize
 
     def get(self,
             start_date: int,
             order="by_date",
             validate_only=False,
-            validate_length=None):
+            validate_length=None,
+            normalize=False):
         """获取从某天开始的训练集和验证集.
 
         Notes:
@@ -229,6 +231,7 @@ class TrainValData:
             validate_only: 如果设置为True，则只返回validate set
                 和训练集、验证集时间信息。可以用于训练后的分析。
             validate_length (int): override class validate_length
+            normalize (bool): override class normalize
 
         Returns:
             如果``validate_only=False``，返回训练集、验证集、日期信息：
@@ -246,16 +249,20 @@ class TrainValData:
                 raise ValueError("`validate_length` should be at least 1")
         else:
             validate_length = self.__validate_length
+        if not normalize:
+            normalize = self.__normalize
         return self.__get_in_memory__(start_date,
                                       order,
                                       validate_only,
-                                      validate_length)
+                                      validate_length,
+                                      normalize)
 
     def __get_in_memory__(self,
                           start_date,
                           order="by_date",
                           validate_only=False,
-                          validate_length=None):
+                          validate_length=None,
+                          normalize=False):
         """使用显存生成历史数据.
 
         使用tensorflow from_tensor_slices，通过传递完整的tensor进行训练，
@@ -267,13 +274,14 @@ class TrainValData:
         if validate_length is not None:
             kwargs.update({"validate_length": validate_length})
         train_args, val_args, dates_info = self.__get_period_info__(**kwargs)
+        train_args = (*train_args, normalize)
+        val_args = (*val_args, normalize)
         # 将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息
         (val_x,
          val_y,
          val_dates_series) = __full_tensor_generation__(*val_args)
         # 转化为tensorflow DataSet
         val = _tf.data.Dataset.from_tensor_slices((val_x, val_y))
-        val_dates_series = val_dates_series.numpy().astype(int)
         val_dates_list = val_dates_series[:, 0].tolist()
         val_series_list = val_dates_series[:, 1].tolist()
         dates_info["validation"]["dates_list"] = val_dates_list
@@ -286,7 +294,6 @@ class TrainValData:
          train_y,
          train_dates_series) = __full_tensor_generation__(*train_args)
         train = _tf.data.Dataset.from_tensor_slices((train_x, train_y))
-        train_dates_series = train_dates_series.numpy().astype(int)
         train_dates_list = train_dates_series[:, 0].tolist()
         train_series_list = train_dates_series[:, 1].tolist()
         dates_info["training"]["dates_list"] = train_dates_list
@@ -366,17 +373,18 @@ class TrainValData:
                            for series_i in range(len(data))]
 
         if order == "shuffle":
+            generation_list = _np.array(generation_list)
             _np.random.shuffle(generation_list)
         elif order == "by_date":
-            pass
+            generation_list = _np.array(generation_list)
         elif order == "by_series":
             generation_list = sorted(generation_list, key=lambda k: k[0])
+            generation_list = _np.array(generation_list)
         else:
             raise ValueError("wrong order argument, choose from `shuffle`, "
                              "`by_date`, and `by_series`")
 
-        generation_list = _tf.constant(generation_list, dtype=_tf.int32)
-        history_length = _tf.constant(self.__history_length, dtype=_tf.int32)
+        history_length = self.__history_length
 
         return data, label, generation_list, history_length, dates_series
 
@@ -394,26 +402,26 @@ class TrainValData:
         val_time_index = val_generation_list[:, 1]
 
         # 加上片段的开始位置，得到相对TrainValData类日期列表的位置
-        train_time_index += train_start_index
-        val_time_index += val_start_index
+        train_time_index = train_time_index + train_start_index
+        val_time_index = val_time_index + val_start_index
 
         # 训练集在日期列表中的开始位置
-        training_beginning = _tf.reduce_min(train_time_index)
+        training_beginning = _np.min(train_time_index)
 
         # 结束位置：加上历史长度减去一，获取最大日期位置(inclusive)
-        training_ending = _tf.reduce_max(train_time_index)
+        training_ending = _np.max(train_time_index)
         training_ending += self.__history_length - 1
 
         # validation集每次取的都是某历史片段末尾的数据
         # 所以加上历史减去一
         validation_index = val_time_index + self.__history_length - 1
-        validation_beginning = _tf.reduce_min(validation_index)
-        validation_ending = _tf.reduce_max(validation_index)
+        validation_beginning = _np.min(validation_index)
+        validation_ending = _np.max(validation_index)
 
         dates_info = {
             "training": {
                 "start_date": int(self.__distinct_dates[training_beginning]),
-                "end_date": int(self.__distinct_dates[training_ending])
+                "end_date": int(self.__distinct_dates[training_ending]),
             },
             "validation": {
                 "start_date": int(self.__distinct_dates[validation_beginning]),
@@ -427,34 +435,68 @@ def __full_tensor_generation__(data,
                                label,
                                generation_list,
                                history,
-                               dates_series):
+                               dates_series,
+                               normalize):
     """将输入的数据、标签片段转化为单个sample包含history日期长度的历史信息."""
     # 先将该数据片段的历史维度展开
 
     # 根据generation_list指定的series，日期，获取标签及数据片段
     total_time_length = data.shape[1]
-    expanded = [_tf.gather_nd(data[:, i: (total_time_length + i
+    expanded = [__gather_2d__(data[:, i: (total_time_length + i
                                           - history + 1), :], generation_list)
-                for i in _tf.range(history)]
-    data_all = _tf.stack(expanded, axis=1)
-    label_all = _tf.gather_nd(label[:, history - 1:], generation_list)
-    dates_series_all = _tf.gather_nd(dates_series[:, history - 1:],
+                for i in range(history)]
+
+    # date_all dimensions: (series * dates, features, history)
+    data_all = _np.stack(expanded, axis=-1)
+    label_all = __gather_2d__(label[:, history - 1:], generation_list)
+    dates_series_all = __gather_2d__(dates_series[:, history - 1:],
                                      generation_list)
 
     # 去掉所有包含缺失数据的某股票某时间历史片段
-    label_nan = _tf.math.is_nan(label_all)
-    if _tf.rank(label_all) == 2:
+    label_nan = _np.isnan(label_all)
+    if _np.ndim(label_all) == 2:
         # 如果是分类问题, 需要特殊处理
-        label_nan = _tf.math.reduce_any(label_nan, axis=1)
-    data_nan = _tf.math.is_nan(data_all)
-    nan_series_time_index = _tf.math.reduce_any(
-        _tf.math.reduce_any(data_nan, axis=2),
+        label_nan = _np.any(label_nan, axis=1)
+    data_nan = _np.isnan(data_all)
+    series_time_nan = _np.any(
+        _np.any(data_nan, axis=2),
         axis=1
     )
-    not_nan = _tf.math.logical_not(_tf.math.logical_or(nan_series_time_index, label_nan))
-    return data_all[not_nan], label_all[not_nan], dates_series_all[not_nan]
+    not_nan = _np.logical_not(_np.logical_or(series_time_nan, label_nan))
+
+    data_all = data_all[not_nan]
+    label_all = label_all[not_nan]
+    dates_series_all = dates_series_all[not_nan]
+
+    # max/min standardization for series greater than 1
+    if normalize:
+        max_val = _np.max(data_all, axis=-1, keepdims=True)
+        non_rate_mask = _np.less(1.0, _np.squeeze(max_val))
+        min_val = _np.min(data_all, axis=-1, keepdims=True)
+        with _np.errstate(divide='ignore', invalid='ignore'):
+            normalized = _np.nan_to_num((data_all - min_val)
+                                        / (max_val - min_val))
+        data_all[non_rate_mask] = normalized[non_rate_mask]
+
+    data_all = _np.transpose(data_all, axes=(0, 2, 1))
+    data_all = _tf.constant(data_all, dtype=_tf.float32)
+    label_all = _tf.constant(label_all, dtype=_tf.float32)
+
+    return data_all, label_all, dates_series_all
 
 
 def __first_index__(array, element):
     """计算第一个出现的元素的位置."""
     return _np.min(_np.where(array == element))
+
+
+@njit
+def __gather_2d__(array: _np.ndarray, generation_list: _np.ndarray):
+    out_shape = (len(generation_list), *array.shape[2:])
+    out_array = np.empty(shape=out_shape,
+                         dtype=array.dtype)
+    pointer = 0
+    for i, j in generation_list:
+        out_array[pointer] = array[i, j]
+        pointer += 1
+    return out_array

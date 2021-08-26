@@ -43,7 +43,7 @@ date: 2021-07-29
 
 ---
 
-<a href="../src/alphanet/__init__.py#L860"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L759"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `load_model`
 
@@ -89,7 +89,7 @@ load_model(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L63"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L95"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Std`
 计算每个序列各stride的标准差. 
@@ -100,15 +100,15 @@ load_model(
 
 > 计算每个feature各个stride的standard deviation 
 
-<a href="../src/alphanet/__init__.py#L71"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L66"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
 ```python
-__init__(stride: int = 10, **kwargs)
+__init__(stride=10, **kwargs)
 ```
 
-标准差. 
+计算每个stride的统计值的基类. 
 
 
 
@@ -522,7 +522,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L85"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L81"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -534,7 +534,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L94"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L103"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -557,7 +557,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L124"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L88"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -570,7 +570,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L131"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L120"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `ZScore`
 计算每个序列各stride的均值除以其标准差. 
@@ -581,15 +581,15 @@ get_config()
 
 > 并非严格意义上的z-score, 计算公式为每个feature各个stride的mean除以各自的standard deviation 
 
-<a href="../src/alphanet/__init__.py#L140"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L66"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
 ```python
-__init__(stride: int = 10, **kwargs)
+__init__(stride=10, **kwargs)
 ```
 
-均值除以标准差. 
+计算每个stride的统计值的基类. 
 
 
 
@@ -1003,7 +1003,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L154"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L81"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1015,7 +1015,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L163"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L129"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -1038,7 +1038,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L190"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L88"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -1051,7 +1051,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L197"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L152"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `LinearDecay`
 计算每个序列各stride的线性衰减加权平均. 
@@ -1062,7 +1062,7 @@ get_config()
 
 > 以线性衰减为权重，计算每个feature各个stride的均值： 如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) 
 
-<a href="../src/alphanet/__init__.py#L206"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L66"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1070,7 +1070,7 @@ get_config()
 __init__(stride=10, **kwargs)
 ```
 
-线性递减加权平均. 
+计算每个stride的统计值的基类. 
 
 
 
@@ -1484,7 +1484,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L221"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L81"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1496,7 +1496,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L228"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L161"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -1519,7 +1519,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L253"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L88"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -1532,7 +1532,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L260"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L187"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Return`
 计算每个序列各stride的回报率. 
@@ -1543,7 +1543,7 @@ get_config()
 
 > 计算公式为每个stride最后一个数除以第一个数再减去一 
 
-<a href="../src/alphanet/__init__.py#L268"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L195"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -1965,7 +1965,488 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L281"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L208"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `build`
+
+```python
+build(input_shape)
+```
+
+构建该层，计算维度信息. 
+
+---
+
+<a href="../src/alphanet/__init__.py#L214"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `call`
+
+```python
+call(inputs, *args, **kwargs)
+```
+
+函数主逻辑实现部分. 
+
+
+
+**Args:**
+ 
+ - <b>`inputs`</b> (tensor):  输入dimension为(batch_size, time_steps, features) 
+
+
+
+**Returns:**
+ dimension 为(batch_size, time_steps / stride, features) 
+
+---
+
+<a href="../src/alphanet/__init__.py#L232"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `get_config`
+
+```python
+get_config()
+```
+
+获取参数，保存模型需要的函数. 
+
+
+---
+
+<a href="../src/alphanet/__init__.py#L278"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+## <kbd>class</kbd> `Covariance`
+计算每个stride各时间序列片段的covariance. 
+
+
+
+**Notes:**
+
+> 计算每个stride每两个feature之间的covariance大小， 输出feature数量为features * (features - 1) / 2 
+
+<a href="../src/alphanet/__init__.py#L241"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `__init__`
+
+```python
+__init__(stride=10, **kwargs)
+```
+
+外乘类的扩张层. 
+
+
+
+**Args:**
+ 
+ - <b>`stride`</b> (int):  time steps需要是stride的整数倍 
+
+
+---
+
+#### <kbd>property</kbd> activity_regularizer
+
+Optional regularizer function for the output of this layer. 
+
+---
+
+#### <kbd>property</kbd> compute_dtype
+
+The dtype of the layer's computations. 
+
+This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
+
+Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
+
+Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
+
+
+
+**Returns:**
+  The layer's compute dtype. 
+
+---
+
+#### <kbd>property</kbd> dtype
+
+The dtype of the layer weights. 
+
+This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
+
+---
+
+#### <kbd>property</kbd> dtype_policy
+
+The dtype policy associated with this layer. 
+
+This is an instance of a `tf.keras.mixed_precision.Policy`. 
+
+---
+
+#### <kbd>property</kbd> dynamic
+
+Whether the layer is dynamic (eager-only); set in the constructor. 
+
+---
+
+#### <kbd>property</kbd> inbound_nodes
+
+Deprecated, do NOT use! Only for compatibility with external Keras. 
+
+---
+
+#### <kbd>property</kbd> input
+
+Retrieves the input tensor(s) of a layer. 
+
+Only applicable if the layer has exactly one input, i.e. if it is connected to one incoming layer. 
+
+
+
+**Returns:**
+  Input tensor or list of input tensors. 
+
+
+
+**Raises:**
+ 
+ - <b>`RuntimeError`</b>:  If called in Eager mode. 
+ - <b>`AttributeError`</b>:  If no inbound nodes are found. 
+
+---
+
+#### <kbd>property</kbd> input_mask
+
+Retrieves the input mask tensor(s) of a layer. 
+
+Only applicable if the layer has exactly one inbound node, i.e. if it is connected to one incoming layer. 
+
+
+
+**Returns:**
+  Input mask tensor (potentially None) or list of input  mask tensors. 
+
+
+
+**Raises:**
+ 
+ - <b>`AttributeError`</b>:  if the layer is connected to more than one incoming layers. 
+
+---
+
+#### <kbd>property</kbd> input_shape
+
+Retrieves the input shape(s) of a layer. 
+
+Only applicable if the layer has exactly one input, i.e. if it is connected to one incoming layer, or if all inputs have the same shape. 
+
+
+
+**Returns:**
+  Input shape, as an integer shape tuple  (or list of shape tuples, one tuple per input tensor). 
+
+
+
+**Raises:**
+ 
+ - <b>`AttributeError`</b>:  if the layer has no defined input_shape. 
+ - <b>`RuntimeError`</b>:  if called in Eager mode. 
+
+---
+
+#### <kbd>property</kbd> input_spec
+
+`InputSpec` instance(s) describing the input format for this layer. 
+
+When you create a layer subclass, you can set `self.input_spec` to enable the layer to run input compatibility checks when it is called. Consider a `Conv2D` layer: it can only be called on a single input tensor of rank 4. As such, you can set, in `__init__()`: 
+
+```python
+self.input_spec = tf.keras.layers.InputSpec(ndim=4)
+``` 
+
+Now, if you try to call the layer on an input that isn't rank 4 (for instance, an input of shape `(2,)`, it will raise a nicely-formatted error: 
+
+```
+ValueError: Input 0 of layer conv2d is incompatible with the layer:
+expected ndim=4, found ndim=1. Full shape received: [2]
+``` 
+
+Input checks that can be specified via `input_spec` include: 
+- Structure (e.g. a single input, a list of 2 inputs, etc) 
+- Shape 
+- Rank (ndim) 
+- Dtype 
+
+For more information, see `tf.keras.layers.InputSpec`. 
+
+
+
+**Returns:**
+  A `tf.keras.layers.InputSpec` instance, or nested structure thereof. 
+
+---
+
+#### <kbd>property</kbd> losses
+
+List of losses added using the `add_loss()` API. 
+
+Variable regularization tensors are created when this property is accessed, so it is eager safe: accessing `losses` under a `tf.GradientTape` will propagate gradients back to the corresponding variables. 
+
+
+
+**Examples:**
+ 
+
+``` class MyLayer(tf.keras.layers.Layer):```
+...   def call(self, inputs):
+...     self.add_loss(tf.abs(tf.reduce_mean(inputs)))
+...     return inputs
+``` l = MyLayer()``` ``` l(np.ones((10, 1)))```
+``` l.losses``` [1.0] 
+
+``` inputs = tf.keras.Input(shape=(10,))```
+``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
+``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
+``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
+``` len(model.losses)``` 1 
+
+``` inputs = tf.keras.Input(shape=(10,))```
+``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
+``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
+``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
+``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
+
+
+
+**Returns:**
+  A list of tensors. 
+
+---
+
+#### <kbd>property</kbd> metrics
+
+List of metrics added using the `add_metric()` API. 
+
+
+
+**Example:**
+ 
+
+``` input = tf.keras.layers.Input(shape=(3,))```
+``` d = tf.keras.layers.Dense(2)``` ``` output = d(input)```
+``` d.add_metric(tf.reduce_max(output), name='max')``` ``` d.add_metric(tf.reduce_min(output), name='min')```
+``` [m.name for m in d.metrics]``` ['max', 'min'] 
+
+
+
+**Returns:**
+  A list of `Metric` objects. 
+
+---
+
+#### <kbd>property</kbd> name
+
+Name of the layer (string), set in the constructor. 
+
+---
+
+#### <kbd>property</kbd> name_scope
+
+Returns a `tf.name_scope` instance for this class. 
+
+---
+
+#### <kbd>property</kbd> non_trainable_variables
+
+
+
+
+
+---
+
+#### <kbd>property</kbd> non_trainable_weights
+
+List of all non-trainable weights tracked by this layer. 
+
+Non-trainable weights are *not* updated during training. They are expected to be updated manually in `call()`. 
+
+
+
+**Returns:**
+  A list of non-trainable variables. 
+
+---
+
+#### <kbd>property</kbd> outbound_nodes
+
+Deprecated, do NOT use! Only for compatibility with external Keras. 
+
+---
+
+#### <kbd>property</kbd> output
+
+Retrieves the output tensor(s) of a layer. 
+
+Only applicable if the layer has exactly one output, i.e. if it is connected to one incoming layer. 
+
+
+
+**Returns:**
+  Output tensor or list of output tensors. 
+
+
+
+**Raises:**
+ 
+ - <b>`AttributeError`</b>:  if the layer is connected to more than one incoming  layers. 
+ - <b>`RuntimeError`</b>:  if called in Eager mode. 
+
+---
+
+#### <kbd>property</kbd> output_mask
+
+Retrieves the output mask tensor(s) of a layer. 
+
+Only applicable if the layer has exactly one inbound node, i.e. if it is connected to one incoming layer. 
+
+
+
+**Returns:**
+  Output mask tensor (potentially None) or list of output  mask tensors. 
+
+
+
+**Raises:**
+ 
+ - <b>`AttributeError`</b>:  if the layer is connected to more than one incoming layers. 
+
+---
+
+#### <kbd>property</kbd> output_shape
+
+Retrieves the output shape(s) of a layer. 
+
+Only applicable if the layer has one output, or if all outputs have the same shape. 
+
+
+
+**Returns:**
+  Output shape, as an integer shape tuple  (or list of shape tuples, one tuple per output tensor). 
+
+
+
+**Raises:**
+ 
+ - <b>`AttributeError`</b>:  if the layer has no defined output shape. 
+ - <b>`RuntimeError`</b>:  if called in Eager mode. 
+
+---
+
+#### <kbd>property</kbd> stateful
+
+
+
+
+
+---
+
+#### <kbd>property</kbd> submodules
+
+Sequence of all sub-modules. 
+
+Submodules are modules which are properties of this module, or found as properties of modules which are properties of this module (and so on). 
+
+``` a = tf.Module()```
+``` b = tf.Module()``` ``` c = tf.Module()```
+``` a.b = b``` ``` b.c = c```
+``` list(a.submodules) == [b, c]``` True ``` list(b.submodules) == [c]```
+True
+``` list(c.submodules) == []``` True 
+
+
+
+**Returns:**
+  A sequence of all submodules. 
+
+---
+
+#### <kbd>property</kbd> supports_masking
+
+Whether this layer supports computing a mask using `compute_mask`. 
+
+---
+
+#### <kbd>property</kbd> trainable
+
+
+
+
+
+---
+
+#### <kbd>property</kbd> trainable_variables
+
+
+
+
+
+---
+
+#### <kbd>property</kbd> trainable_weights
+
+List of all trainable weights tracked by this layer. 
+
+Trainable weights are updated via gradient descent during training. 
+
+
+
+**Returns:**
+  A list of trainable variables. 
+
+---
+
+#### <kbd>property</kbd> updates
+
+
+
+
+
+---
+
+#### <kbd>property</kbd> variable_dtype
+
+Alias of `Layer.dtype`, the dtype of the weights. 
+
+---
+
+#### <kbd>property</kbd> variables
+
+Returns the list of all layer variables/weights. 
+
+Alias of `self.weights`. 
+
+Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
+
+
+
+**Returns:**
+  A list of variables. 
+
+---
+
+#### <kbd>property</kbd> weights
+
+Returns the list of all layer variables/weights. 
+
+
+
+**Returns:**
+  A list of variables. 
+
+
+
+---
+
+<a href="../src/alphanet/__init__.py#L257"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -1996,492 +2477,11 @@ call(inputs, *args, **kwargs)
 
 
 **Returns:**
- dimension 为(batch_size, time_steps / stride, features) 
-
----
-
-<a href="../src/alphanet/__init__.py#L305"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `get_config`
-
-```python
-get_config()
-```
-
-获取参数，保存模型需要的函数. 
-
-
----
-
-<a href="../src/alphanet/__init__.py#L351"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>class</kbd> `Covariance`
-计算每个stride各时间序列片段的covariance. 
-
-
-
-**Notes:**
-
-> 计算每个stride每两个feature之间的covariance大小， 输出feature数量为features * (features - 1) / 2 
-
-<a href="../src/alphanet/__init__.py#L314"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `__init__`
-
-```python
-__init__(stride=10, **kwargs)
-```
-
-外乘类的扩张层. 
-
-
-
-**Args:**
- 
- - <b>`stride`</b> (int):  time steps需要是stride的整数倍 
-
-
----
-
-#### <kbd>property</kbd> activity_regularizer
-
-Optional regularizer function for the output of this layer. 
-
----
-
-#### <kbd>property</kbd> compute_dtype
-
-The dtype of the layer's computations. 
-
-This is equivalent to `Layer.dtype_policy.compute_dtype`. Unless mixed precision is used, this is the same as `Layer.dtype`, the dtype of the weights. 
-
-Layers automatically cast their inputs to the compute dtype, which causes computations and the output to be in the compute dtype as well. This is done by the base Layer class in `Layer.__call__`, so you do not have to insert these casts if implementing your own layer. 
-
-Layers often perform certain internal computations in higher precision when `compute_dtype` is float16 or bfloat16 for numeric stability. The output will still typically be float16 or bfloat16 in such cases. 
-
-
-
-**Returns:**
-  The layer's compute dtype. 
-
----
-
-#### <kbd>property</kbd> dtype
-
-The dtype of the layer weights. 
-
-This is equivalent to `Layer.dtype_policy.variable_dtype`. Unless mixed precision is used, this is the same as `Layer.compute_dtype`, the dtype of the layer's computations. 
-
----
-
-#### <kbd>property</kbd> dtype_policy
-
-The dtype policy associated with this layer. 
-
-This is an instance of a `tf.keras.mixed_precision.Policy`. 
-
----
-
-#### <kbd>property</kbd> dynamic
-
-Whether the layer is dynamic (eager-only); set in the constructor. 
-
----
-
-#### <kbd>property</kbd> inbound_nodes
-
-Deprecated, do NOT use! Only for compatibility with external Keras. 
-
----
-
-#### <kbd>property</kbd> input
-
-Retrieves the input tensor(s) of a layer. 
-
-Only applicable if the layer has exactly one input, i.e. if it is connected to one incoming layer. 
-
-
-
-**Returns:**
-  Input tensor or list of input tensors. 
-
-
-
-**Raises:**
- 
- - <b>`RuntimeError`</b>:  If called in Eager mode. 
- - <b>`AttributeError`</b>:  If no inbound nodes are found. 
-
----
-
-#### <kbd>property</kbd> input_mask
-
-Retrieves the input mask tensor(s) of a layer. 
-
-Only applicable if the layer has exactly one inbound node, i.e. if it is connected to one incoming layer. 
-
-
-
-**Returns:**
-  Input mask tensor (potentially None) or list of input  mask tensors. 
-
-
-
-**Raises:**
- 
- - <b>`AttributeError`</b>:  if the layer is connected to more than one incoming layers. 
-
----
-
-#### <kbd>property</kbd> input_shape
-
-Retrieves the input shape(s) of a layer. 
-
-Only applicable if the layer has exactly one input, i.e. if it is connected to one incoming layer, or if all inputs have the same shape. 
-
-
-
-**Returns:**
-  Input shape, as an integer shape tuple  (or list of shape tuples, one tuple per input tensor). 
-
-
-
-**Raises:**
- 
- - <b>`AttributeError`</b>:  if the layer has no defined input_shape. 
- - <b>`RuntimeError`</b>:  if called in Eager mode. 
-
----
-
-#### <kbd>property</kbd> input_spec
-
-`InputSpec` instance(s) describing the input format for this layer. 
-
-When you create a layer subclass, you can set `self.input_spec` to enable the layer to run input compatibility checks when it is called. Consider a `Conv2D` layer: it can only be called on a single input tensor of rank 4. As such, you can set, in `__init__()`: 
-
-```python
-self.input_spec = tf.keras.layers.InputSpec(ndim=4)
-``` 
-
-Now, if you try to call the layer on an input that isn't rank 4 (for instance, an input of shape `(2,)`, it will raise a nicely-formatted error: 
-
-```
-ValueError: Input 0 of layer conv2d is incompatible with the layer:
-expected ndim=4, found ndim=1. Full shape received: [2]
-``` 
-
-Input checks that can be specified via `input_spec` include: 
-- Structure (e.g. a single input, a list of 2 inputs, etc) 
-- Shape 
-- Rank (ndim) 
-- Dtype 
-
-For more information, see `tf.keras.layers.InputSpec`. 
-
-
-
-**Returns:**
-  A `tf.keras.layers.InputSpec` instance, or nested structure thereof. 
-
----
-
-#### <kbd>property</kbd> losses
-
-List of losses added using the `add_loss()` API. 
-
-Variable regularization tensors are created when this property is accessed, so it is eager safe: accessing `losses` under a `tf.GradientTape` will propagate gradients back to the corresponding variables. 
-
-
-
-**Examples:**
- 
-
-``` class MyLayer(tf.keras.layers.Layer):```
-...   def call(self, inputs):
-...     self.add_loss(tf.abs(tf.reduce_mean(inputs)))
-...     return inputs
-``` l = MyLayer()``` ``` l(np.ones((10, 1)))```
-``` l.losses``` [1.0] 
-
-``` inputs = tf.keras.Input(shape=(10,))```
-``` x = tf.keras.layers.Dense(10)(inputs)``` ``` outputs = tf.keras.layers.Dense(1)(x)```
-``` model = tf.keras.Model(inputs, outputs)``` ``` # Activity regularization.```
-``` len(model.losses)``` 0 ``` model.add_loss(tf.abs(tf.reduce_mean(x)))```
-``` len(model.losses)``` 1 
-
-``` inputs = tf.keras.Input(shape=(10,))```
-``` d = tf.keras.layers.Dense(10, kernel_initializer='ones')``` ``` x = d(inputs)```
-``` outputs = tf.keras.layers.Dense(1)(x)``` ``` model = tf.keras.Model(inputs, outputs)```
-``` # Weight regularization.``` ``` model.add_loss(lambda: tf.reduce_mean(d.kernel))```
-``` model.losses``` [<tf.Tensor: shape=(), dtype=float32, numpy=1.0>] 
-
-
-
-**Returns:**
-  A list of tensors. 
-
----
-
-#### <kbd>property</kbd> metrics
-
-List of metrics added using the `add_metric()` API. 
-
-
-
-**Example:**
- 
-
-``` input = tf.keras.layers.Input(shape=(3,))```
-``` d = tf.keras.layers.Dense(2)``` ``` output = d(input)```
-``` d.add_metric(tf.reduce_max(output), name='max')``` ``` d.add_metric(tf.reduce_min(output), name='min')```
-``` [m.name for m in d.metrics]``` ['max', 'min'] 
-
-
-
-**Returns:**
-  A list of `Metric` objects. 
-
----
-
-#### <kbd>property</kbd> name
-
-Name of the layer (string), set in the constructor. 
-
----
-
-#### <kbd>property</kbd> name_scope
-
-Returns a `tf.name_scope` instance for this class. 
-
----
-
-#### <kbd>property</kbd> non_trainable_variables
-
-
-
-
-
----
-
-#### <kbd>property</kbd> non_trainable_weights
-
-List of all non-trainable weights tracked by this layer. 
-
-Non-trainable weights are *not* updated during training. They are expected to be updated manually in `call()`. 
-
-
-
-**Returns:**
-  A list of non-trainable variables. 
-
----
-
-#### <kbd>property</kbd> outbound_nodes
-
-Deprecated, do NOT use! Only for compatibility with external Keras. 
-
----
-
-#### <kbd>property</kbd> output
-
-Retrieves the output tensor(s) of a layer. 
-
-Only applicable if the layer has exactly one output, i.e. if it is connected to one incoming layer. 
-
-
-
-**Returns:**
-  Output tensor or list of output tensors. 
-
-
-
-**Raises:**
- 
- - <b>`AttributeError`</b>:  if the layer is connected to more than one incoming  layers. 
- - <b>`RuntimeError`</b>:  if called in Eager mode. 
-
----
-
-#### <kbd>property</kbd> output_mask
-
-Retrieves the output mask tensor(s) of a layer. 
-
-Only applicable if the layer has exactly one inbound node, i.e. if it is connected to one incoming layer. 
-
-
-
-**Returns:**
-  Output mask tensor (potentially None) or list of output  mask tensors. 
-
-
-
-**Raises:**
- 
- - <b>`AttributeError`</b>:  if the layer is connected to more than one incoming layers. 
-
----
-
-#### <kbd>property</kbd> output_shape
-
-Retrieves the output shape(s) of a layer. 
-
-Only applicable if the layer has one output, or if all outputs have the same shape. 
-
-
-
-**Returns:**
-  Output shape, as an integer shape tuple  (or list of shape tuples, one tuple per output tensor). 
-
-
-
-**Raises:**
- 
- - <b>`AttributeError`</b>:  if the layer has no defined output shape. 
- - <b>`RuntimeError`</b>:  if called in Eager mode. 
-
----
-
-#### <kbd>property</kbd> stateful
-
-
-
-
-
----
-
-#### <kbd>property</kbd> submodules
-
-Sequence of all sub-modules. 
-
-Submodules are modules which are properties of this module, or found as properties of modules which are properties of this module (and so on). 
-
-``` a = tf.Module()```
-``` b = tf.Module()``` ``` c = tf.Module()```
-``` a.b = b``` ``` b.c = c```
-``` list(a.submodules) == [b, c]``` True ``` list(b.submodules) == [c]```
-True
-``` list(c.submodules) == []``` True 
-
-
-
-**Returns:**
-  A sequence of all submodules. 
-
----
-
-#### <kbd>property</kbd> supports_masking
-
-Whether this layer supports computing a mask using `compute_mask`. 
-
----
-
-#### <kbd>property</kbd> trainable
-
-
-
-
-
----
-
-#### <kbd>property</kbd> trainable_variables
-
-
-
-
-
----
-
-#### <kbd>property</kbd> trainable_weights
-
-List of all trainable weights tracked by this layer. 
-
-Trainable weights are updated via gradient descent during training. 
-
-
-
-**Returns:**
-  A list of trainable variables. 
-
----
-
-#### <kbd>property</kbd> updates
-
-
-
-
-
----
-
-#### <kbd>property</kbd> variable_dtype
-
-Alias of `Layer.dtype`, the dtype of the weights. 
-
----
-
-#### <kbd>property</kbd> variables
-
-Returns the list of all layer variables/weights. 
-
-Alias of `self.weights`. 
-
-Note: This will not track the weights of nested `tf.Modules` that are not themselves Keras layers. 
-
-
-
-**Returns:**
-  A list of variables. 
-
----
-
-#### <kbd>property</kbd> weights
-
-Returns the list of all layer variables/weights. 
-
-
-
-**Returns:**
-  A list of variables. 
-
-
-
----
-
-<a href="../src/alphanet/__init__.py#L330"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `build`
-
-```python
-build(input_shape)
-```
-
-构建该层，计算维度信息. 
-
----
-
-<a href="../src/alphanet/__init__.py#L360"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `call`
-
-```python
-call(inputs, *args, **kwargs)
-```
-
-函数主逻辑实现部分. 
-
-
-
-**Args:**
- 
- - <b>`inputs`</b> (tensor):  输入dimension为(batch_size, time_steps, features) 
-
-
-
-**Returns:**
  dimension 为(batch_size, time_steps / stride, features * (features - 1) / 2) 
 
 ---
 
-<a href="../src/alphanet/__init__.py#L339"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L266"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -2494,7 +2494,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L398"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L325"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Correlation`
 计算每个stride各时间序列的相关系数. 
@@ -2505,7 +2505,7 @@ get_config()
 
 > 计算每个stride每两个feature之间的correlation coefficient， 输出feature数量为features * (features - 1) / 2 
 
-<a href="../src/alphanet/__init__.py#L314"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L241"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -2927,7 +2927,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L330"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L257"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `build`
 
@@ -2939,7 +2939,7 @@ build(input_shape)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L407"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L334"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -2962,7 +2962,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L339"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L266"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -2975,7 +2975,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L456"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L383"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `FeatureExpansion`
 计算时间序列特征扩张层，汇总6个计算层. 
@@ -2992,7 +2992,7 @@ get_config()
 >- covariance of each two features for each stride 
 >- correlation coefficient of each two features for each stride 
 
-<a href="../src/alphanet/__init__.py#L477"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L404"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -3414,7 +3414,7 @@ Returns the list of all layer variables/weights.
 
 ---
 
-<a href="../src/alphanet/__init__.py#L496"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L423"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `call`
 
@@ -3437,7 +3437,7 @@ call(inputs, *args, **kwargs)
 
 ---
 
-<a href="../src/alphanet/__init__.py#L520"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L447"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -3450,7 +3450,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L527"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L454"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV2`
 神经网络模型，继承``keras.Model``类. 
@@ -3464,7 +3464,7 @@ alpha net v2版本模型.
 > 复现华泰金工 alpha net V2 版本 
 >``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L539"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L466"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -3978,13 +3978,13 @@ Note: This will not track the weights of nested `tf.Modules` that are not themse
 
 ---
 
-<a href="../src/alphanet/__init__.py#L594"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L521"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<keras.optimizer_v2.adam.Adam object at 0x7fa5a0e31c70>,
+    optimizer=<keras.optimizer_v2.adam.Adam object at 0x7ff5ed712fd0>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -3998,7 +3998,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L610"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L537"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -4011,7 +4011,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L619"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L546"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV3`
 神经网络模型，继承``keras.Model``类. 
@@ -4025,7 +4025,7 @@ alpha net v3版本模型.
 > 复现华泰金工 alpha net V3 版本 
 >``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L631"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L558"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -4542,13 +4542,13 @@ Note: This will not track the weights of nested `tf.Modules` that are not themse
 
 ---
 
-<a href="../src/alphanet/__init__.py#L704"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L631"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<keras.optimizer_v2.adam.Adam object at 0x7fa5a0e481f0>,
+    optimizer=<keras.optimizer_v2.adam.Adam object at 0x7ff5ed71cfd0>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -4562,7 +4562,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L720"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L647"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 
@@ -4575,7 +4575,7 @@ get_config()
 
 ---
 
-<a href="../src/alphanet/__init__.py#L728"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L655"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `AlphaNetV4`
 神经网络模型，继承``keras.Model``类. 
@@ -4586,7 +4586,7 @@ get_config()
 
 > ``input: (batch_size, history time steps, features)`` 
 
-<a href="../src/alphanet/__init__.py#L736"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L663"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -4597,7 +4597,6 @@ __init__(
     classification=False,
     categories=0,
     recurrent_unit='GRU',
-    batch_normalization=False,
     *args,
     **kwargs
 )
@@ -4607,6 +4606,11 @@ Alpha net v4.
 
 
 
+**Notes:**
+
+> 去掉了batch normalization的模型， 训练需要使用data模块的normalization 或其他自定义normalization. 
+>
+
 **Args:**
  
  - <b>`dropout`</b>:  跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout 
@@ -4614,7 +4618,6 @@ Alpha net v4.
  - <b>`classification`</b>:  是否为分类问题 
  - <b>`categories`</b>:  分类问题的类别数量 
  - <b>`recurrent_unit`</b> (str):  该参数可以为"GRU"或"LSTM" 
- - <b>`batch_normalization`</b> (bool):  是否使用批标准化 
 
 
 ---
@@ -5100,13 +5103,13 @@ Note: This will not track the weights of nested `tf.Modules` that are not themse
 
 ---
 
-<a href="../src/alphanet/__init__.py#L835"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L735"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `compile`
 
 ```python
 compile(
-    optimizer=<keras.optimizer_v2.adam.Adam object at 0x7fa5a0e48370>,
+    optimizer=<keras.optimizer_v2.adam.Adam object at 0x7ff5ed72d2b0>,
     loss='MSE',
     metrics=None,
     loss_weights=None,
@@ -5120,7 +5123,7 @@ compile(
 
 ---
 
-<a href="../src/alphanet/__init__.py#L851"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/alphanet/__init__.py#L751"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `get_config`
 

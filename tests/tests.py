@@ -400,7 +400,7 @@ class TestDataModule(unittest.TestCase):
 
     @classmethod
     def __get_batches__(cls, data, start_date):
-        train_val_generator = TrainValData(data)
+        train_val_generator = TrainValData(data, normalize=False)
         train, val, dates_info = train_val_generator.get(start_date)
         first_train = next(iter(train.batch(500)))
         first_val = next(iter(val.batch(500)))
@@ -436,6 +436,140 @@ class TestDataModule(unittest.TestCase):
                 self.full_data["日期"] >= start_date
             ), :]
             dt = df.iloc[:, 3:].values
+            lb = df["10日回报率"].iloc[-1]
+            if np.sum(pd.isnull(dt)) == 0:
+                data_list.append(dt)
+                label_list.append(lb)
+
+        return data_list, label_list
+
+    def __get_first_batches__(self, start_basis, start, n, history=30, step=2):
+        return self.__get_n_batches__(start_basis + start,
+                                      start_basis + start + history - 1,
+                                      n=n,
+                                      step=step)
+
+    def __get_last_batches__(self, start_basis, end, n, history=30, step=2):
+        """
+        :param end: exclusive
+        """
+        return self.__get_n_batches__(start_basis + end - history - step * (n - 1),
+                                      start_basis + end - 1 - step * (n - 1),
+                                      n=n,
+                                      step=step)
+
+
+class TestDataNormalizationModule(unittest.TestCase):
+    """
+    Test the data ranges of data and label for `alphanet.data`
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        (cls.data,
+         cls.full_data,
+         cls.codes,
+         cls.trading_dates) = __test_data__()
+        cls.test_date = np.random.randint(20110101, 20121231)
+        print("getting batches for {}".format(cls.test_date))
+        (cls.first_batch_train,
+         cls.first_batch_val,
+         cls.last_batch_train,
+         cls.last_batch_val,
+         cls.dates_info) = cls.__get_batches__(cls.data, cls.test_date)
+        cls.start_basis = np.min(np.where(cls.trading_dates >= cls.test_date))
+
+    def test_dates_info(self):
+        self.assertEqual(
+            min(self.dates_info["validation"]["dates_list"]),
+            self.dates_info["validation"]["start_date"],
+            "validation dates_list incorrect"
+        )
+        self.assertEqual(
+            max(self.dates_info["validation"]["dates_list"]),
+            self.dates_info["validation"]["end_date"],
+            "validation dates_list incorrect"
+        )
+
+    def test_first_batch_of_training_dataset(self):
+        data_label = self.__get_first_batches__(self.start_basis, 0, 120)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][:len(self.first_batch_train[k])],
+                self.first_batch_train[k]
+            ), "first batch of training {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    def test_last_batch_of_training_dataset(self):
+        data_label = self.__get_last_batches__(self.start_basis, 1200, 120)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][-len(self.last_batch_train[0]):],
+                self.last_batch_train[k]
+            ), "last batch of training {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    def test_first_batch_of_validation_dataset(self):
+        data_label = self.__get_first_batches__(self.start_basis, 1210 - 29, 120)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][:len(self.first_batch_val[k])],
+                self.first_batch_val[k]
+            ), "first batch of validation {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    def test_last_batch_of_validation_dataset(self):
+        data_label = self.__get_last_batches__(self.start_basis, 1510 - 1, 120)
+        for k, name in enumerate(["data", "label"]):
+            self.assertTrue(__is_all_close__(
+                data_label[k][-len(self.last_batch_val[0]):],
+                self.last_batch_val[k]
+            ), "last batch of validation {} "
+               "(start {}): failure".format(name, self.test_date))
+
+    @classmethod
+    def __get_batches__(cls, data, start_date):
+        train_val_generator = TrainValData(data, normalize=True)
+        train, val, dates_info = train_val_generator.get(start_date)
+        first_train = next(iter(train.batch(500)))
+        first_val = next(iter(val.batch(500)))
+        last_train = None
+        last_val = None
+
+        for b in iter(train.batch(500)):
+            last_train = b
+
+        for b in iter(val.batch(500)):
+            last_val = b
+
+        return first_train, first_val, last_train, last_val, dates_info
+
+    def __get_n_batches__(self,
+                          start_date_index,
+                          end_date_index,
+                          n=2,
+                          step=2):
+        data_list = []
+        label_list = []
+        running_index = [(start_date_index + day, end_date_index + day, co)
+                         for day in range(0, step * n, step)
+                         for co in self.codes]
+        for start, end, co in tqdm(running_index):
+            start_date = self.trading_dates[start]
+            end_date = self.trading_dates[end]
+            df = self.full_data.loc[np.logical_and(
+                np.logical_and(
+                    self.full_data["代码"] == co,
+                    self.full_data["日期"] <= end_date
+                ),
+                self.full_data["日期"] >= start_date
+            ), :]
+            dt = df.iloc[:, 3:].values
+            dt_max = np.max(dt, axis=0, keepdims=True)
+            dt_min = np.min(dt, axis=0, keepdims=True)
+            large_cols = np.squeeze(dt_max) > 1.0
+            normal = (dt - dt_min) / (dt_max - dt_min)
+            dt[:, large_cols] = normal[:, large_cols]
             lb = df["10日回报率"].iloc[-1]
             if np.sum(pd.isnull(dt)) == 0:
                 data_list.append(dt)

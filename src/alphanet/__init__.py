@@ -670,6 +670,11 @@ class AlphaNetV4(_Model):
                  **kwargs):
         """Alpha net v4.
 
+        Notes:
+            去掉了batch normalization的模型，
+            训练需要使用data模块的normalization
+            或其他自定义normalization.
+
         Args:
             dropout: 跟在特征扩张以及Batch Normalization之后的dropout，默认无dropout
             l2: 输出层的l2-regularization参数
@@ -684,10 +689,6 @@ class AlphaNetV4(_Model):
         self.expanded10 = FeatureExpansion(stride=10)
         self.expanded5 = FeatureExpansion(stride=5)
         self.dropout_layer = _tfl.Dropout(self.dropout)
-        self.normalized10 = _tfl.BatchNormalization()
-        self.normalized5 = _tfl.BatchNormalization()
-        self.normalized10_2 = _tfl.BatchNormalization()
-        self.normalized5_2 = _tfl.BatchNormalization()
         if recurrent_unit == "GRU":
             self.recurrent10 = _tfl.GRU(units=30)
             self.recurrent5 = _tfl.GRU(units=30)
@@ -719,26 +720,17 @@ class AlphaNetV4(_Model):
                                       kernel_regularizer=self.regularizer)
 
     @_tf.function
-    def __call_bn__(self, inputs, training):
-        """有BN的逻辑."""
+    def call(self, inputs, training=None, mask=None):
+        """计算逻辑实现."""
         expanded10 = self.expanded10(inputs)
         expanded5 = self.expanded5(inputs)
-        normalized10 = self.normalized10(expanded10, training=training)
-        normalized5 = self.normalized5(expanded5, training=training)
-        recurrent10 = self.recurrent10(normalized10)
-        recurrent5 = self.recurrent5(normalized5)
-        normalized10_2 = self.normalized10_2(recurrent10, training=training)
-        normalized5_2 = self.normalized5_2(recurrent5, training=training)
-        concat = self.concat([normalized10_2, normalized5_2])
+        recurrent10 = self.recurrent10(expanded10)
+        recurrent5 = self.recurrent5(expanded5)
+        concat = self.concat([recurrent10, recurrent5])
         dropout = self.dropout_layer(concat, training=training)
         dense = self.dense(dropout)
         output = self.outputs(dense)
         return output
-
-    @_tf.function
-    def call(self, inputs, training=None, mask=None):
-        """计算逻辑实现."""
-        return self.__call_bn__(inputs, training)
 
     def compile(self,
                 optimizer=_tf.keras.optimizers.Adam(0.0001),
