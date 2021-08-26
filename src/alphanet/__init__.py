@@ -60,151 +60,11 @@ __all__ = ["Std",
            "load_model"]
 
 
-class Std(_Layer):
-    """计算每个序列各stride的标准差.
-
-    Notes:
-        计算每个feature各个stride的standard deviation
-
-    """
-
-    def __init__(self, stride: int = 10, **kwargs):
-        """标准差.
-
-        Args:
-            stride (int): time steps需要是stride的整数倍
-
-        """
-        if stride <= 1:
-            raise ValueError("Illegal Argument: stride should be "
-                             "greater than 1")
-        super(Std, self).__init__(**kwargs)
-        self.stride = stride
-        self.intermediate_shape = None
-
-    def build(self, input_shape):
-        """构建该层，计算维度信息."""
-        (features,
-         output_length) = __get_dimensions__(input_shape, self.stride)
-        self.intermediate_shape = [-1,
-                                   output_length,
-                                   self.stride,
-                                   features]
-
-    def call(self, inputs, *args, **kwargs):
-        """函数主逻辑实现部分.
-
-        Args:
-            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
-
-        Returns:
-            dimension 为(batch_size, time_steps / stride, features)
-
-        """
-        # compute means for each stride
-        means = _tf.repeat(
-            _tf.nn.avg_pool(inputs,
-                            ksize=self.stride,
-                            strides=self.stride,
-                            padding="VALID"),
-            self.stride,
-            axis=1
-        )
-
-        # subtract means for each stride
-        squared_diff = _tf.square(_tf.subtract(inputs, means))
-        squared_diff = _tf.reshape(squared_diff, self.intermediate_shape)
-
-        # compute standard deviation for each stride
-        mean_squared_diff = _tf.reduce_mean(squared_diff, axis=2)
-        std = _tf.sqrt(mean_squared_diff)
-
-        return std
-
-    def get_config(self):
-        """获取参数，保存模型需要的函数."""
-        config = super().get_config().copy()
-        config.update({'stride': self.stride})
-        return config
-
-
-class ZScore(_Layer):
-    """计算每个序列各stride的均值除以其标准差.
-
-    Notes:
-        并非严格意义上的z-score,
-        计算公式为每个feature各个stride的mean除以各自的standard deviation
-
-    """
-
-    def __init__(self, stride: int = 10, **kwargs):
-        """均值除以标准差.
-
-        Args:
-            stride (int): time steps需要是stride的整数倍
-
-        """
-        if stride <= 1:
-            raise ValueError("Illegal Argument: stride should be "
-                             "greater than 1")
-        super(ZScore, self).__init__(**kwargs)
-        self.stride = stride
-        self.intermediate_shape = None
-
-    def build(self, input_shape):
-        """构建该层，计算维度信息."""
-        (features,
-         output_length) = __get_dimensions__(input_shape, self.stride)
-        self.intermediate_shape = [-1,
-                                   output_length,
-                                   self.stride,
-                                   features]
-
-    def call(self, inputs, *args, **kwargs):
-        """函数主逻辑实现部分.
-
-        Args:
-            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
-
-        Returns:
-            dimension 为(batch_size, time_steps / stride, features)
-
-        """
-        # compute means for each stride
-        means = _tf.nn.avg_pool(inputs,
-                                ksize=self.stride,
-                                strides=self.stride,
-                                padding="VALID")
-
-        # compute standard deviations for each stride
-        means_broadcast = _tf.repeat(means, self.stride, axis=1)
-        squared_diff = _tf.square(_tf.subtract(inputs, means_broadcast))
-        squared_diff = _tf.reshape(squared_diff, self.intermediate_shape)
-        mean_squared_diff = _tf.reduce_mean(squared_diff, axis=2)
-        std = _tf.sqrt(mean_squared_diff)
-
-        # divide means by standard deviations for each stride
-        z_score = _tf.math.divide_no_nan(means, std)
-        return z_score
-
-    def get_config(self):
-        """获取参数，保存模型需要的函数."""
-        config = super().get_config().copy()
-        config.update({'stride': self.stride})
-        return config
-
-
-class LinearDecay(_Layer):
-    """计算每个序列各stride的线性衰减加权平均.
-
-    Notes:
-        以线性衰减为权重，计算每个feature各个stride的均值：
-        如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-
-    """
+class _StrideLayer(_Layer, _ABC):
+    """计算每个stride的统计值的基类."""
 
     def __init__(self, stride=10, **kwargs):
-        """线性递减加权平均.
+        """计算每个stride的统计值的基类.
 
         Args:
             stride (int): time steps需要是stride的整数倍
@@ -213,7 +73,7 @@ class LinearDecay(_Layer):
         if stride <= 1:
             raise ValueError("Illegal Argument: stride should be "
                              "greater than 1")
-        super(LinearDecay, self).__init__(**kwargs)
+        super(_StrideLayer, self).__init__(**kwargs)
         self.stride = stride
         self.out_shape = None
         self.intermediate_shape = None
@@ -224,6 +84,79 @@ class LinearDecay(_Layer):
          output_length) = __get_dimensions__(input_shape, self.stride)
         self.out_shape = [-1, output_length, features]
         self.intermediate_shape = [-1, self.stride, features]
+
+    def get_config(self):
+        """获取参数，保存模型需要的函数."""
+        config = super().get_config().copy()
+        config.update({'stride': self.stride})
+        return config
+
+
+class Std(_StrideLayer):
+    """计算每个序列各stride的标准差.
+
+    Notes:
+        计算每个feature各个stride的standard deviation
+
+    """
+
+    def call(self, inputs, *args, **kwargs):
+        """函数主逻辑实现部分.
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride, features)
+
+        """
+        strides = _tf.reshape(inputs, self.intermediate_shape)
+
+        # compute standard deviations for each stride
+        std = _tf.math.reduce_std(strides, axis=-2)
+        return _tf.reshape(std, self.out_shape)
+
+
+class ZScore(_StrideLayer):
+    """计算每个序列各stride的均值除以其标准差.
+
+    Notes:
+        并非严格意义上的z-score,
+        计算公式为每个feature各个stride的mean除以各自的standard deviation
+
+    """
+
+    def call(self, inputs, *args, **kwargs):
+        """函数主逻辑实现部分.
+
+        Args:
+            inputs (tensor): 输入dimension为(batch_size, time_steps, features)
+
+        Returns:
+            dimension 为(batch_size, time_steps / stride, features)
+
+        """
+        strides = _tf.reshape(inputs, self.intermediate_shape)
+
+        # compute standard deviations for each stride
+        std = _tf.math.reduce_std(strides, axis=-2)
+
+        # compute means for each stride
+        means = _tf.math.reduce_mean(strides, axis=-2)
+
+        # divide means by standard deviations for each stride
+        z_score = _tf.math.divide_no_nan(means, std)
+        return _tf.reshape(z_score, self.out_shape)
+
+
+class LinearDecay(_StrideLayer):
+    """计算每个序列各stride的线性衰减加权平均.
+
+    Notes:
+        以线性衰减为权重，计算每个feature各个stride的均值：
+        如stride为10，则某feature该stride的权重为(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    """
 
     def call(self, inputs, *args, **kwargs):
         """函数主逻辑实现部分.
@@ -249,12 +182,6 @@ class LinearDecay(_Layer):
         linear_decay = _tf.reduce_sum(kernel * inputs, axis=1)
         linear_decay = _tf.reshape(linear_decay, self.out_shape)
         return linear_decay
-
-    def get_config(self):
-        """获取参数，保存模型需要的函数."""
-        config = super().get_config().copy()
-        config.update({'stride': self.stride})
-        return config
 
 
 class Return(_Layer):
