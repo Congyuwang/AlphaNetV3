@@ -166,18 +166,21 @@ class TrainValData:
         # 标签维度为(序列(股票), 时间)
         self.__data = _np.empty((len(time_series_list),
                                  len(self.__distinct_dates),
-                                 self.__feature_counts))
+                                 self.__feature_counts),
+                                dtype=_np.float32)
         if self.__class_num == 0:
             self.__labels = _np.empty((len(time_series_list),
-                                       len(self.__distinct_dates)))
+                                       len(self.__distinct_dates)),
+                                      dtype=_np.float32)
         else:
             self.__labels = _np.empty((len(time_series_list),
                                        len(self.__distinct_dates),
-                                       self.__class_num))
+                                       self.__class_num),
+                                      dtype=_np.float32)
 
         self.__series_date_matrix = _np.empty((len(time_series_list),
                                                len(self.__distinct_dates), 2),
-                                              dtype=_np.int)
+                                              dtype=_np.int32)
         self.__data[:] = fill_na
         self.__labels[:] = fill_na
 
@@ -373,13 +376,13 @@ class TrainValData:
                            for series_i in range(len(data))]
 
         if order == "shuffle":
-            generation_list = _np.array(generation_list)
+            generation_list = _np.array(generation_list, dtype=_np.int32)
             _np.random.shuffle(generation_list)
         elif order == "by_date":
-            generation_list = _np.array(generation_list)
+            generation_list = _np.array(generation_list, dtype=_np.int32)
         elif order == "by_series":
             generation_list = sorted(generation_list, key=lambda k: k[0])
-            generation_list = _np.array(generation_list)
+            generation_list = _np.array(generation_list, dtype=_np.int32)
         else:
             raise ValueError("wrong order argument, choose from `shuffle`, "
                              "`by_date`, and `by_series`")
