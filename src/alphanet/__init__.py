@@ -561,6 +561,7 @@ class AlphaNetV3(_Model):
                  classification=False,
                  categories=0,
                  recurrent_unit="GRU",
+                 hidden_units=30,
                  *args,
                  **kwargs):
         """Alpha net v3.
@@ -585,11 +586,11 @@ class AlphaNetV3(_Model):
         self.normalized5 = _tfl.BatchNormalization()
         self.dropout_layer = _tfl.Dropout(self.dropout)
         if recurrent_unit == "GRU":
-            self.recurrent10 = _tfl.GRU(units=30)
-            self.recurrent5 = _tfl.GRU(units=30)
+            self.recurrent10 = _tfl.GRU(units=hidden_units)
+            self.recurrent5 = _tfl.GRU(units=hidden_units)
         elif recurrent_unit == "LSTM":
-            self.recurrent10 = _tfl.LSTM(units=30)
-            self.recurrent5 = _tfl.LSTM(units=30)
+            self.recurrent10 = _tfl.LSTM(units=hidden_units)
+            self.recurrent5 = _tfl.LSTM(units=hidden_units)
         else:
             raise ValueError("Unknown recurrent_unit")
         self.normalized10_2 = _tfl.BatchNormalization()
@@ -666,6 +667,7 @@ class AlphaNetV4(_Model):
                  classification=False,
                  categories=0,
                  recurrent_unit="GRU",
+                 hidden_units=30,
                  *args,
                  **kwargs):
         """Alpha net v4.
@@ -690,19 +692,15 @@ class AlphaNetV4(_Model):
         self.expanded5 = FeatureExpansion(stride=5)
         self.dropout_layer = _tfl.Dropout(self.dropout)
         if recurrent_unit == "GRU":
-            self.recurrent10 = _tfl.GRU(units=30)
-            self.recurrent5 = _tfl.GRU(units=30)
+            self.recurrent10 = _tfl.GRU(units=hidden_units)
+            self.recurrent5 = _tfl.GRU(units=hidden_units)
         elif recurrent_unit == "LSTM":
-            self.recurrent10 = _tfl.LSTM(units=30)
-            self.recurrent5 = _tfl.LSTM(units=30)
+            self.recurrent10 = _tfl.LSTM(units=hidden_units)
+            self.recurrent5 = _tfl.LSTM(units=hidden_units)
         else:
             raise ValueError("Unknown recurrent_unit")
         self.concat = _tfl.Concatenate(axis=-1)
         self.regularizer = _tf.keras.regularizers.l2(self.l2)
-        self.dense = _tfl.Dense(units=30,
-                                activation="relu",
-                                kernel_initializer="he_normal",
-                                kernel_regularizer=self.regularizer)
         if classification:
             if categories < 1:
                 raise ValueError("categories should be at least 1")
@@ -728,8 +726,7 @@ class AlphaNetV4(_Model):
         recurrent5 = self.recurrent5(expanded5)
         concat = self.concat([recurrent10, recurrent5])
         dropout = self.dropout_layer(concat, training=training)
-        dense = self.dense(dropout)
-        output = self.outputs(dense)
+        output = self.outputs(dropout)
         return output
 
     def compile(self,
