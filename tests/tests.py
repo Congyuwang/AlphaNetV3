@@ -496,7 +496,8 @@ class TestDataNormalizationModule(unittest.TestCase):
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][:len(self.first_batch_train[k])],
-                self.first_batch_train[k]
+                self.first_batch_train[k],
+                atol=1e-5
             ), "first batch of training {} "
                "(start {}): failure".format(name, self.test_date))
 
@@ -505,7 +506,8 @@ class TestDataNormalizationModule(unittest.TestCase):
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][-len(self.last_batch_train[0]):],
-                self.last_batch_train[k]
+                self.last_batch_train[k],
+                atol=1e-5
             ), "last batch of training {} "
                "(start {}): failure".format(name, self.test_date))
 
@@ -514,7 +516,8 @@ class TestDataNormalizationModule(unittest.TestCase):
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][:len(self.first_batch_val[k])],
-                self.first_batch_val[k]
+                self.first_batch_val[k],
+                atol=1e-5
             ), "first batch of validation {} "
                "(start {}): failure".format(name, self.test_date))
 
@@ -523,7 +526,8 @@ class TestDataNormalizationModule(unittest.TestCase):
         for k, name in enumerate(["data", "label"]):
             self.assertTrue(__is_all_close__(
                 data_label[k][-len(self.last_batch_val[0]):],
-                self.last_batch_val[k]
+                self.last_batch_val[k],
+                atol=1e-5
             ), "last batch of validation {} "
                "(start {}): failure".format(name, self.test_date))
 
@@ -564,11 +568,13 @@ class TestDataNormalizationModule(unittest.TestCase):
                 ),
                 self.full_data["日期"] >= start_date
             ), :]
-            dt = df.iloc[:, 3:].values
+            dt = df.iloc[:, 3:].values.astype(np.float32)
             dt_max = np.max(dt, axis=0, keepdims=True)
             dt_min = np.min(dt, axis=0, keepdims=True)
             large_cols = np.squeeze(dt_max) > 1.0
-            normal = (dt - dt_min) / (dt_max - dt_min)
+            with np.errstate(divide='ignore', invalid='ignore'):
+                normal = np.nan_to_num((dt - dt_min)
+                                       / (dt_max - dt_min))
             dt[:, large_cols] = normal[:, large_cols]
             lb = df["10日回报率"].iloc[-1]
             if np.sum(pd.isnull(dt)) == 0:
